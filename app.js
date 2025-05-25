@@ -1,11 +1,12 @@
 let noodles = [];
 
+const API_URL = '/api/getNoodles';
+
 async function loadData() {
-    const res = await fetch('data/noodles.json');
+    const res = await fetch(API_URL);
     noodles = await res.json();
     renderList(noodles);
 }
-
 function renderList(data) {
     const list = document.getElementById('noodle-list');
     list.innerHTML = '';
