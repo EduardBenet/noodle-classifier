@@ -10,8 +10,17 @@ app.http('getNoodles', {
     methods: ['GET'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
-        context.log(`Http function processed request for url "${request.url}"`);
-
-        return { body: `${endpoint}, ${key}` };
+        try {
+            const { databases } = await client.databases.readAll().fetchAll();
+            return {
+                status: 200,
+                body: databases
+            };
+        } catch (error) {
+            return {
+                status: 500,
+                body: { error: error.message }
+            };
+        }
     }
 });
