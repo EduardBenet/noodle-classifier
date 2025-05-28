@@ -3,10 +3,32 @@ let noodles = [];
 const API_URL = '/api/getNoodles';
 
 async function loadData() {
-    const res = await fetch(API_URL);
-    noodles = await res.json();
-    renderList(noodles);
+
+    const query = `
+      {
+        packages {
+          items {
+            id
+            brand
+            description
+            keywords
+            spicy
+            price
+            rating
+          }
+        }
+      }`;
+
+    const endpoint = "/data-api/graphql";
+    const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: query })
+    });
+    const result = await response.json();
+    renderList(result.data.people.items);
 }
+
 function renderList(data) {
     const list = document.getElementById('noodle-list');
     list.innerHTML = '';
