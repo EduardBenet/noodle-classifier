@@ -4,31 +4,15 @@ const { CosmosClient } = require('@azure/cosmos');
 const endpoint = process.env.COSMOS_DB_ENDPOINT;
 const key = process.env.COSMOS_DB_KEY;
 
-const client = new CosmosClient({ endpoint, key });
 
 app.http('getNoodles', {
-    methods: ['GET'],
+    methods: ['GET', 'POST'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
-        context.log(`Fetching noodles from Cosmos DB...`);
+        context.log(`Http function processed request for url "${request.url}"`);
 
-        try {
-            const database = client.database('noodles');
-            const container = database.container('packages');
+        const name = request.query.get('name') || await request.text() || 'world';
 
-            const { resources: items } = await container.items.readAll().fetchAll();
-
-            return {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' },
-                body: items
-            };
-        } catch (error) {
-            context.log.error('Error reading from Cosmos DB:', error.message);
-            return {
-                status: 500,
-                body: { error: 'Failed to retrieve noodles from the database.' }
-            };
-        }
+        return { body: `Hello, ${name}!` };
     }
 });
