@@ -31,5 +31,17 @@
       "mode": "production"
     }
   },
-  "entities": {}
+  "entities": {
+    "Noodles": {
+      "source": "packages",
+      "permissions": [
+        {
+          "actions": [
+            "*"
+          ],
+          "role": "anonymous"
+        }
+      ]
+    }
+  }
 }
