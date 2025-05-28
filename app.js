@@ -4,7 +4,7 @@ async function loadData() {
 
     const query = `
       {
-        packages {
+        Noodles {
           items {
             id
             name
