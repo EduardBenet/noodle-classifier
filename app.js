@@ -26,7 +26,7 @@ async function loadData() {
         body: JSON.stringify({ query: query })
     });
     const result = await response.json();
-    renderList(result.data.people.items);
+    renderList(result.data.packages.items);
 }
 
 function renderList(data) {
