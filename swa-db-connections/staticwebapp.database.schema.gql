@@ -1,0 +1,11 @@
+type Noodles @model {
+  id: ID
+  name: String
+  brand: String
+  keywords: [String]
+  description: String
+  spicy: Int
+  price: Float
+  rating: Int
+  image: String
+}
