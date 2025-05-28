@@ -26,7 +26,7 @@ async function loadData() {
         body: JSON.stringify({ query: query })
     });
     const result = await response.json();
-    renderList(result.data.packages.items);
+    renderList(result.data.Noodles.items);
 }
 
 function renderList(data) {
