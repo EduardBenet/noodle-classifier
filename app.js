@@ -1,7 +1,5 @@
 let noodles = [];
 
-const API_URL = '/api/getNoodles';
-
 async function loadData() {
 
     const query = `
@@ -9,12 +7,14 @@ async function loadData() {
         packages {
           items {
             id
+            name
             brand
             description
             keywords
             spicy
             price
             rating
+            image
           }
         }
       }`;
@@ -76,19 +76,6 @@ document.getElementById('add-form').addEventListener('submit', e => {
 
     noodles.push(newNoodle);
     renderList(noodles);
-});
-
-document.getElementById('export').addEventListener('click', () => {
-    const json = JSON.stringify(noodles, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'noodles.json';
-    a.click();
-
-    URL.revokeObjectURL(url);
 });
 
 loadData();
