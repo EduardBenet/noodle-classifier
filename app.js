@@ -26,6 +26,7 @@ async function list() {
     body: JSON.stringify({ query: query })
   });
   const result = await response.json();
+  console.log(result.data)
   renderList(result.data.noodles.items);
 }
 
