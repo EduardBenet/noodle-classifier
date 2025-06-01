@@ -1,10 +1,10 @@
 let noodles = [];
 
-async function loadData() {
+async function list() {
 
   const query = `
       {
-        peoples {
+        noodles {
           items {
             id
             name
@@ -26,7 +26,7 @@ async function loadData() {
     body: JSON.stringify({ query: query })
   });
   const result = await response.json();
-  renderList(result.data.people.items);
+  renderList(result.data.noodles.items);
 }
 
 function renderList(data) {
@@ -78,4 +78,4 @@ document.getElementById('add-form').addEventListener('submit', e => {
   renderList(noodles);
 });
 
-loadData();
+list();
