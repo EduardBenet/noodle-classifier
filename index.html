@@ -10,17 +10,17 @@
 <body>
     <h1>🍜 Instant Noodle Classifier</h1>
 
-    <input type="text" id="search" placeholder="Search by brand or keyword...">
-
     <div id="noodle-list"></div>
 
+    <h1>Search</h1>
+    <input type="text" id="search" placeholder="Search by brand or keyword...">
+
     <h2>Add New Instant Noodles</h2>
-    <h2>Add New Noodle (manual entry)</h2>
     <form id="add-form">
         <div>
             <input type="text" id="name" placeholder="Name" required>
             <input type="text" id="brand" placeholder="Brand" required>
-            <input type="number" id="price" placeholder="Price (€)" required>
+            <input type="number" id="price" placeholder="Price (£)" step="0.01" min="0" required>
 
             <textarea id="description" placeholder="Description" style="grid-column: span 3;" required></textarea>
 
