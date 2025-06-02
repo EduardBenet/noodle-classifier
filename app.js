@@ -10,7 +10,7 @@ async function create() {
     description: document.getElementById('description').value,
     spicy: parseInt(document.getElementById('spicy').value),
     price: parseFloat(document.getElementById('price').value),
-    rating: parseInt(document.getElementById('rating').value),
+    rating: parseInt(document.querySelector('input[name="rating"]:checked')?.value || "0"),
     image: document.getElementById('image').values
   };
 
