@@ -8,6 +8,7 @@ async function create() {
     brand: document.getElementById('brand').value,
     keywords: document.getElementById('keywords').value.split(',').map(k => k.trim()),
     description: document.getElementById('description').value,
+    spicy: parseInt(document.getElementById('spicy').value),
     price: parseFloat(document.getElementById('price').value),
     rating: parseInt(document.getElementById('rating').value),
     image: document.getElementById('image').values
@@ -21,6 +22,7 @@ async function create() {
         brand
         keywords
         description
+        spicy
         price
         rating
         image

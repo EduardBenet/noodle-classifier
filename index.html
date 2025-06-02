@@ -24,12 +24,24 @@
 
             <textarea id="description" placeholder="Description" style="grid-column: span 3;" required></textarea>
 
-            <div class="rating" style="grid-column: span 3;">
-                <input type="radio" name="rating" id="star5" value="5"><label for="star5">★</label>
-                <input type="radio" name="rating" id="star4" value="4"><label for="star4">★</label>
-                <input type="radio" name="rating" id="star3" value="3"><label for="star3">★</label>
-                <input type="radio" name="rating" id="star2" value="2"><label for="star2">★</label>
-                <input type="radio" name="rating" id="star1" value="1"><label for="star1">★</label>
+            <div style="grid-column: span 3; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;">
+                <label for="spicy">Spice Level:</label>
+                <select id="spicy" name="spicy">
+                    <option value="1">🌶️</option>
+                    <option value="2">🌶️🌶️</option>
+                    <option value="3">🌶️🌶️🌶️</option>
+                    <option value="4">🌶️🌶️🌶️🌶️</option>
+                    <option value="5">🌶️🌶️🌶️🌶️🌶️</option>
+                </select>
+
+                <span>Rating:</span>
+                <div class="rating">
+                    <input type="radio" name="rating" id="star5" value="5"><label for="star5">★</label>
+                    <input type="radio" name="rating" id="star4" value="4"><label for="star4">★</label>
+                    <input type="radio" name="rating" id="star3" value="3"><label for="star3">★</label>
+                    <input type="radio" name="rating" id="star2" value="2"><label for="star2">★</label>
+                    <input type="radio" name="rating" id="star1" value="1"><label for="star1">★</label>
+                </div>
             </div>
 
             <input type="text" id="keywords" placeholder="Keywords (comma-separated)">
