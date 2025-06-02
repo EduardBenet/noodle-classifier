@@ -14,24 +14,22 @@
 
     <div id="noodle-list"></div>
 
+    <h2>Add New Instant Noodles</h2>
     <h2>Add New Noodle (manual entry)</h2>
     <form id="add-form">
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; max-width: 800px;">
+        <div>
             <input type="text" id="name" placeholder="Name" required>
             <input type="text" id="brand" placeholder="Brand" required>
             <input type="number" id="price" placeholder="Price (€)" required>
 
-            <textarea id="description" placeholder="Description" style="grid-column: span 3;"></textarea>
+            <textarea id="description" placeholder="Description" style="grid-column: span 3;" required></textarea>
 
-            <div style="grid-column: span 3;">
-                <label>Rating: </label>
-                <span class="stars">
-                    <label><input type="radio" name="rating" value="1">⭐</label>
-                    <label><input type="radio" name="rating" value="2">⭐⭐</label>
-                    <label><input type="radio" name="rating" value="3">⭐⭐⭐</label>
-                    <label><input type="radio" name="rating" value="4">⭐⭐⭐⭐</label>
-                    <label><input type="radio" name="rating" value="5">⭐⭐⭐⭐⭐</label>
-                </span>
+            <div class="rating" style="grid-column: span 3;">
+                <input type="radio" name="rating" id="star5" value="5"><label for="star5">★</label>
+                <input type="radio" name="rating" id="star4" value="4"><label for="star4">★</label>
+                <input type="radio" name="rating" id="star3" value="3"><label for="star3">★</label>
+                <input type="radio" name="rating" id="star2" value="2"><label for="star2">★</label>
+                <input type="radio" name="rating" id="star1" value="1"><label for="star1">★</label>
             </div>
 
             <input type="text" id="keywords" placeholder="Keywords (comma-separated)">

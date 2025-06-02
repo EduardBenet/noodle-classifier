@@ -27,3 +27,65 @@ body {
 .stars {
     color: gold;
 }
+
+.stars input {
+    display: none;
+}
+
+.stars label {
+    cursor: pointer;
+    font-size: 1.2em;
+    margin-right: 5px;
+}
+
+/* Star Rating Styling */
+.rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+    gap: 5px;
+}
+
+.rating input {
+    display: none;
+}
+
+.rating label {
+    font-size: 2em;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.rating input:checked~label,
+.rating label:hover,
+.rating label:hover~label {
+    color: gold;
+}
+
+/* Responsive Form Grid */
+form#add-form>div {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    max-width: 100%;
+    padding: 10px;
+}
+
+@media (max-width: 768px) {
+    form#add-form>div {
+        grid-template-columns: 1fr;
+    }
+
+    .rating {
+        justify-content: center;
+    }
+
+    button[type="submit"] {
+        justify-self: center !important;
+    }
+}
+
+textarea {
+    resize: vertical;
+}
