@@ -1,5 +1,55 @@
 let noodles = [];
 
+async function create() {
+
+  const data = {
+    id: `id-${Date.now()}`,
+    name: document.getElementById('name').value,
+    brand: document.getElementById('brand').value,
+    keywords: document.getElementById('keywords').value.split(',').map(k => k.trim()),
+    description: document.getElementById('description').value,
+    price: parseFloat(document.getElementById('price').value),
+    rating: parseInt(document.getElementById('rating').value),
+    image: document.getElementById('image').values
+  };
+
+  const gql = `
+    mutation create($item: CreateNoodlesInput!) {
+      createNoodles(item: $item) {
+        id
+        name
+        brand
+        keywords
+        description
+        price
+        rating
+        image
+      }
+    }`;
+
+  const query = {
+    query: gql,
+    variables: {
+      item: data
+    }
+  };
+
+  const endpoint = "/data-api/graphql";
+  const result = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(query)
+  });
+
+  const response = await result.json();
+  list();
+}
+
+document.getElementById('add-form').addEventListener('submit', function (e) {
+  e.preventDefault();
+  create();
+});
+
 async function list() {
 
   const query = `
@@ -26,7 +76,6 @@ async function list() {
     body: JSON.stringify({ query: query })
   });
   const result = await response.json();
-  console.log(result.data)
   renderList(result.data.noodles.items);
 }
 
@@ -59,24 +108,6 @@ document.getElementById('search').addEventListener('input', (e) => {
     n.keywords.some(k => k.toLowerCase().includes(term))
   );
   renderList(filtered);
-});
-
-document.getElementById('add-form').addEventListener('submit', e => {
-  e.preventDefault();
-
-  const newNoodle = {
-    id: `id-${Date.now()}`,
-    name: document.getElementById('name').value,
-    brand: document.getElementById('brand').value,
-    keywords: document.getElementById('keywords').value.split(',').map(k => k.trim()),
-    description: document.getElementById('description').value,
-    price: parseFloat(document.getElementById('price').value),
-    rating: parseInt(document.getElementById('rating').value),
-    image: document.getElementById('image').value
-  };
-
-  noodles.push(newNoodle);
-  renderList(noodles);
 });
 
 list();

@@ -16,14 +16,28 @@
 
     <h2>Add New Noodle (manual entry)</h2>
     <form id="add-form">
-        <input type="text" id="name" placeholder="Name" required>
-        <input type="text" id="brand" placeholder="Brand" required>
-        <input type="text" id="keywords" placeholder="Keywords (comma-separated)">
-        <textarea id="description" placeholder="Description"></textarea>
-        <input type="number" id="price" placeholder="Price (€)">
-        <input type="number" id="rating" min="1" max="5" placeholder="Rating (1-5)">
-        <input type="text" id="image" placeholder="Image filename (e.g. shin.jpg)">
-        <button type="submit">Add Noodle</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; max-width: 800px;">
+            <input type="text" id="name" placeholder="Name" required>
+            <input type="text" id="brand" placeholder="Brand" required>
+            <input type="number" id="price" placeholder="Price (€)" required>
+
+            <textarea id="description" placeholder="Description" style="grid-column: span 3;"></textarea>
+
+            <div style="grid-column: span 3;">
+                <label>Rating: </label>
+                <span class="stars">
+                    <label><input type="radio" name="rating" value="1">⭐</label>
+                    <label><input type="radio" name="rating" value="2">⭐⭐</label>
+                    <label><input type="radio" name="rating" value="3">⭐⭐⭐</label>
+                    <label><input type="radio" name="rating" value="4">⭐⭐⭐⭐</label>
+                    <label><input type="radio" name="rating" value="5">⭐⭐⭐⭐⭐</label>
+                </span>
+            </div>
+
+            <input type="text" id="keywords" placeholder="Keywords (comma-separated)">
+            <input type="text" id="image" placeholder="Image filename (e.g. shin.jpg)">
+            <button type="submit" style="grid-column: span 1; justify-self: end;">Add Noodle</button>
+        </div>
     </form>
 
     <script src="app.js"></script>
