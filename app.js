@@ -123,4 +123,7 @@ document.querySelectorAll(".tab-btn").forEach(button => {
   });
 });
 
-list();
+window.addEventListener("DOMContentLoaded", () => {
+  list(); // or whatever function you use to populate #noodle-list
+});
+
