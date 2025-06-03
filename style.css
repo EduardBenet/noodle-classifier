@@ -142,6 +142,13 @@ form#add-form>div {
     flex-shrink: 0;
 }
 
+.rating-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    grid-column: span 3;
+}
+
 /* Optional: consistent star appearance in display-only mode */
 .stars {
     color: gold;
