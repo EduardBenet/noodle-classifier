@@ -92,7 +92,7 @@ function renderList(data) {
     card.innerHTML = `
       <img src="${noodle.image}" alt="${noodle.name}">
       <strong>${noodle.name}</strong> (${noodle.brand})<br>
-      €${noodle.price.toFixed(2)}<br>
+      £${noodle.price.toFixed(2)}<br>
       <span class="stars">${'★'.repeat(noodle.rating)}${'☆'.repeat(5 - noodle.rating)}</span><br>
       <small>${noodle.description}</small><br>
       <small><em>Tags: ${noodle.keywords.join(', ')}</em></small>
