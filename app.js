@@ -11,7 +11,7 @@ async function create() {
     spicy: parseInt(document.getElementById('spicy').value),
     price: parseFloat(document.getElementById('price').value),
     rating: parseInt(document.querySelector('input[name="rating"]:checked')?.value || "0"),
-    image: document.getElementById('image').values
+    image: document.getElementById('image').value
   };
 
   const gql = `
@@ -45,6 +45,8 @@ async function create() {
 
   const response = await result.json();
   list();
+  // Reset form on success
+  document.getElementById('add-form').reset();
 }
 
 document.getElementById('add-form').addEventListener('submit', function (e) {
