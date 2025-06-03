@@ -27,36 +27,38 @@
             <div class="search-bar">
                 <input type="text" id="search" placeholder="Search by brand or keyword...">
             </div>
-        </section <section id="tab-add" class="tab">
+        </section>
 
-        <form id="add-form">
-            <input type="text" id="name" placeholder="Name" required>
-            <input type="text" id="brand" placeholder="Brand" required>
-            <input type="number" id="price" placeholder="Price (£)" step="0.01" min="0" required>
-            <textarea id="description" placeholder="Description" required></textarea>
+        <section id="tab-add" class="tab">
 
-            <label for="spicy">Spice Level:</label>
-            <select id="spicy" name="spicy">
-                <option value="1">🌶️</option>
-                <option value="2">🌶️🌶️</option>
-                <option value="3">🌶️🌶️🌶️</option>
-                <option value="4">🌶️🌶️🌶️🌶️</option>
-                <option value="5">🌶️🌶️🌶️🌶️🌶️</option>
-            </select>
+            <form id="add-form">
+                <input type="text" id="name" placeholder="Name" required>
+                <input type="text" id="brand" placeholder="Brand" required>
+                <input type="number" id="price" placeholder="Price (£)" step="0.01" min="0" required>
+                <textarea id="description" placeholder="Description" required></textarea>
 
-            <div class="rating">
-                <span>Rating:</span>
-                <input type="radio" name="rating" id="star5" value="5"><label for="star5">★</label>
-                <input type="radio" name="rating" id="star4" value="4"><label for="star4">★</label>
-                <input type="radio" name="rating" id="star3" value="3"><label for="star3">★</label>
-                <input type="radio" name="rating" id="star2" value="2"><label for="star2">★</label>
-                <input type="radio" name="rating" id="star1" value="1"><label for="star1">★</label>
-            </div>
+                <label for="spicy">Spice Level:</label>
+                <select id="spicy" name="spicy">
+                    <option value="1">🌶️</option>
+                    <option value="2">🌶️🌶️</option>
+                    <option value="3">🌶️🌶️🌶️</option>
+                    <option value="4">🌶️🌶️🌶️🌶️</option>
+                    <option value="5">🌶️🌶️🌶️🌶️🌶️</option>
+                </select>
 
-            <input type="text" id="keywords" placeholder="Keywords (comma-separated)">
-            <input type="text" id="image" placeholder="Image filename (e.g. shin.jpg)">
-            <button type="submit">Add Noodle</button>
-        </form>
+                <div class="rating">
+                    <span>Rating:</span>
+                    <input type="radio" name="rating" id="star5" value="5"><label for="star5">★</label>
+                    <input type="radio" name="rating" id="star4" value="4"><label for="star4">★</label>
+                    <input type="radio" name="rating" id="star3" value="3"><label for="star3">★</label>
+                    <input type="radio" name="rating" id="star2" value="2"><label for="star2">★</label>
+                    <input type="radio" name="rating" id="star1" value="1"><label for="star1">★</label>
+                </div>
+
+                <input type="text" id="keywords" placeholder="Keywords (comma-separated)">
+                <input type="text" id="image" placeholder="Image filename (e.g. shin.jpg)">
+                <button type="submit">Add Noodle</button>
+            </form>
         </section>
     </main>
 
