@@ -215,7 +215,7 @@ form#add-form>div {
     border: 1px solid #ccc;
     margin: 0 auto;
     box-sizing: border-box;
-    padding-bottom: 2rem;
+    margin-bottom: 2rem;
 }
 
 @media (max-width: 600px) {
