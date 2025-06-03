@@ -172,6 +172,22 @@ form#add-form>div {
     color: gold;
 }
 
+/* Optional: consistent star appearance in display-only mode */
+.stars {
+    color: gold;
+    font-size: 1.2em;
+}
+
+/* Hides actual inputs in stars if using them outside form */
+.stars input {
+    display: none;
+}
+
+.stars label {
+    cursor: pointer;
+    margin-right: 5px;
+}
+
 .search-bar {
     max-width: 600px;
     margin: 1rem auto;
