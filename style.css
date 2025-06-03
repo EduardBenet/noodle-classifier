@@ -146,7 +146,6 @@ form#add-form>div {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    grid-column: span 3;
 }
 
 .rating-stars {
