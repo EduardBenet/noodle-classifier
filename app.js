@@ -145,9 +145,20 @@ async function searchNoodles(searchTerm) {
   renderList(result.data.noodles.items, 'search-results');
 }
 
+let debounceTimeout;
+
 document.getElementById("search").addEventListener("input", async (e) => {
   const searchTerm = e.target.value.trim();
-  searchNoodles(searchTerm);
+
+  // Clear the last timeout
+  clearTimeout(debounceTimeout);
+
+  // Set a new timeout
+  debounceTimeout = setTimeout(() => {
+    if (searchTerm) {
+      searchNoodles(searchTerm);
+    }
+  }, 300); // wait 300ms after last keystroke
 });
 
 document.querySelectorAll(".tab-btn").forEach(button => {
