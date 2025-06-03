@@ -106,24 +106,19 @@ function renderList(data, lname) {
 
 async function searchNoodles(searchTerm) {
   const gql = `
-    query searchNoodles($search: String!) {
-      noodle(
-        where: {
-          _or: [
-            { brand: { _ilike: $search } }
-            { keywords: { _ilike: $search } }
-          ]
+    query SearchNoodles($filter: NoodlesFilterInput) {
+      noodles(filter: $filter) {
+        items {
+          id
+          name
+          brand
+          description
+          keywords
+          spicy
+          price
+          rating
+          image
         }
-      ) {
-        id
-        name
-        brand
-        description
-        keywords
-        spicy
-        price
-        rating
-        image
       }
     }
   `;
@@ -131,8 +126,13 @@ async function searchNoodles(searchTerm) {
   const query = {
     query: gql,
     variables: {
-      search: `%${searchTerm}%`, // ilike wildcard match
-    },
+      filter: {
+        or: [
+          { brand: { contains: searchTerm } },
+          { keywords: { contains: searchTerm } }
+        ]
+      }
+    }
   };
 
   const response = await fetch("/data-api/graphql", {
