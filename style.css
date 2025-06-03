@@ -188,8 +188,8 @@ form#add-form>div {
 }
 
 .search-bar {
+    width: 100%;
     max-width: 600px;
-    padding: 0 1rem;
 }
 
 #search {
@@ -201,6 +201,9 @@ form#add-form>div {
 }
 
 #tab-search {
-    display: flex;
     justify-content: center;
+    align-items: flex-start;
+    padding-top: 1rem;
+    flex-direction: column;
+    align-items: center;
 }
