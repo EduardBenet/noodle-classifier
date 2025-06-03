@@ -142,7 +142,7 @@ async function searchNoodles(searchTerm) {
   });
 
   const result = await response.json();
-  renderList(result.data.noodle.items, 'search-results');
+  renderList(result.data.noodles.items, 'search-results');
 }
 
 document.getElementById("search").addEventListener("input", async (e) => {
