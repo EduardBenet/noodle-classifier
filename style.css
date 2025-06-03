@@ -188,11 +188,8 @@ form#add-form>div {
 }
 
 #tab-search {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     padding-top: 1rem;
-    gap: 1rem;
+    text-align: center;
 }
 
 #search {
@@ -203,12 +200,12 @@ form#add-form>div {
     border-radius: 6px;
     border: 1px solid #ccc;
     margin: 0 auto;
-    /* Center the input horizontally */
-    display: block;
+    box-sizing: border-box;
+    /* 👈 ensures padding stays within the width */
 }
 
 @media (max-width: 600px) {
     #search {
-        max-width: 90%;
+        max-width: 90vw;
     }
 }
