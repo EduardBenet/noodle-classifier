@@ -201,7 +201,7 @@ form#add-form>div {
     border: 1px solid #ccc;
     margin: 0 auto;
     box-sizing: border-box;
-    /* 👈 ensures padding stays within the width */
+    margin-bottom: 12px;
 }
 
 @media (max-width: 600px) {
