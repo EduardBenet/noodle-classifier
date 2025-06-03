@@ -118,9 +118,10 @@ async function searchNoodles(searchTerm) {
         id
         name
         brand
-        keywords
         description
+        keywords
         spicy
+        price
         rating
         image
       }
@@ -141,16 +142,12 @@ async function searchNoodles(searchTerm) {
   });
 
   const result = await response.json();
-  console.table(result.data.noodle);
-  return result.data.noodle;
+  renderList(result.data.noodle.items, 'search-results');
 }
-
 
 document.getElementById("search").addEventListener("input", async (e) => {
   const searchTerm = e.target.value.trim();
-  const filtered = await searchNoodles(searchTerm);
-
-  renderList(filtered, 'search-results');
+  searchNoodles(searchTerm);
 });
 
 document.querySelectorAll(".tab-btn").forEach(button => {
