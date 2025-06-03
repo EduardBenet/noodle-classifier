@@ -189,7 +189,6 @@ form#add-form>div {
 
 .search-bar {
     max-width: 600px;
-    margin: 1rem auto;
     padding: 0 1rem;
 }
 
@@ -199,4 +198,9 @@ form#add-form>div {
     font-size: 1rem;
     border-radius: 6px;
     border: 1px solid #ccc;
+}
+
+#tab-search {
+    display: flex;
+    justify-content: center;
 }
