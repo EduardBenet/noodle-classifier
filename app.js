@@ -112,4 +112,15 @@ document.getElementById('search').addEventListener('input', (e) => {
   renderList(filtered);
 });
 
+document.querySelectorAll(".tab-btn").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+
+    const target = button.getAttribute("data-tab");
+    document.getElementById(`tab-${target}`).classList.add("active");
+    button.classList.add("active");
+  });
+});
+
 list();

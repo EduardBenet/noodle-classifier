@@ -5,26 +5,35 @@
     <meta charset="UTF-8">
     <title>Noodle Classifier 🍜</title>
     <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
-    <h1>🍜 Instant Noodle Classifier</h1>
+    <header>
+        <h1>🍜 Instant Noodle Classifier</h1>
+        <nav>
+            <button class="tab-btn" data-tab="list">List</button>
+            <button class="tab-btn" data-tab="search">Search</button>
+            <button class="tab-btn" data-tab="add">Add</button>
+        </nav>
+    </header>
 
-    <div id="noodle-list"></div>
+    <main>
+        <section id="tab-list" class="tab active">
+            <div id="noodle-list"></div>
+        </section>
 
-    <h1>Search</h1>
-    <input type="text" id="search" placeholder="Search by brand or keyword...">
+        <section id="tab-search" class="tab">
+            <input type="text" id="search" placeholder="Search by brand or keyword...">
+        </section>
 
-    <h2>Add New Instant Noodles</h2>
-    <form id="add-form">
-        <div>
-            <input type="text" id="name" placeholder="Name" required>
-            <input type="text" id="brand" placeholder="Brand" required>
-            <input type="number" id="price" placeholder="Price (£)" step="0.01" min="0" required>
+        <section id="tab-add" class="tab">
+            <form id="add-form">
+                <input type="text" id="name" placeholder="Name" required>
+                <input type="text" id="brand" placeholder="Brand" required>
+                <input type="number" id="price" placeholder="Price (£)" step="0.01" min="0" required>
+                <textarea id="description" placeholder="Description" required></textarea>
 
-            <textarea id="description" placeholder="Description" style="grid-column: span 3;" required></textarea>
-
-            <div style="grid-column: span 3; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;">
                 <label for="spicy">Spice Level:</label>
                 <select id="spicy" name="spicy">
                     <option value="1">🌶️</option>
@@ -34,21 +43,21 @@
                     <option value="5">🌶️🌶️🌶️🌶️🌶️</option>
                 </select>
 
-                <span>Rating:</span>
-                <div class="rating">
+                <fieldset class="rating">
+                    <legend>Rating:</legend>
                     <input type="radio" name="rating" id="star5" value="5"><label for="star5">★</label>
                     <input type="radio" name="rating" id="star4" value="4"><label for="star4">★</label>
                     <input type="radio" name="rating" id="star3" value="3"><label for="star3">★</label>
                     <input type="radio" name="rating" id="star2" value="2"><label for="star2">★</label>
                     <input type="radio" name="rating" id="star1" value="1"><label for="star1">★</label>
-                </div>
-            </div>
+                </fieldset>
 
-            <input type="text" id="keywords" placeholder="Keywords (comma-separated)">
-            <input type="text" id="image" placeholder="Image filename (e.g. shin.jpg)">
-            <button type="submit" style="grid-column: span 1; justify-self: end;">Add Noodle</button>
-        </div>
-    </form>
+                <input type="text" id="keywords" placeholder="Keywords (comma-separated)">
+                <input type="text" id="image" placeholder="Image filename (e.g. shin.jpg)">
+                <button type="submit">Add Noodle</button>
+            </form>
+        </section>
+    </main>
 
     <script src="app.js"></script>
 </body>
