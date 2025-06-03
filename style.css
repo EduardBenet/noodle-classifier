@@ -142,6 +142,20 @@ form#add-form>div {
     flex-shrink: 0;
 }
 
+@media (max-width: 600px) {
+    .card {
+        flex-direction: column;
+        align-items: center;
+        /* center image and text */
+    }
+
+    .card img {
+        max-width: 100%;
+        height: auto;
+        margin-bottom: 1rem;
+    }
+}
+
 .rating-row {
     display: flex;
     justify-content: space-between;
