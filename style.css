@@ -187,6 +187,14 @@ form#add-form>div {
     margin-right: 5px;
 }
 
+#tab-search {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 1rem;
+    gap: 1rem;
+}
+
 #search {
     width: 100%;
     max-width: 600px;
@@ -195,14 +203,12 @@ form#add-form>div {
     border-radius: 6px;
     border: 1px solid #ccc;
     margin: 0 auto;
-    /* this centers the input if it's a block element */
+    /* Center the input horizontally */
     display: block;
 }
 
-#tab-search {
-    justify-content: center;
-    align-items: flex-start;
-    padding-top: 1rem;
-    flex-direction: column;
-    align-items: center;
+@media (max-width: 600px) {
+    #search {
+        max-width: 90%;
+    }
 }
