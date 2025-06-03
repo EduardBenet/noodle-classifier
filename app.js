@@ -80,11 +80,11 @@ async function list() {
     body: JSON.stringify({ query: query })
   });
   const result = await response.json();
-  renderList(result.data.noodles.items);
+  renderList(result.data.noodles.items, 'noodle-list');
 }
 
-function renderList(data) {
-  const list = document.getElementById('noodle-list');
+function renderList(data, lname) {
+  const list = document.getElementById(lname);
   list.innerHTML = '';
 
   data.forEach(noodle => {
@@ -104,14 +104,53 @@ function renderList(data) {
   });
 }
 
-document.getElementById('search').addEventListener('input', (e) => {
-  const term = e.target.value.toLowerCase();
-  const filtered = noodles.filter(n =>
-    n.name.toLowerCase().includes(term) ||
-    n.brand.toLowerCase().includes(term) ||
-    n.keywords.some(k => k.toLowerCase().includes(term))
-  );
-  renderList(filtered);
+async function searchNoodles(searchTerm) {
+  const gql = `
+    query searchNoodles($search: String!) {
+      noodle(
+        where: {
+          _or: [
+            { brand: { _ilike: $search } }
+            { keywords: { _ilike: $search } }
+          ]
+        }
+      ) {
+        id
+        name
+        brand
+        keywords
+        description
+        spicy
+        rating
+        image
+      }
+    }
+  `;
+
+  const query = {
+    query: gql,
+    variables: {
+      search: `%${searchTerm}%`, // ilike wildcard match
+    },
+  };
+
+  const response = await fetch("/data-api/graphql", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(query),
+  });
+
+  const result = await response.json();
+  console.table(result.data.noodle);
+  return result.data.noodle;
+}
+
+
+document.getElementById("search").addEventListener("input", async (e) => {
+  const searchTerm = e.target.value.trim();
+  const filtered = await searchNoodles(searchTerm);
+
+  renderList(filtered, 'search-results');
 });
 
 document.querySelectorAll(".tab-btn").forEach(button => {
