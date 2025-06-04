@@ -148,6 +148,10 @@ form#add-form>div {
     gap: 0.25rem;
 }
 
+.card-content small {
+    text-align: justify;
+}
+
 .price {
     font-weight: bold;
     color: #444;
@@ -215,6 +219,34 @@ form#add-form>div {
 .stars label {
     cursor: pointer;
     margin-right: 5px;
+}
+
+.rating-spice-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.rating-spice-row .stars {
+    flex-grow: 1;
+    text-align: left;
+}
+
+.rating-spice-row .spice {
+    text-align: right;
+}
+
+@media (max-width: 600px) {
+    .rating-spice-row {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .rating-spice-row .stars,
+    .rating-spice-row .spice {
+        flex: 1 1 auto;
+    }
 }
 
 #tab-search {
