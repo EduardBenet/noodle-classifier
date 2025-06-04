@@ -166,7 +166,7 @@ form#add-form>div {
     }
 
     .card img {
-        max-width: 80px;
+        max-width: 70%;
         height: auto;
         margin-bottom: 0.25rem;
     }
