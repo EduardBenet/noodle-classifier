@@ -165,7 +165,7 @@ document.getElementById("search").addEventListener("input", async (e) => {
     }
   }, 300); // wait 300ms after last keystroke
 });
-g
+
 document.querySelectorAll(".tab-btn").forEach(button => {
   button.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
