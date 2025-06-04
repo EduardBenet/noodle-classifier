@@ -101,8 +101,7 @@ function renderList(data, lname) {
         <div class="price">£${noodle.price.toFixed(2)}</div>
         <div class="stars">${'★'.repeat(noodle.rating)}${'☆'.repeat(5 - noodle.rating)}</div>
         <div class="spice">${'🌶️'.repeat(noodle.spicy)}</div>
-        <small>${noodle.description}</small><br>
-        ${noodle.keywords && noodle.keywords.length > 0 ? `<small><em>Tags: ${noodle.keywords.join(', ')}</em></small>` : ''}
+        <small>${noodle.description}</small>
       </div>
     `;
 

@@ -141,6 +141,22 @@ form#add-form>div {
     margin-bottom: 1rem;
 }
 
+.card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.price {
+    font-weight: bold;
+    color: #444;
+}
+
+.spice {
+    font-size: 1.2rem;
+    line-height: 1.2;
+}
+
 @media (max-width: 600px) {
     .card {
         flex-direction: column;
