@@ -133,8 +133,8 @@ async function searchNoodles(searchTerm) {
     variables: {
       filter: {
         or: [
-          { brand: { contains: searchTerm, mode: "insensitive" } },
-          { keywords: { contains: searchTerm, mode: "insensitive" } }
+          { brand: { contains: searchTerm } },
+          { keywords: { contains: searchTerm } }
         ]
       }
     }
