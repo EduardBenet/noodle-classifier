@@ -136,9 +136,9 @@ form#add-form>div {
 }
 
 .card img {
-    max-width: 80px;
+    max-width: 60px;
     height: auto;
-    margin-bottom: 1rem;
+    margin-bottom: 0.25rem;
 }
 
 .card-content {
