@@ -128,8 +128,8 @@ async function searchNoodles(searchTerm) {
     variables: {
       filter: {
         or: [
-          { brand: { contains: searchTerm } },
-          { keywords: { contains: searchTerm } }
+          { brand: { contains: searchTerm, mode: "insensitive" } },
+          { keywords: { contains: searchTerm, mode: "insensitive" } }
         ]
       }
     }
@@ -160,7 +160,7 @@ document.getElementById("search").addEventListener("input", async (e) => {
     }
   }, 300); // wait 300ms after last keystroke
 });
-
+g
 document.querySelectorAll(".tab-btn").forEach(button => {
   button.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
