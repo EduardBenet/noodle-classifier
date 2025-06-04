@@ -93,11 +93,17 @@ function renderList(data, lname) {
 
     card.innerHTML = `
       <img src="${noodle.image}" alt="${noodle.name}">
-      <strong>${noodle.name}</strong> (${noodle.brand})<br>
-      £${noodle.price.toFixed(2)}<br>
-      <span class="stars">${'★'.repeat(noodle.rating)}${'☆'.repeat(5 - noodle.rating)}</span><br>
-      <small>${noodle.description}</small><br>
-      <small><em>Tags: ${noodle.keywords.join(', ')}</em></small>
+      <div class="card-content">
+        <div>
+         <strong>${noodle.name}</strong>
+         <span class="brand">(${noodle.brand})</span>
+         </div>
+        <div class="price">£${noodle.price.toFixed(2)}</div>
+        <div class="stars">${'★'.repeat(noodle.rating)}${'☆'.repeat(5 - noodle.rating)}</div>
+        <div class="spice">${'🌶️'.repeat(noodle.spicy)}</div>
+        <small>${noodle.description}</small><br>
+        ${noodle.keywords && noodle.keywords.length > 0 ? `<small><em>Tags: ${noodle.keywords.join(', ')}</em></small>` : ''}
+      </div>
     `;
 
     list.appendChild(card);
