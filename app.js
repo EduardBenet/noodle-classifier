@@ -101,7 +101,7 @@ function renderList(data, lname) {
         <div class="price">£${noodle.price.toFixed(2)}</div>
         <div class="rating-spice-row">
           <div class="stars">${'★'.repeat(noodle.rating)}${'☆'.repeat(5 - noodle.rating)}</div>
-          <div class="spice">${'🌶️'.repeat(noodle.spicy)}</div>
+          <div class="spice">${'🌶️'.repeat(noodle.spicy)}${'<span class="inactive">🌶️</span>'.repeat(5 - noodle.spicy)}</div>
         </div>
         <small>${noodle.description}</small>
       </div>

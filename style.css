@@ -162,6 +162,11 @@ form#add-form>div {
     line-height: 1.2;
 }
 
+.spice .inactive {
+    opacity: 0.3;
+    filter: grayscale(100%);
+}
+
 @media (max-width: 600px) {
     .card {
         flex-direction: column;
