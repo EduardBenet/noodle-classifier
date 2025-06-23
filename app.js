@@ -3,7 +3,7 @@ let noodles = [];
 async function create() {
 
   const data = {
-    id: `id-${Date.now()}`,
+    id: document.getElementById('product-id').value,
     name: document.getElementById('name').value,
     brand: document.getElementById('brand').value,
     keywords: document.getElementById('keywords').value.split(',').map(k => k.trim()),
@@ -183,3 +183,35 @@ window.addEventListener("DOMContentLoaded", () => {
   list(); // or whatever function you use to populate #noodle-list
 });
 
+let scanner;
+
+function startScanner() {
+  const reader = document.getElementById('reader');
+  reader.style.display = 'block';
+
+  scanner = new Html5Qrcode("reader");
+
+  const config = { fps: 10, qrbox: 250 };
+
+  scanner.start(
+    { facingMode: "environment" }, // Use rear camera
+    config,
+    (decodedText, decodedResult) => {
+      document.getElementById("product-id").value = decodedText;
+      stopScanner();
+    },
+    errorMessage => {
+      console.log(errorMessage);
+    }
+  ).catch(err => {
+    alert("Camera start failed: " + err);
+  });
+}
+
+function stopScanner() {
+  scanner.stop().then(() => {
+    document.getElementById("reader").style.display = 'none';
+  }).catch(err => {
+    alert("Camera stop failed: " + err);
+  });
+}
