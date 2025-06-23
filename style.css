@@ -70,7 +70,7 @@ form button {
     box-sizing: border-box;
 }
 
-form#add-form>div {
+form#add-form>div:not(.barcode-row):not(#reader):not(.rating-row) {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
@@ -160,6 +160,12 @@ form#add-form>div {
 .spice {
     font-size: 1.2em;
     line-height: 1.2;
+}
+
+.barcode-row {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
 }
 
 .spice .inactive {
