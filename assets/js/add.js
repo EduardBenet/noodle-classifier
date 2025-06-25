@@ -85,7 +85,7 @@ function stopScanner() {
   if (!scanner) return;
 
   scanner.stop().then(() => {
-    document.getElementById("scanner-overlay").style.display = 'none';
+    document.getElementById("reader").style.display = 'none';
     scanner.clear();
     scannerRunning = false;
   }).catch(err => {
