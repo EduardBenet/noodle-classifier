@@ -48,9 +48,16 @@ async function create() {
 }
 
 let scanner;
+let scannerRunning = false;
 
 function startScanner() {
   const reader = document.getElementById('reader');
+
+  if (scannerRunning) {
+    stopScanner();
+    return;
+  }
+
   reader.style.display = 'block';
 
   scanner = new Html5Qrcode("reader");
@@ -67,14 +74,20 @@ function startScanner() {
     errorMessage => {
       console.log(errorMessage);
     }
-  ).catch(err => {
+  ).then(() => {
+    scannerRunning = true;
+  }).catch(err => {
     alert("Camera start failed: " + err);
   });
 }
 
 function stopScanner() {
+  if (!scanner) return;
+
   scanner.stop().then(() => {
-    document.getElementById("reader").style.display = 'none';
+    document.getElementById("scanner-overlay").style.display = 'none';
+    scanner.clear();
+    scannerRunning = false;
   }).catch(err => {
     alert("Camera stop failed: " + err);
   });

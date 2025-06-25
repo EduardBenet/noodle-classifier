@@ -162,10 +162,15 @@ form#add-form>div:not(.barcode-row):not(#reader):not(.rating-row) {
     line-height: 1.2;
 }
 
-.barcode-row {
-    display: flex !important;
-    align-items: center;
-    gap: 8px;
+.barcode-row input[type="text"] {
+    flex: 1;
+}
+
+.barcode-row button {
+    flex: 0 0 auto;
+    padding: 0.5rem;
+    font-size: 1.2rem;
+    line-height: 1;
 }
 
 .spice .inactive {
