@@ -60,7 +60,7 @@ async function startScanner() {
   const videoElement = document.getElementById('video-preview');
   readerContainer.style.display = 'block';
 
-  codeReader = new ZXingBrowser.BrowserQRCodeReader();
+  codeReader = new ZXingBrowser.BrowserMultiFormatReader();
 
   try {
     const devices = await ZXingBrowser.BrowserCodeReader.listVideoInputDevices();
