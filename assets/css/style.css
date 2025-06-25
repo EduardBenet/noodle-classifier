@@ -164,20 +164,17 @@ form#add-form>div:not(.barcode-row):not(#reader):not(.rating-row) {
 
 .barcode-row {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 0.5rem;
 }
 
 .barcode-row input[type="text"] {
-    flex: 1;
+    flex: 0 1 90%;
     min-width: 0;
 }
 
 .barcode-row button {
-    flex: 0 0 auto;
-    padding: 0.4rem 0.6rem;
-    font-size: 1rem;
-    line-height: 1;
+    flex: 0 1 10%;
 }
 
 .spice .inactive {

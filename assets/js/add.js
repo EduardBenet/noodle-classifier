@@ -47,50 +47,69 @@ async function create() {
   document.getElementById('add-form').reset();
 }
 
-let scanner;
+let codeReader;
 let scannerRunning = false;
 
-function startScanner() {
-  const reader = document.getElementById('reader');
-
+async function startScanner() {
   if (scannerRunning) {
     stopScanner();
     return;
   }
 
-  reader.style.display = 'block';
+  const readerContainer = document.getElementById('reader-container');
+  const videoElement = document.getElementById('video-preview');
+  readerContainer.style.display = 'block';
 
-  scanner = new Html5Qrcode("reader");
+  codeReader = new ZXingBrowser.BrowserQRCodeReader();
 
-  const config = { fps: 10, qrbox: 250 };
+  try {
+    const devices = await ZXingBrowser.BrowserCodeReader.listVideoInputDevices();
+    const backCam = devices.find(device =>
+      device.label.toLowerCase().includes('back')
+    );
+    const selectedDeviceId = backCam ? backCam.deviceId : devices[0]?.deviceId;
 
-  scanner.start(
-    { facingMode: "environment" }, // Use rear camera
-    config,
-    (decodedText, decodedResult) => {
-      document.getElementById("product-id").value = decodedText;
-      stopScanner();
-    },
-    errorMessage => {
-      console.log(errorMessage);
-    }
-  ).then(() => {
+    await codeReader.decodeFromVideoDevice(
+      selectedDeviceId,
+      videoElement,
+      (result, err) => {
+        if (result) {
+          document.getElementById('product-id').value = result.text;
+          stopScanner();
+        }
+
+        if (err) {
+          console.log('Scan error:', err); // non-fatal scanning failures
+        }
+      }
+    );
+
     scannerRunning = true;
-  }).catch(err => {
-    alert("Camera start failed: " + err);
-  });
+
+  } catch (err) {
+    alert("Camera start failed: " + err.message);
+  }
 }
 
-function stopScanner() {
-  if (!scanner) return;
+async function stopScanner() {
+  if (!codeReader) return;
 
-  scanner.stop().then(() => {
-    document.getElementById("reader").style.display = 'none';
-    scanner.clear();
-    scannerRunning = false;
-  }).catch(err => {
-    alert("Camera stop failed: " + err);
-  });
+  try {
+    await codeReader.stopDecoding();
+  } catch (e) {
+    console.warn("Failed to stop decoding:", e);
+  }
+
+  // Stop all video tracks (fully disables camera)
+  const videoElement = document.getElementById('video-preview');
+  const stream = videoElement.srcObject;
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    videoElement.srcObject = null;
+  }
+
+  document.getElementById('reader-container').style.display = 'none';
+  scannerRunning = false;
 }
 
 document.getElementById('add-form').addEventListener('submit', function (e) {

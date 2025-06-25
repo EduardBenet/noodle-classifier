@@ -6,7 +6,7 @@
     <title>Noodle Classifier 🍜</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script type="text/javascript" src="https://unpkg.com/@zxing/browser@latest"></script>
 </head>
 
 <body>
@@ -36,7 +36,10 @@
                     <input type="text" id="product-id" placeholder="Product ID (Barcode)" required>
                     <button type="button" onclick="startScanner()">📷</button>
                 </div>
-                <div id="reader" style="width: 300px; height: 300px; display: none;"></div>
+                <div id="reader-container" style="display: none; margin-top: 10px;">
+                    <video id="video-preview" autoplay muted playsinline
+                        style="width: 100%; max-height: 300px; border: 1px solid #ccc; border-radius: 8px;"></video>
+                </div>
                 <input type="text" id="name" placeholder="Name" required>
                 <input type="text" id="brand" placeholder="Brand" required>
                 <input type="number" id="price" placeholder="Price (£)" step="0.01" min="0" required>
