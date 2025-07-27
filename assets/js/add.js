@@ -21,6 +21,7 @@ async function create() {
         keywords
         description
         spicy
+        hasSoup
         price
         rating
         image
