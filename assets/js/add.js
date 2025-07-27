@@ -7,6 +7,7 @@ async function create() {
     keywords: document.getElementById('keywords').value.split(',').map(k => k.trim()),
     description: document.getElementById('description').value,
     spicy: parseInt(document.getElementById('spicy').value),
+    hasSoup: document.getElementById('hasSoup').checked,
     price: parseFloat(document.getElementById('price').value),
     rating: parseInt(document.querySelector('input[name="rating"]:checked')?.value || "0"),
     image: document.getElementById('image').value
