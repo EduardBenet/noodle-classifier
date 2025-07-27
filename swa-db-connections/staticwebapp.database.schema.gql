@@ -5,6 +5,7 @@ type Noodles @model {
   keywords: [String]
   description: String
   spicy: Int
+  hasSoup: Boolean
   price: Float
   rating: Int
   image: String
