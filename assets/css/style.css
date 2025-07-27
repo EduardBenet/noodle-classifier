@@ -99,6 +99,11 @@ form#add-form>div:not(.barcode-row):not(#reader):not(.rating-row) {
     margin-top: 4px;
 }
 
+.price-soup-row {
+    display: flex;
+    justify-content: space-between;
+}
+
 /* ========== Star Rating ========== */
 .rating {
     display: flex;

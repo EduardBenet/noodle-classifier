@@ -43,8 +43,10 @@ function renderList(data, lname) {
          <strong>${noodle.name}</strong>
          <span class="brand">(${noodle.brand})</span>
         </div>
-        <div class="soup-info">${noodle.hasSoup ? '🍜 Comes with soup' : '🥣 Dry noodles'}</div>
-        <div class="price">£${noodle.price.toFixed(2)}</div>
+        <div class="price-soup-row">
+          <span>£${noodle.price.toFixed(2)}</span>
+          <span class="soup-check">Soup? ${noodle.hasSoup ? '✓' : ''}</span>
+        </div>
         <div class="rating-spice-row">
           <div class="stars">${'★'.repeat(noodle.rating)}${'☆'.repeat(5 - noodle.rating)}</div>
           <div class="spice">${'🌶️'.repeat(noodle.spicy)}${'<span class="inactive">🌶️</span>'.repeat(5 - noodle.spicy)}</div>
