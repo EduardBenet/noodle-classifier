@@ -93,6 +93,12 @@ form#add-form>div:not(.barcode-row):not(#reader):not(.rating-row) {
     }
 }
 
+/* has soup field */
+.soup-info {
+    font-weight: bold;
+    margin-top: 4px;
+}
+
 /* ========== Star Rating ========== */
 .rating {
     display: flex;
