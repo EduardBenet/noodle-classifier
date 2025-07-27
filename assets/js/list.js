@@ -10,6 +10,7 @@ async function list() {
             description
             keywords
             spicy
+            hasSoup
             price
             rating
             image
@@ -41,7 +42,8 @@ function renderList(data, lname) {
         <div>
          <strong>${noodle.name}</strong>
          <span class="brand">(${noodle.brand})</span>
-         </div>
+        </div>
+        <div class="soup-info">${noodle.hasSoup ? '🍜 Comes with soup' : '🥣 Dry noodles'}</div>
         <div class="price">£${noodle.price.toFixed(2)}</div>
         <div class="rating-spice-row">
           <div class="stars">${'★'.repeat(noodle.rating)}${'☆'.repeat(5 - noodle.rating)}</div>
