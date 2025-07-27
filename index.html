@@ -44,19 +44,21 @@
                 <input type="text" id="brand" placeholder="Brand" required>
                 <input type="number" id="price" placeholder="Price (£)" step="0.01" min="0" required>
                 <textarea id="description" placeholder="Description" required></textarea>
-                <label>
+                <div class="form-row">
+                    <label for="hasSoup">Comes with soup</label>
                     <input type="checkbox" id="hasSoup">
-                    Comes with soup
-                </label>
-                <label for="spicy">Spice Level:</label>
-                <select id="spicy" name="spicy">
-                    <option value="0">None</option>
-                    <option value="1">🌶️</option>
-                    <option value="2">🌶️🌶️</option>
-                    <option value="3">🌶️🌶️🌶️</option>
-                    <option value="4">🌶️🌶️🌶️🌶️</option>
-                    <option value="5">🌶️🌶️🌶️🌶️🌶️</option>
-                </select>
+                </div>
+                <div class="form-row">
+                    <label for="spicy">Spice Level:</label>
+                    <select id="spicy" name="spicy">
+                        <option value="0">None</option>
+                        <option value="1">🌶️</option>
+                        <option value="2">🌶️🌶️</option>
+                        <option value="3">🌶️🌶️🌶️</option>
+                        <option value="4">🌶️🌶️🌶️🌶️</option>
+                        <option value="5">🌶️🌶️🌶️🌶️🌶️</option>
+                    </select>
+                </div>
 
                 <div class="rating-row">
                     <label>Rating:</label>
