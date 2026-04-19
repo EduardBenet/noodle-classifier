@@ -64,11 +64,56 @@ nav {
     display: block;
 }
 
-/* ========== Home View ========== */
-#noodle-of-the-day-heading {
+/* ========== Overlay ========== */
+#overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+
+#overlay.visible {
+    display: flex;
+}
+
+#overlay-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.5rem;
+    max-width: 480px;
+    width: calc(100% - 2rem);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+#overlay-card h2 {
+    margin: 0 0 1rem;
+    font-size: 1.3rem;
     text-align: center;
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
+}
+
+#overlay-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: #888;
+    line-height: 1;
+    padding: 0.25rem;
+}
+
+#overlay-close:hover {
+    color: #333;
+}
+
+#noodle-of-the-day {
+    margin-top: 0;
 }
 
 /* ========== Form Styles ========== */
@@ -153,8 +198,7 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row) {
 
 /* ========== Noodle Cards ========== */
 #noodle-list,
-#search-results,
-#noodle-of-the-day {
+#search-results {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;

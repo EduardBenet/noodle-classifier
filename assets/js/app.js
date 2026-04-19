@@ -18,13 +18,23 @@ document.querySelectorAll(".tab-btn").forEach(button => {
 
 document.getElementById("home-link").addEventListener("click", (e) => {
   e.preventDefault();
-  document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
-  document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
-  document.getElementById("tab-home").classList.add("active");
-  showHome();
+  showOverlay();
 });
 
-async function showHome() {
+document.getElementById("overlay-close").addEventListener("click", hideOverlay);
+document.getElementById("overlay").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("overlay")) hideOverlay();
+});
+
+function showOverlay() {
+  document.getElementById("overlay").classList.add("visible");
+}
+
+function hideOverlay() {
+  document.getElementById("overlay").classList.remove("visible");
+}
+
+async function loadNoodleOfTheDay() {
   const response = await fetch("/api/noodles");
   const items = await response.json();
   if (!items.length) return;
@@ -33,5 +43,8 @@ async function showHome() {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  showHome();
+  list();
+  listLoaded = true;
+  loadNoodleOfTheDay();
+  showOverlay();
 });

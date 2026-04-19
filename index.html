@@ -20,13 +20,16 @@
         </nav>
     </header>
 
-    <main>
-        <section id="tab-home" class="tab home-view active">
-            <h2 id="noodle-of-the-day-heading">Noodle of the day! 🍜</h2>
+    <div id="overlay">
+        <div id="overlay-card">
+            <button id="overlay-close">✕</button>
+            <h2>Noodle of the Day 🍜</h2>
             <div id="noodle-of-the-day"></div>
-        </section>
+        </div>
+    </div>
 
-        <section id="tab-list" class="tab">
+    <main>
+        <section id="tab-list" class="tab active">
             <div class="list-filters">
                 <select id="sort-by">
                     <option value="">Sort by...</option>
