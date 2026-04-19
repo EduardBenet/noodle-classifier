@@ -1,42 +1,7 @@
 async function searchNoodles(searchTerm) {
-  const gql = `
-    query SearchNoodles($filter: NoodlesFilterInput) {
-      noodles(filter: $filter) {
-        items {
-          id
-          name
-          brand
-          description
-          keywords
-          spicy
-          price
-          rating
-          image
-        }
-      }
-    }
-  `;
-
-  const query = {
-    query: gql,
-    variables: {
-      filter: {
-        or: [
-          { brand: { contains: searchTerm } },
-          { keywords: { contains: searchTerm } }
-        ]
-      }
-    }
-  };
-
-  const response = await fetch("/data-api/graphql", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(query),
-  });
-
-  const result = await response.json();
-  renderList(result.data.noodles.items, 'search-results');
+  const response = await fetch(`/api/noodles?search=${encodeURIComponent(searchTerm)}`);
+  const items = await response.json();
+  renderList(items, 'search-results');
 }
 
 let debounceTimeout;

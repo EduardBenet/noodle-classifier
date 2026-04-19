@@ -1,31 +1,7 @@
 async function list() {
-
-  const query = `
-      {
-        noodles {
-          items {
-            id
-            name
-            brand
-            description
-            keywords
-            spicy
-            hasSoup
-            price
-            rating
-            image
-          }
-        }
-      }`;
-
-  const endpoint = "/data-api/graphql";
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query: query })
-  });
-  const result = await response.json();
-  renderList(result.data.noodles.items, 'noodle-list');
+  const response = await fetch("/api/noodles");
+  const items = await response.json();
+  renderList(items, 'noodle-list');
 }
 
 function renderList(data, lname) {

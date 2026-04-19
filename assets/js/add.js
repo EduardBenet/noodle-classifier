@@ -13,37 +13,11 @@ async function create() {
     image: document.getElementById('image').value
   };
 
-  const gql = `
-    mutation create($item: CreateNoodlesInput!) {
-      createNoodles(item: $item) {
-        id
-        name
-        brand
-        keywords
-        description
-        spicy
-        hasSoup
-        price
-        rating
-        image
-      }
-    }`;
-
-  const query = {
-    query: gql,
-    variables: {
-      item: data
-    }
-  };
-
-  const endpoint = "/data-api/graphql";
-  const result = await fetch(endpoint, {
+  await fetch("/api/noodles", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(query)
+    body: JSON.stringify(data)
   });
-
-  const response = await result.json();
   list();
   // Reset form on success
   document.getElementById('add-form').reset();
