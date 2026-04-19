@@ -2,7 +2,7 @@ type Noodles @model {
   id: ID
   name: String
   brand: String
-  keywords: [String]
+  keywords: String
   description: String
   spicy: Int
   hasSoup: Boolean
