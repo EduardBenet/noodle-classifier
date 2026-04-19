@@ -31,10 +31,9 @@ function renderList(data, lname) {
     card.innerHTML = `
       <img src="${noodle.image}" alt="${noodle.name}">
       <div class="card-content">
-        <div>
+        <div class="card-title">
          <strong>${noodle.name}</strong>
          <span class="brand">(${noodle.brand})</span>
-         <span>${noodle.hasSoup ? '🍜' : '🥣'}</span>
         </div>
         <div class="price">£${noodle.price.toFixed(2)}</div>
         <div class="rating-spice-row">

@@ -250,6 +250,11 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    flex: 1;
+}
+
+.card-title {
+    text-align: center;
 }
 
 .card-content small {
