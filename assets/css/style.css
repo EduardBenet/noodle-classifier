@@ -268,12 +268,22 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     gap: 0.5rem;
 }
 
+.list-filters input[type="text"],
 .list-filters select {
     padding: 0.5rem;
     font-size: 1rem;
     border: 1px solid #ccc;
     border-radius: 6px;
     background: #fff;
+    box-sizing: border-box;
+}
+
+.list-filters input[type="text"] {
+    flex: 1;
+    min-width: 0;
+}
+
+.list-filters select {
     cursor: pointer;
 }
 
@@ -389,23 +399,6 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     flex-shrink: 0;
 }
 
-/* ========== Search Tab ========== */
-#tab-search {
-    padding-top: 1rem;
-    text-align: center;
-}
-
-#search {
-    width: 100%;
-    max-width: 600px;
-    padding: 0.75rem;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    margin: 0 auto 2rem;
-    box-sizing: border-box;
-    display: block;
-}
 
 /* ========== Responsive ========== */
 @media (max-width: 600px) {
@@ -430,7 +423,4 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
         flex: 1 1 auto;
     }
 
-    #search {
-        max-width: 90vw;
-    }
 }

@@ -16,7 +16,6 @@
         <h1><a href="#" id="home-link">🍜 Instant Noodle Classifier</a></h1>
         <nav>
             <button class="tab-btn active" data-tab="list">List</button>
-            <button class="tab-btn" data-tab="search">Search</button>
             <button class="tab-btn" data-tab="add">Add</button>
         </nav>
     </header>
@@ -45,6 +44,7 @@
     <main>
         <section id="tab-list" class="tab active">
             <div class="list-filters">
+                <input type="text" id="search" placeholder="Search...">
                 <select id="sort-by">
                     <option value="">Sort by...</option>
                     <option value="rating-desc">★ Rating (best first)</option>
@@ -58,10 +58,6 @@
             <div id="noodle-list"></div>
         </section>
 
-        <section id="tab-search" class="tab">
-            <input type="text" id="search" placeholder="Search by brand or keyword...">
-            <div id="search-results"></div>
-        </section>
 
         <section id="tab-add" class="tab">
 
