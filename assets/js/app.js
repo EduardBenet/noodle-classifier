@@ -38,7 +38,9 @@ async function loadNoodleOfTheDay() {
   const response = await fetch("/api/noodles");
   const items = await response.json();
   if (!items.length) return;
-  const noodle = items[Math.floor(Math.random() * items.length)];
+  const today = new Date();
+  const daySeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+  const noodle = items[daySeed % items.length];
   renderList([noodle], "noodle-of-the-day");
 }
 
