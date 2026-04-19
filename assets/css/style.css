@@ -1,20 +1,3 @@
-/* ========== Home Link (Title) ========== */
-header h1 a {
-    color: inherit;
-    text-decoration: none;
-}
-
-header h1 a:hover {
-    text-decoration: underline;
-    cursor: pointer;
-}
-
-#noodle-of-the-day-heading {
-    text-align: center;
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-}
-
 /* ========== Base Styles ========== */
 body {
     font-family: sans-serif;
@@ -32,6 +15,16 @@ header {
     padding: 1rem;
     text-align: center;
     z-index: 10;
+}
+
+header h1 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+header h1 a:hover {
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 main {
@@ -71,6 +64,13 @@ nav {
     display: block;
 }
 
+/* ========== Home View ========== */
+#noodle-of-the-day-heading {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
 /* ========== Form Styles ========== */
 form {
     display: grid;
@@ -87,7 +87,7 @@ form button {
     box-sizing: border-box;
 }
 
-form#add-form>div:not(.barcode-row):not(#reader):not(.rating-row) {
+form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row) {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
@@ -95,31 +95,9 @@ form#add-form>div:not(.barcode-row):not(#reader):not(.rating-row) {
     max-width: 100%;
 }
 
-.form-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 8px 0;
-}
-
-.form-row label {
-    font-weight: 500;
-}
-
-.form-row input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    margin-left: 8px;
-}
-
-/* Responsive form layout */
 @media (max-width: 768px) {
     form#add-form>div {
         grid-template-columns: 1fr;
-    }
-
-    .rating {
-        justify-content: center;
     }
 
     button[type="submit"] {
@@ -127,48 +105,44 @@ form#add-form>div:not(.barcode-row):not(#reader):not(.rating-row) {
     }
 }
 
-/* has soup field */
-.soup-info {
-    font-weight: bold;
-    margin-top: 4px;
-}
-
-.price-soup-row {
+/* ========== Star Rating (form) ========== */
+.rating-row {
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
-/* ========== Star Rating ========== */
-.rating {
+.rating-stars {
     display: flex;
     flex-direction: row-reverse;
-    justify-content: flex-start;
     gap: 5px;
 }
 
-.rating input {
+.rating-stars input {
     display: none;
 }
 
-.rating label {
+.rating-stars label {
     font-size: 2em;
     color: #ccc;
     cursor: pointer;
     transition: color 0.2s;
 }
 
-.rating input:checked~label,
-.rating label:hover,
-.rating label:hover~label {
+.rating-stars input:checked~label,
+.rating-stars label:hover,
+.rating-stars label:hover~label {
     color: gold;
 }
 
-/* ========== Noodle List / Card ========== */
-#noodle-list {
+/* ========== Noodle Cards ========== */
+#noodle-list,
+#search-results,
+#noodle-of-the-day {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
-    margin-top: 2rem;
+    margin-top: 1rem;
 }
 
 .card {
@@ -202,88 +176,19 @@ form#add-form>div:not(.barcode-row):not(#reader):not(.rating-row) {
     color: #444;
 }
 
-.spice {
-    font-size: 1.2em;
-    line-height: 1.2;
-}
-
-.barcode-row {
-    display: flex;
-    align-items: stretch;
-    gap: 0.5rem;
-}
-
-.barcode-row input[type="text"] {
-    flex: 0 1 90%;
-    min-width: 0;
-}
-
-.barcode-row button {
-    flex: 0 1 10%;
-}
-
-.spice .inactive {
-    opacity: 0.3;
-    filter: grayscale(100%);
-}
-
-@media (max-width: 600px) {
-    .card {
-        flex-direction: column;
-        align-items: center;
-        /* center image and text */
-    }
-
-    .card img {
-        max-width: 70%;
-        height: auto;
-        margin-bottom: 0.25rem;
-    }
-}
-
-.rating-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.rating-stars {
-    display: flex;
-    flex-direction: row-reverse;
-    gap: 5px;
-}
-
-.rating-stars input {
-    display: none;
-}
-
-.rating-stars label {
-    font-size: 2em;
-    color: #ccc;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.rating-stars input:checked~label,
-.rating-stars label:hover,
-.rating-stars label:hover~label {
-    color: gold;
-}
-
-/* Optional: consistent star appearance in display-only mode */
 .stars {
     color: gold;
     font-size: 1.2em;
 }
 
-/* Hides actual inputs in stars if using them outside form */
-.stars input {
-    display: none;
+.spice {
+    font-size: 1.2em;
+    line-height: 1.2;
 }
 
-.stars label {
-    cursor: pointer;
-    margin-right: 5px;
+.spice .inactive {
+    opacity: 0.3;
+    filter: grayscale(100%);
 }
 
 .rating-spice-row {
@@ -302,18 +207,23 @@ form#add-form>div:not(.barcode-row):not(#reader):not(.rating-row) {
     text-align: right;
 }
 
-@media (max-width: 600px) {
-    .rating-spice-row {
-        justify-content: space-between;
-        width: 100%;
-    }
-
-    .rating-spice-row .stars,
-    .rating-spice-row .spice {
-        flex: 1 1 auto;
-    }
+/* ========== Barcode Scanner Row ========== */
+.barcode-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
 }
 
+.barcode-row input[type="text"] {
+    flex: 0 1 90%;
+    min-width: 0;
+}
+
+.barcode-row button {
+    flex: 0 1 10%;
+}
+
+/* ========== Search Tab ========== */
 #tab-search {
     padding-top: 1rem;
     text-align: center;
@@ -326,12 +236,34 @@ form#add-form>div:not(.barcode-row):not(#reader):not(.rating-row) {
     font-size: 1rem;
     border-radius: 6px;
     border: 1px solid #ccc;
-    margin: 0 auto;
+    margin: 0 auto 2rem;
     box-sizing: border-box;
-    margin-bottom: 2rem;
+    display: block;
 }
 
+/* ========== Responsive ========== */
 @media (max-width: 600px) {
+    .card {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card img {
+        max-width: 70%;
+        height: auto;
+        margin-bottom: 0.25rem;
+    }
+
+    .rating-spice-row {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .rating-spice-row .stars,
+    .rating-spice-row .spice {
+        flex: 1 1 auto;
+    }
+
     #search {
         max-width: 90vw;
     }
