@@ -132,7 +132,7 @@ form button {
     box-sizing: border-box;
 }
 
-form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row) {
+form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(.spice-row):not(.checkbox-row) {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
@@ -150,20 +150,23 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row) {
     }
 }
 
-/* ========== Star Rating (form) ========== */
-.rating-row {
+/* ========== Star Rating & Spice Level (form) ========== */
+.rating-row,
+.spice-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.rating-stars {
+.rating-stars,
+.spice-chilies {
     display: flex;
     flex-direction: row-reverse;
     gap: 5px;
 }
 
-.rating-stars input {
+.rating-stars input,
+.spice-chilies input {
     display: none;
 }
 
@@ -178,6 +181,24 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row) {
 .rating-stars label:hover,
 .rating-stars label:hover~label {
     color: gold;
+}
+
+.spice-chilies label {
+    font-size: 1.25em;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    opacity: 0.2;
+    filter: grayscale(100%);
+    cursor: pointer;
+    transition: opacity 0.2s, filter 0.2s;
+}
+
+.spice-chilies input:checked~label,
+.spice-chilies label:hover,
+.spice-chilies label:hover~label {
+    opacity: 1;
+    filter: none;
 }
 
 /* ========== List Filters ========== */
@@ -281,6 +302,20 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row) {
 
 .barcode-row button {
     flex: 0 1 10%;
+}
+
+.checkbox-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.checkbox-row input[type="checkbox"] {
+    width: 1.4rem;
+    height: 1.4rem;
+    margin: 0;
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
 /* ========== Search Tab ========== */

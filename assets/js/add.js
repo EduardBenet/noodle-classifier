@@ -6,7 +6,7 @@ async function create() {
     brand: document.getElementById('brand').value,
     keywords: document.getElementById('keywords').value.split(',').map(k => k.trim()),
     description: document.getElementById('description').value,
-    spicy: parseInt(document.getElementById('spicy').value),
+    spicy: parseInt(document.querySelector('input[name="spice"]:checked')?.value || "0"),
     hasSoup: document.getElementById('hasSoup').checked,
     price: parseFloat(document.getElementById('price').value),
     rating: parseInt(document.querySelector('input[name="rating"]:checked')?.value || "0"),
@@ -52,6 +52,7 @@ async function startScanner() {
         if (result) {
           document.getElementById('product-id').value = result.text;
           stopScanner();
+          fillFormById(result.text);
         }
 
         if (err) {
@@ -86,6 +87,32 @@ async function stopScanner() {
 
   document.getElementById('reader-container').style.display = 'none';
   scannerRunning = false;
+}
+
+document.getElementById('product-id').addEventListener('blur', () => {
+  const id = document.getElementById('product-id').value.trim();
+  if (id) fillFormById(id);
+});
+
+async function fillFormById(id) {
+  const response = await fetch(`/api/noodles?id=${encodeURIComponent(id)}`);
+  const items = await response.json();
+  if (!items.length) return;
+
+  const n = items[0];
+  document.getElementById('name').value = n.name ?? '';
+  document.getElementById('brand').value = n.brand ?? '';
+  document.getElementById('price').value = n.price ?? '';
+  document.getElementById('description').value = n.description ?? '';
+  document.getElementById('keywords').value = Array.isArray(n.keywords) ? n.keywords.join(', ') : (n.keywords ?? '');
+  document.getElementById('image').value = n.image ?? '';
+  document.getElementById('hasSoup').checked = !!n.hasSoup;
+
+  const spiceInput = document.querySelector(`input[name="spice"][value="${n.spicy}"]`);
+  if (spiceInput) spiceInput.checked = true;
+
+  const ratingInput = document.querySelector(`input[name="rating"][value="${n.rating}"]`);
+  if (ratingInput) ratingInput.checked = true;
 }
 
 document.getElementById('add-form').addEventListener('submit', function (e) {

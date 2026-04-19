@@ -9,10 +9,17 @@ app.http('noodles', {
   authLevel: 'anonymous',
   handler: async (request, context) => {
     if (request.method === 'GET') {
-      const search = new URL(request.url).searchParams.get('search');
+      const params = new URL(request.url).searchParams;
+      const search = params.get('search');
+      const id = params.get('id');
       let querySpec;
 
-      if (search) {
+      if (id) {
+        querySpec = {
+          query: 'SELECT * FROM c WHERE c.id = @id',
+          parameters: [{ name: '@id', value: id }]
+        };
+      } else if (search) {
         const term = search.toLowerCase();
         querySpec = {
           query: `SELECT * FROM c WHERE
