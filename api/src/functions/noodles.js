@@ -5,7 +5,7 @@ const client = new CosmosClient(process.env.DATABASE_CONNECTION_STRING);
 const container = client.database('noodles').container('packages');
 
 app.http('noodles', {
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'PUT'],
   authLevel: 'anonymous',
   handler: async (request, context) => {
     if (request.method === 'GET') {
@@ -40,6 +40,12 @@ app.http('noodles', {
       const data = await request.json();
       const { resource } = await container.items.create(data);
       return { jsonBody: resource, status: 201 };
+    }
+
+    if (request.method === 'PUT') {
+      const data = await request.json();
+      const { resource } = await container.items.upsert(data);
+      return { jsonBody: resource };
     }
   }
 });

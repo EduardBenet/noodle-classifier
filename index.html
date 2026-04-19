@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Noodle Classifier 🍜</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍜</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍜</text></svg>">
     <link rel="stylesheet" href="assets/css/style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="https://unpkg.com/@zxing/browser@latest"></script>
@@ -19,6 +20,16 @@
             <button class="tab-btn" data-tab="add">Add</button>
         </nav>
     </header>
+
+    <div id="confirm-dialog" class="confirm-backdrop">
+        <div class="confirm-box">
+            <p id="confirm-message"></p>
+            <div class="confirm-buttons">
+                <button id="confirm-cancel">Cancel</button>
+                <button id="confirm-ok" class="confirm-ok">Update</button>
+            </div>
+        </div>
+    </div>
 
     <div id="overlay">
         <div id="overlay-card">
@@ -65,7 +76,7 @@
                 <input type="number" id="price" placeholder="Price (£)" step="0.01" min="0" required>
                 <textarea id="description" placeholder="Description" required></textarea>
                 <div class="checkbox-row">
-                    <label for="hasSoup">Comes with soup</label>
+                    <label for="hasSoup">Comes with soup:</label>
                     <input type="checkbox" id="hasSoup">
                 </div>
                 <div class="spice-row">

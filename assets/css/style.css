@@ -68,6 +68,57 @@ nav {
     display: block;
 }
 
+/* ========== Confirm Dialog ========== */
+.confirm-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirm-backdrop.visible {
+    display: flex;
+}
+
+.confirm-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    max-width: 340px;
+    width: calc(100% - 2rem);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.confirm-box p {
+    margin: 0 0 1.25rem;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.confirm-buttons button {
+    padding: 0.5rem 1.1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    background: #f0f0f0;
+}
+
+.confirm-buttons .confirm-ok {
+    background: #333;
+    color: #fff;
+    border-color: #333;
+}
+
 /* ========== Overlay ========== */
 #overlay {
     display: none;

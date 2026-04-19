@@ -1,6 +1,7 @@
-async function create() {
+let isExistingNoodle = false;
 
-  const data = {
+function collectFormData() {
+  return {
     id: document.getElementById('product-id').value,
     name: document.getElementById('name').value,
     brand: document.getElementById('brand').value,
@@ -12,15 +13,17 @@ async function create() {
     rating: parseInt(document.querySelector('input[name="rating"]:checked')?.value || "0"),
     image: document.getElementById('image').value
   };
+}
 
+async function save(method) {
   await fetch("/api/noodles", {
-    method: "POST",
+    method,
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
+    body: JSON.stringify(collectFormData())
   });
   list();
-  // Reset form on success
   document.getElementById('add-form').reset();
+  isExistingNoodle = false;
 }
 
 let codeReader;
@@ -89,6 +92,10 @@ async function stopScanner() {
   scannerRunning = false;
 }
 
+document.getElementById('product-id').addEventListener('input', () => {
+  isExistingNoodle = false;
+});
+
 document.getElementById('product-id').addEventListener('blur', () => {
   const id = document.getElementById('product-id').value.trim();
   if (id) fillFormById(id);
@@ -99,6 +106,7 @@ async function fillFormById(id) {
   const items = await response.json();
   if (!items.length) return;
 
+  isExistingNoodle = true;
   const n = items[0];
   document.getElementById('name').value = n.name ?? '';
   document.getElementById('brand').value = n.brand ?? '';
@@ -117,5 +125,20 @@ async function fillFormById(id) {
 
 document.getElementById('add-form').addEventListener('submit', function (e) {
   e.preventDefault();
-  create();
+  if (isExistingNoodle) {
+    const name = document.getElementById('name').value;
+    document.getElementById('confirm-message').textContent = `"${name}" already exists. Overwrite it?`;
+    document.getElementById('confirm-dialog').classList.add('visible');
+  } else {
+    save('POST');
+  }
+});
+
+document.getElementById('confirm-ok').addEventListener('click', () => {
+  document.getElementById('confirm-dialog').classList.remove('visible');
+  save('PUT');
+});
+
+document.getElementById('confirm-cancel').addEventListener('click', () => {
+  document.getElementById('confirm-dialog').classList.remove('visible');
 });
