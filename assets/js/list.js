@@ -44,6 +44,7 @@ function renderList(data, lname) {
       </div>
     `;
 
+    card.addEventListener('click', () => showNoodleOverlay(noodle));
     list.appendChild(card);
   });
 }

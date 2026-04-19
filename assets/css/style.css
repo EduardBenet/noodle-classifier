@@ -150,20 +150,25 @@ nav {
     text-align: center;
 }
 
-#overlay-close {
+.overlay-actions {
     position: absolute;
     top: 0.75rem;
     right: 0.75rem;
+    display: flex;
+    gap: 0.25rem;
+}
+
+.overlay-actions button {
     background: none;
     border: none;
-    font-size: 1.1rem;
+    font-size: 1rem;
     cursor: pointer;
     color: #888;
     line-height: 1;
     padding: 0.25rem;
 }
 
-#overlay-close:hover {
+.overlay-actions button:hover {
     color: #333;
 }
 
@@ -288,6 +293,12 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     display: flex;
     align-items: flex-start;
     gap: 1rem;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
 }
 
 .card img {
