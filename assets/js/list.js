@@ -29,7 +29,7 @@ function renderList(data, lname) {
     card.className = 'card';
 
     card.innerHTML = `
-      <img src="${noodle.image}" alt="${noodle.name}">
+      <img src="${noodle.image}" alt="${noodle.name}" loading="lazy">
       <div class="card-content">
         <div class="card-title">
          <strong>${noodle.name}</strong>
