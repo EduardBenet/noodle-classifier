@@ -1,8 +1,24 @@
+let allNoodles = [];
+
 async function list() {
   const response = await fetch("/api/noodles");
-  const items = await response.json();
-  renderList(items, 'noodle-list');
+  allNoodles = await response.json();
+  renderList(sortNoodles(allNoodles), 'noodle-list');
 }
+
+function sortNoodles(items) {
+  const val = document.getElementById('sort-by')?.value;
+  if (!val) return items;
+  const [field, dir] = val.split('-');
+  const key = field === 'spicy' ? 'spicy' : field;
+  return [...items].sort((a, b) => dir === 'asc' ? a[key] - b[key] : b[key] - a[key]);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('sort-by').addEventListener('change', () => {
+    renderList(sortNoodles(allNoodles), 'noodle-list');
+  });
+});
 
 function renderList(data, lname) {
   const list = document.getElementById(lname);

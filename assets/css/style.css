@@ -135,6 +135,22 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row) {
     color: gold;
 }
 
+/* ========== List Filters ========== */
+.list-filters {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.list-filters select {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+}
+
 /* ========== Noodle Cards ========== */
 #noodle-list,
 #search-results,
