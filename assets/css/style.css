@@ -1,4 +1,8 @@
 /* ========== Base Styles ========== */
+html {
+    scrollbar-gutter: stable;
+}
+
 body {
     font-family: sans-serif;
     margin: 0;
