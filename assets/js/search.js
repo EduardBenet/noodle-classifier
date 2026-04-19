@@ -22,8 +22,9 @@ async function searchNoodles(searchTerm) {
     variables: {
       filter: {
         or: [
+          { name: { contains: searchTerm } },
           { brand: { contains: searchTerm } },
-          { keywords: { contains: searchTerm } }
+          { description: { contains: searchTerm } }
         ]
       }
     }
