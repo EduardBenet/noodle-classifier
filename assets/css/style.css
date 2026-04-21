@@ -369,7 +369,30 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     text-align: right;
 }
 
-/* ========== Barcode Scanner Row ========== */
+/* ========== Barcode Scanner ========== */
+#reader-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+#reader-container.scanning::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(255, 80, 80, 0.85);
+    animation: scanline 1.8s ease-in-out infinite;
+}
+
+@keyframes scanline {
+    0%   { top: 10%; }
+    50%  { top: 88%; }
+    100% { top: 10%; }
+}
+
+
 .barcode-row {
     display: flex;
     align-items: stretch;
