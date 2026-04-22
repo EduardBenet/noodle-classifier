@@ -53,6 +53,25 @@ async function startScanner() {
   }
 }
 
+async function tapToFocus(videoElement, e) {
+  const track = videoElement.srcObject?.getVideoTracks()[0];
+  if (!track) return;
+  const capabilities = track.getCapabilities?.() ?? {};
+
+  try {
+    if (capabilities.focusMode?.includes('manual') && 'pointOfInterest' in capabilities) {
+      const rect = videoElement.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      await track.applyConstraints({ advanced: [{ focusMode: 'manual', pointOfInterest: { x, y } }] });
+    } else if (capabilities.focusMode?.includes('continuous')) {
+      // Nudge autofocus by toggling to manual briefly then back
+      await track.applyConstraints({ advanced: [{ focusMode: 'manual' }] });
+      await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+    }
+  } catch (_) {}
+}
+
 async function startNativeScanner(videoElement) {
   const detector = new BarcodeDetector({
     formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code']
@@ -62,6 +81,7 @@ async function startNativeScanner(videoElement) {
   });
   videoElement.srcObject = stream;
   await videoElement.play();
+  videoElement.addEventListener('click', (e) => tapToFocus(videoElement, e));
 
   const scan = async () => {
     if (!scannerRunning) return;
@@ -89,6 +109,7 @@ async function startZXingScanner(videoElement) {
       }
     }
   );
+  videoElement.addEventListener('click', (e) => tapToFocus(videoElement, e));
 }
 
 function onBarcodeFound(value) {

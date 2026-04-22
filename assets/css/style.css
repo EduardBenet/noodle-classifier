@@ -376,6 +376,14 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     border-radius: 8px;
 }
 
+#video-preview {
+    cursor: crosshair;
+}
+
+#video-preview:active {
+    filter: brightness(1.15);
+}
+
 #reader-container.scanning::after {
     content: '';
     position: absolute;
