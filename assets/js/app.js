@@ -1,4 +1,3 @@
-let listLoaded = false;
 let overlayNoodle = null;
 
 document.querySelectorAll(".tab-btn").forEach(button => {
@@ -9,11 +8,6 @@ document.querySelectorAll(".tab-btn").forEach(button => {
     const target = button.getAttribute("data-tab");
     document.getElementById(`tab-${target}`).classList.add("active");
     button.classList.add("active");
-
-    if (target === "list" && !listLoaded) {
-      list();
-      listLoaded = true;
-    }
   });
 });
 

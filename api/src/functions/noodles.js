@@ -22,10 +22,10 @@ app.http('noodles', {
       } else if (search) {
         const term = search.toLowerCase();
         querySpec = {
-          query: `SELECT * FROM c WHERE
+          query: `SELECT * FROM c JOIN k IN c.keywords WHERE
             CONTAINS(LOWER(c.name), @term) OR
             CONTAINS(LOWER(c.brand), @term) OR
-            CONTAINS(LOWER(c.keywords), @term)`,
+            CONTAINS(LOWER(k), @term)`,
           parameters: [{ name: '@term', value: term }]
         };
       } else {
