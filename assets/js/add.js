@@ -16,27 +16,14 @@ function collectFormData() {
 }
 
 async function save(method) {
-  const res = await fetch("/api/noodles", {
+  await fetch("/api/noodles", {
     method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(collectFormData())
   });
-  if (!res.ok) {
-    showToast('Something went wrong. Please try again.', true);
-    return;
-  }
-  showToast(method === 'PUT' ? 'Noodle updated!' : 'Noodle added!');
   list();
   document.getElementById('add-form').reset();
   isExistingNoodle = false;
-}
-
-function showToast(message, error = false) {
-  const toast = document.getElementById('toast');
-  toast.textContent = message;
-  toast.className = 'toast visible' + (error ? ' toast-error' : '');
-  clearTimeout(toast._timer);
-  toast._timer = setTimeout(() => toast.className = 'toast', 2500);
 }
 
 let codeReader;

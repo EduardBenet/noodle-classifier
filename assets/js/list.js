@@ -10,7 +10,7 @@ function sortNoodles(items) {
   const val = document.getElementById('sort-by')?.value;
   if (!val) return items;
   const [field, dir] = val.split('-');
-  const key = field;
+  const key = field === 'spicy' ? 'spicy' : field;
   return [...items].sort((a, b) => dir === 'asc' ? a[key] - b[key] : b[key] - a[key]);
 }
 
