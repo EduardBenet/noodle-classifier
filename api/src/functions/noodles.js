@@ -24,8 +24,7 @@ app.http('noodles', {
         querySpec = {
           query: `SELECT * FROM c WHERE
             CONTAINS(LOWER(c.name), @term) OR
-            CONTAINS(LOWER(c.brand), @term) OR
-            CONTAINS(LOWER(c.keywords), @term)`,
+            CONTAINS(LOWER(c.brand), @term)`,
           parameters: [{ name: '@term', value: term }]
         };
       } else {
