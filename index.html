@@ -26,7 +26,10 @@
                 <img id="auth-avatar-icon" alt="">
             </button>
             <div id="auth-dropdown">
-                <a href="/api/auth" class="dropdown-item" id="dropdown-login">Login with GitHub</a>
+                <div id="dropdown-loggedout">
+                    <a href="/api/auth" class="dropdown-item">Login with GitHub</a>
+                    <a href="/api/auth/google" class="dropdown-item">Login with Google</a>
+                </div>
                 <div id="dropdown-user">
                     <div class="dropdown-name" id="dropdown-name"></div>
                     <button class="dropdown-item" id="dropdown-profile">My Profile</button>

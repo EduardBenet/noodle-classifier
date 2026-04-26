@@ -66,7 +66,7 @@ function initAuth() {
     avatarIcon.style.display = 'block';
 
     // Show logged-in dropdown content, hide login link
-    document.getElementById('dropdown-login').style.display = 'none';
+    document.getElementById('dropdown-loggedout').style.display = 'none';
     document.getElementById('dropdown-user').style.display = 'block';
     document.getElementById('dropdown-name').textContent = user.name;
 
