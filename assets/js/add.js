@@ -16,9 +16,13 @@ function collectFormData() {
 }
 
 async function save(method) {
+  const token = getToken();
   await fetch("/api/noodles", {
     method,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { "Authorization": `Bearer ${token}` } : {})
+    },
     body: JSON.stringify(collectFormData())
   });
   list();

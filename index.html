@@ -16,8 +16,16 @@
         <h1><a href="#" id="home-link">🍜 Instant Noodle Classifier</a></h1>
         <nav>
             <button class="tab-btn active" data-tab="list">List</button>
-            <button class="tab-btn" data-tab="add">Add</button>
+            <button class="tab-btn owner-only" data-tab="add">Add</button>
         </nav>
+        <div id="auth-area">
+            <a href="/api/auth" id="login-btn" class="auth-btn">Login with GitHub</a>
+            <div id="user-info">
+                <img id="user-avatar" class="user-avatar" alt="">
+                <span id="user-name"></span>
+                <button id="logout-btn" class="auth-btn">Logout</button>
+            </div>
+        </div>
     </header>
 
     <div id="confirm-dialog" class="confirm-backdrop">
@@ -33,7 +41,7 @@
     <div id="overlay">
         <div id="overlay-card">
             <div class="overlay-actions">
-                <button id="overlay-edit" title="Edit">✏️</button>
+                <button id="overlay-edit" class="owner-only" title="Edit">✏️</button>
                 <button id="overlay-close">✕</button>
             </div>
             <h2 id="overlay-title">Noodle of the Day 🍜</h2>
@@ -107,6 +115,7 @@
         </section>
     </main>
 
+    <script src="assets/js/auth.js"></script>
     <script src="assets/js/app.js"></script>
     <script src="assets/js/list.js"></script>
     <script src="assets/js/search.js"></script>

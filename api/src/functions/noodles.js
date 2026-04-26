@@ -1,5 +1,18 @@
 const { app } = require('@azure/functions');
 const { CosmosClient } = require('@azure/cosmos');
+const jwt = require('jsonwebtoken');
+
+function isOwner(request) {
+  const auth = request.headers.get('authorization') || '';
+  const token = auth.replace(/^Bearer\s+/i, '');
+  if (!token) return false;
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    return payload.isOwner === true;
+  } catch {
+    return false;
+  }
+}
 
 const client = new CosmosClient(process.env.DATABASE_CONNECTION_STRING);
 const container = client.database('noodles').container('packages');
@@ -36,12 +49,14 @@ app.http('noodles', {
     }
 
     if (request.method === 'POST') {
+      if (!isOwner(request)) return { status: 401, jsonBody: { error: 'Unauthorized' } };
       const data = await request.json();
       const { resource } = await container.items.create(data);
       return { jsonBody: resource, status: 201 };
     }
 
     if (request.method === 'PUT') {
+      if (!isOwner(request)) return { status: 401, jsonBody: { error: 'Unauthorized' } };
       const data = await request.json();
       const { resource } = await container.items.upsert(data);
       return { jsonBody: resource };

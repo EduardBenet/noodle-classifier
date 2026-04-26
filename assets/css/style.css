@@ -41,6 +41,63 @@ textarea {
     resize: vertical;
 }
 
+/* ========== Auth ========== */
+header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+#auth-area {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+#user-info {
+    display: none;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+.auth-btn {
+    padding: 0.3rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #f5f5f5;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    font-size: 0.85rem;
+}
+
+.auth-btn:hover {
+    background: #eee;
+}
+
+/* Hide owner-only elements; show them when body has .is-owner */
+.owner-only {
+    display: none !important;
+}
+
+body.is-owner .owner-only {
+    display: revert !important;
+}
+
 /* ========== Navigation Tabs ========== */
 nav {
     display: flex;
