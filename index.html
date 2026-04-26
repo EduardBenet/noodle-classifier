@@ -19,14 +19,19 @@
             <button class="tab-btn" data-tab="add">Add</button>
         </nav>
         <div id="auth-area">
-            <a href="/api/auth" id="login-btn" class="profile-btn" title="Login with GitHub">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <button id="auth-menu-btn" class="profile-btn" title="Account">
+                <svg id="auth-anon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                     <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
                 </svg>
-            </a>
-            <div id="user-info">
-                <span id="user-greeting"></span>
-                <img id="user-avatar" class="user-avatar" alt="" title="Logout">
+                <img id="auth-avatar-icon" alt="">
+            </button>
+            <div id="auth-dropdown">
+                <a href="/api/auth" class="dropdown-item" id="dropdown-login">Login with GitHub</a>
+                <div id="dropdown-user">
+                    <div class="dropdown-name" id="dropdown-name"></div>
+                    <button class="dropdown-item" id="dropdown-profile">My Profile</button>
+                    <button class="dropdown-item dropdown-item-danger" id="dropdown-logout">Logout</button>
+                </div>
             </div>
         </div>
     </header>

@@ -44,39 +44,58 @@ function initAuth() {
   }
 
   const user = getUser();
-  const loginBtn = document.getElementById('login-btn');
-  const userInfo = document.getElementById('user-info');
+  const menuBtn = document.getElementById('auth-menu-btn');
+  const dropdown = document.getElementById('auth-dropdown');
+
+  // Toggle dropdown on button click
+  menuBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    dropdown.classList.toggle('open');
+  });
+
+  // Close dropdown when clicking anywhere else
+  document.addEventListener('click', () => dropdown.classList.remove('open'));
 
   if (user) {
-    loginBtn.style.display = 'none';
-    userInfo.style.display = 'flex';
+    // Swap the person icon for the GitHub avatar
+    document.getElementById('auth-anon-icon').style.display = 'none';
+    const avatarIcon = document.getElementById('auth-avatar-icon');
+    avatarIcon.src = user.avatar;
+    avatarIcon.style.display = 'block';
 
-    document.getElementById('user-avatar').src = user.avatar;
-    document.getElementById('user-greeting').textContent = `Hi, ${user.name}!`;
+    // Show logged-in dropdown content, hide login link
+    document.getElementById('dropdown-login').style.display = 'none';
+    document.getElementById('dropdown-user').style.display = 'block';
+    document.getElementById('dropdown-name').textContent = user.name;
+
+    // Populate profile overlay
     document.getElementById('profile-avatar-large').src = user.avatar;
     document.getElementById('welcome-msg').textContent = `Welcome, ${user.name}!`;
 
-    document.getElementById('user-avatar').addEventListener('click', () => {
+    // My Profile
+    document.getElementById('dropdown-profile').addEventListener('click', () => {
+      dropdown.classList.remove('open');
       loadProfileStats();
       document.getElementById('profile-overlay').classList.add('visible');
     });
 
+    // Close profile overlay
     document.getElementById('profile-close').addEventListener('click', () => {
       document.getElementById('profile-overlay').classList.remove('visible');
     });
-
     document.getElementById('profile-overlay').addEventListener('click', e => {
       if (e.target === document.getElementById('profile-overlay'))
         document.getElementById('profile-overlay').classList.remove('visible');
     });
 
-    document.getElementById('logout-btn').addEventListener('click', () => {
+    // Logout
+    document.getElementById('dropdown-logout').addEventListener('click', () => {
       localStorage.removeItem(TOKEN_KEY);
       location.reload();
     });
 
+    // Unlock owner-only UI
     if (user.isOwner) {
-      // Remove the hiding class so each element reverts to its own natural display
       document.querySelectorAll('.owner-only').forEach(el => el.classList.remove('owner-only'));
     }
   }
