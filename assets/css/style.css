@@ -112,54 +112,103 @@ textarea {
     display: none;
 }
 
-/* ========== Profile Page ========== */
-.profile-page {
-    max-width: 480px;
-    margin: 2rem auto;
+/* ========== Profile Overlay ========== */
+#profile-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+
+#profile-overlay.visible {
+    display: flex;
+}
+
+#profile-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 2rem 1.5rem 1.5rem;
+    max-width: 360px;
+    width: calc(100% - 2rem);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
     text-align: center;
+    position: relative;
+}
+
+#profile-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #888;
+    padding: 0.25rem;
+}
+
+#profile-close:hover {
+    color: #333;
 }
 
 .profile-avatar-large {
-    width: 90px;
-    height: 90px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     border: 3px solid #ddd;
     display: block;
     margin: 0 auto 1rem;
 }
 
-.profile-page h2 {
-    margin: 0 0 2rem;
-    font-size: 1.4rem;
+#profile-card h2 {
+    margin: 0 0 1.5rem;
+    font-size: 1.3rem;
 }
 
 .profile-stats {
     display: flex;
     gap: 1rem;
     justify-content: center;
+    margin-bottom: 1.5rem;
 }
 
 .stat-card {
     flex: 1;
-    max-width: 180px;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 1.25rem 1rem;
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 1rem 0.75rem;
 }
 
 .stat-value {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     font-weight: bold;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.25rem;
     word-break: break-word;
 }
 
 .stat-label {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: #777;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+
+#logout-btn {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #f5f5f5;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+#logout-btn:hover {
+    background: #eee;
 }
 
 /* ========== Navigation Tabs ========== */

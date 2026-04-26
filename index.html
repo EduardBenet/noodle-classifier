@@ -17,7 +17,6 @@
         <nav class="owner-only">
             <button class="tab-btn active" data-tab="list">List</button>
             <button class="tab-btn" data-tab="add">Add</button>
-            <button class="tab-btn" data-tab="profile">Profile</button>
         </nav>
         <div id="auth-area">
             <a href="/api/auth" id="login-btn" class="profile-btn" title="Login with GitHub">
@@ -118,23 +117,26 @@
             </form>
         </section>
 
-        <section id="tab-profile" class="tab owner-only">
-            <div class="profile-page">
-                <img id="profile-avatar-large" class="profile-avatar-large" alt="">
-                <h2 id="welcome-msg"></h2>
-                <div class="profile-stats">
-                    <div class="stat-card">
-                        <div class="stat-value" id="stat-count">—</div>
-                        <div class="stat-label">Noodles rated</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="stat-best">—</div>
-                        <div class="stat-label">Best noodle</div>
-                    </div>
+    </main>
+
+    <div id="profile-overlay">
+        <div id="profile-card">
+            <button id="profile-close">✕</button>
+            <img id="profile-avatar-large" class="profile-avatar-large" alt="">
+            <h2 id="welcome-msg"></h2>
+            <div class="profile-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-count">—</div>
+                    <div class="stat-label">Noodles rated</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-best">—</div>
+                    <div class="stat-label">Best noodle</div>
                 </div>
             </div>
-        </section>
-    </main>
+            <button id="logout-btn">Logout</button>
+        </div>
+    </div>
 
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/app.js"></script>

@@ -53,8 +53,24 @@ function initAuth() {
 
     document.getElementById('user-avatar').src = user.avatar;
     document.getElementById('user-greeting').textContent = `Hi, ${user.name}!`;
+    document.getElementById('profile-avatar-large').src = user.avatar;
+    document.getElementById('welcome-msg').textContent = `Welcome, ${user.name}!`;
 
     document.getElementById('user-avatar').addEventListener('click', () => {
+      loadProfileStats();
+      document.getElementById('profile-overlay').classList.add('visible');
+    });
+
+    document.getElementById('profile-close').addEventListener('click', () => {
+      document.getElementById('profile-overlay').classList.remove('visible');
+    });
+
+    document.getElementById('profile-overlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('profile-overlay'))
+        document.getElementById('profile-overlay').classList.remove('visible');
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
       localStorage.removeItem(TOKEN_KEY);
       location.reload();
     });
@@ -62,17 +78,8 @@ function initAuth() {
     if (user.isOwner) {
       // Remove the hiding class so each element reverts to its own natural display
       document.querySelectorAll('.owner-only').forEach(el => el.classList.remove('owner-only'));
-
-      // Populate profile page
-      document.getElementById('profile-avatar-large').src = user.avatar;
-      document.getElementById('welcome-msg').textContent = `Welcome, ${user.name}!`;
-      loadProfileStats();
     }
   }
-
-  // Load profile stats when the profile tab is opened (in case noodles weren't ready yet)
-  document.querySelector('.tab-btn[data-tab="profile"]')
-    ?.addEventListener('click', loadProfileStats);
 }
 
 document.addEventListener('DOMContentLoaded', initAuth);
