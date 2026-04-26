@@ -1,0 +1,67 @@
+const { app } = require('@azure/functions');
+const jwt = require('jsonwebtoken');
+
+const CLIENT_ID = process.env.GITHUB_CLIENT_ID;
+const CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET;
+const OWNER = process.env.OWNER_GITHUB_USERNAME;
+
+app.http('auth-start', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'auth',
+  handler: async () => {
+    const params = new URLSearchParams({
+      client_id: CLIENT_ID,
+      scope: 'read:user'
+    });
+    return {
+      status: 302,
+      headers: { Location: `https://github.com/login/oauth/authorize?${params}` }
+    };
+  }
+});
+
+app.http('auth-callback', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'auth/callback',
+  handler: async (request) => {
+    const code = new URL(request.url).searchParams.get('code');
+    if (!code) return { status: 400, body: 'Missing code' };
+
+    // Exchange code for GitHub access token (client_secret stays server-side)
+    const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ client_id: CLIENT_ID, client_secret: CLIENT_SECRET, code })
+    });
+    const tokenData = await tokenRes.json();
+    if (!tokenData.access_token) return { status: 400, body: 'GitHub auth failed' };
+
+    // Fetch GitHub user profile
+    const userRes = await fetch('https://api.github.com/user', {
+      headers: {
+        Authorization: `Bearer ${tokenData.access_token}`,
+        'User-Agent': 'noodle-classifier'
+      }
+    });
+    const user = await userRes.json();
+
+    const payload = {
+      sub: String(user.id),
+      login: user.login,
+      name: user.name || user.login,
+      avatar: user.avatar_url,
+      isOwner: user.login === OWNER
+    };
+
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+
+    // Return to frontend with token in URL hash; frontend stores it in localStorage
+    return {
+      status: 302,
+      headers: { Location: `/#token=${token}` }
+    };
+  }
+});
