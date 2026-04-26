@@ -69,18 +69,18 @@ app.http('auth-callback', {
   }
 });
 
+const GOOGLE_REDIRECT_URI = `${process.env.APP_URL}/api/auth/google/callback`;
+
 app.http('google-auth-start', {
   methods: ['GET'],
   authLevel: 'anonymous',
   route: 'auth/google',
-  handler: async (request) => {
-    const origin = new URL(request.url).origin;
+  handler: async () => {
     const params = new URLSearchParams({
       client_id: GOOGLE_CLIENT_ID,
-      redirect_uri: `${origin}/api/auth/google/callback`,
+      redirect_uri: GOOGLE_REDIRECT_URI,
       response_type: 'code',
-      scope: 'openid email profile',
-      access_type: 'online'
+      scope: 'openid email profile'
     });
     return {
       status: 302,
@@ -94,11 +94,9 @@ app.http('google-auth-callback', {
   authLevel: 'anonymous',
   route: 'auth/google/callback',
   handler: async (request) => {
-    const url = new URL(request.url);
-    const code = url.searchParams.get('code');
+    const code = new URL(request.url).searchParams.get('code');
     if (!code) return { status: 400, body: 'Missing code' };
 
-    const origin = url.origin;
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -106,7 +104,7 @@ app.http('google-auth-callback', {
         code,
         client_id: GOOGLE_CLIENT_ID,
         client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri: `${origin}/api/auth/google/callback`,
+        redirect_uri: GOOGLE_REDIRECT_URI,
         grant_type: 'authorization_code'
       }).toString()
     });
