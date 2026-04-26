@@ -2,7 +2,9 @@ const TOKEN_KEY = 'noodle_auth_token';
 
 function parseJWT(token) {
   try {
-    return JSON.parse(atob(token.split('.')[1]));
+    const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = part + '='.repeat((4 - part.length % 4) % 4);
+    return JSON.parse(atob(padded));
   } catch {
     return null;
   }
