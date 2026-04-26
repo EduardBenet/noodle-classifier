@@ -1,5 +1,7 @@
 # Noodle Classifier
 
+> **[https://mango-river-0d57d6203.6.azurestaticapps.net](https://mango-river-0d57d6203.6.azurestaticapps.net)**
+
 A web app for cataloging and browsing instant noodle products. Users can search, filter, and browse noodles. The owner can add and edit products, including barcode scanning with auto-fill from OpenFoodFacts.
 
 **Stack:** Static frontend (HTML/CSS/JS) + Azure Functions (Node.js) + Azure Cosmos DB

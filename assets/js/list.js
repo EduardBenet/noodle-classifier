@@ -14,7 +14,13 @@ function sortNoodles(items) {
   if (!val) return items;
   const [field, dir] = val.split('-');
   const key = field === 'spicy' ? 'spicy' : field;
-  return [...items].sort((a, b) => dir === 'asc' ? a[key] - b[key] : b[key] - a[key]);
+  return [...items].sort((a, b) => {
+    const primary = dir === 'asc' ? a[key] - b[key] : b[key] - a[key];
+    if (primary !== 0) return primary;
+    if (key === 'rating') return a.spicy - b.spicy;
+    if (key === 'spicy') return b.rating - a.rating;
+    return 0;
+  });
 }
 
 function renderPage() {
