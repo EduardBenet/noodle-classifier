@@ -17,14 +17,28 @@ function collectFormData() {
 
 async function save(method) {
   const token = getToken();
-  await fetch("/api/noodles", {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { "Authorization": `Bearer ${token}` } : {})
-    },
-    body: JSON.stringify(collectFormData())
-  });
+  let res;
+  try {
+    res = await fetch("/api/noodles", {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(collectFormData())
+    });
+  } catch {
+    alert('Network error — could not reach the server.');
+    return;
+  }
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const detail = body.errors?.join('\n') || body.error || res.statusText;
+    alert(`Save failed (${res.status}): ${detail}`);
+    return;
+  }
+
   list();
   document.getElementById('add-form').reset();
   isExistingNoodle = false;
