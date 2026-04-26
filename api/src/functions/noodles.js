@@ -17,12 +17,15 @@ function validateNoodle(data) {
 
 function isOwner(request) {
   const auth = request.headers.get('authorization') || '';
+  console.log('[isOwner] auth header present:', !!auth, '| length:', auth.length);
   const token = auth.replace(/^Bearer\s+/i, '');
   if (!token) return false;
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('[isOwner] verified, isOwner:', payload.isOwner);
     return payload.isOwner === true;
-  } catch {
+  } catch (e) {
+    console.log('[isOwner] jwt.verify failed:', e.message);
     return false;
   }
 }
