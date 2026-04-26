@@ -63,6 +63,13 @@ textarea {
 #user-info {
     display: none;
     align-items: center;
+    gap: 0.5rem;
+}
+
+#user-greeting {
+    font-size: 0.8rem;
+    color: #555;
+    white-space: nowrap;
 }
 
 .profile-btn {
@@ -100,13 +107,59 @@ textarea {
     opacity: 0.85;
 }
 
-/* Hide owner-only elements; show them when body has .is-owner */
+/* Hidden until auth.js removes this class for owners */
 .owner-only {
-    display: none !important;
+    display: none;
 }
 
-body.is-owner .owner-only {
-    display: revert !important;
+/* ========== Profile Page ========== */
+.profile-page {
+    max-width: 480px;
+    margin: 2rem auto;
+    text-align: center;
+}
+
+.profile-avatar-large {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 3px solid #ddd;
+    display: block;
+    margin: 0 auto 1rem;
+}
+
+.profile-page h2 {
+    margin: 0 0 2rem;
+    font-size: 1.4rem;
+}
+
+.profile-stats {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.stat-card {
+    flex: 1;
+    max-width: 180px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 1.25rem 1rem;
+}
+
+.stat-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+    word-break: break-word;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #777;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 /* ========== Navigation Tabs ========== */

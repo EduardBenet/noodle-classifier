@@ -23,6 +23,19 @@ function getUser() {
   return payload;
 }
 
+function loadProfileStats() {
+  const source = (typeof allNoodles !== 'undefined' && allNoodles.length)
+    ? Promise.resolve(allNoodles)
+    : fetch('/api/noodles').then(r => r.json());
+
+  source.then(noodles => {
+    const rated = noodles.filter(n => n.rating > 0);
+    const best = rated.reduce((a, b) => b.rating > a.rating ? b : a, rated[0] ?? null);
+    document.getElementById('stat-count').textContent = rated.length;
+    document.getElementById('stat-best').textContent = best ? best.name : '—';
+  });
+}
+
 function initAuth() {
   // Pick up token returned by OAuth callback in URL hash
   if (location.hash.startsWith('#token=')) {
@@ -37,17 +50,29 @@ function initAuth() {
   if (user) {
     loginBtn.style.display = 'none';
     userInfo.style.display = 'flex';
-    const avatar = document.getElementById('user-avatar');
-    avatar.src = user.avatar;
-    avatar.addEventListener('click', () => {
+
+    document.getElementById('user-avatar').src = user.avatar;
+    document.getElementById('user-greeting').textContent = `Hi, ${user.name}!`;
+
+    document.getElementById('user-avatar').addEventListener('click', () => {
       localStorage.removeItem(TOKEN_KEY);
       location.reload();
     });
 
     if (user.isOwner) {
-      document.body.classList.add('is-owner');
+      // Remove the hiding class so each element reverts to its own natural display
+      document.querySelectorAll('.owner-only').forEach(el => el.classList.remove('owner-only'));
+
+      // Populate profile page
+      document.getElementById('profile-avatar-large').src = user.avatar;
+      document.getElementById('welcome-msg').textContent = `Welcome, ${user.name}!`;
+      loadProfileStats();
     }
   }
+
+  // Load profile stats when the profile tab is opened (in case noodles weren't ready yet)
+  document.querySelector('.tab-btn[data-tab="profile"]')
+    ?.addEventListener('click', loadProfileStats);
 }
 
 document.addEventListener('DOMContentLoaded', initAuth);
