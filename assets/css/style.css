@@ -242,6 +242,41 @@ textarea {
     background: #eee;
 }
 
+/* ========== Pagination ========== */
+#pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.5rem 0;
+}
+
+#pagination button {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+#pagination button:hover:not(:disabled) {
+    background: #f0f0f0;
+}
+
+#pagination button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+#pagination span {
+    font-size: 0.9rem;
+    color: #555;
+    min-width: 60px;
+    text-align: center;
+}
+
 /* ========== Navigation Tabs ========== */
 nav {
     display: flex;

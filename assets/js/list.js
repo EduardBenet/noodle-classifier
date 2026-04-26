@@ -1,9 +1,12 @@
+const PAGE_SIZE = 10;
 let allNoodles = [];
+let currentPage = 1;
 
 async function list() {
   const response = await fetch("/api/noodles");
   allNoodles = await response.json();
-  renderList(sortNoodles(allNoodles), 'noodle-list');
+  currentPage = 1;
+  renderPage();
 }
 
 function sortNoodles(items) {
@@ -14,9 +17,41 @@ function sortNoodles(items) {
   return [...items].sort((a, b) => dir === 'asc' ? a[key] - b[key] : b[key] - a[key]);
 }
 
+function renderPage() {
+  const sorted = sortNoodles(allNoodles);
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+  const pageItems = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  renderList(pageItems, 'noodle-list');
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+  const container = document.getElementById('pagination');
+  container.innerHTML = '';
+  if (totalPages <= 1) return;
+
+  const prev = document.createElement('button');
+  prev.textContent = '←';
+  prev.disabled = currentPage === 1;
+  prev.addEventListener('click', () => { currentPage--; renderPage(); window.scrollTo(0, 0); });
+  container.appendChild(prev);
+
+  const label = document.createElement('span');
+  label.textContent = `${currentPage} / ${totalPages}`;
+  container.appendChild(label);
+
+  const next = document.createElement('button');
+  next.textContent = '→';
+  next.disabled = currentPage === totalPages;
+  next.addEventListener('click', () => { currentPage++; renderPage(); window.scrollTo(0, 0); });
+  container.appendChild(next);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('sort-by').addEventListener('change', () => {
-    renderList(sortNoodles(allNoodles), 'noodle-list');
+    currentPage = 1;
+    renderPage();
   });
 });
 

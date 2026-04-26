@@ -5,7 +5,8 @@ document.getElementById("search").addEventListener("input", (e) => {
   clearTimeout(debounceTimeout);
 
   if (!searchTerm) {
-    renderList(sortNoodles(allNoodles), 'noodle-list');
+    currentPage = 1;
+    renderPage();
     return;
   }
 
@@ -13,5 +14,6 @@ document.getElementById("search").addEventListener("input", (e) => {
     const response = await fetch(`/api/noodles?search=${encodeURIComponent(searchTerm)}`);
     const items = await response.json();
     renderList(items, 'noodle-list');
+    document.getElementById('pagination').innerHTML = '';
   }, 300);
 });

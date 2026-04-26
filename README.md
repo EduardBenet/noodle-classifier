@@ -1,8 +1,9 @@
 # Noodle Classifier
 
-A web app for cataloging and browsing instant noodle products. Users can search, filter, and add new products — including barcode scanning with auto-fill from OpenFoodFacts.
+A web app for cataloging and browsing instant noodle products. Users can search, filter, and browse noodles. The owner can add and edit products, including barcode scanning with auto-fill from OpenFoodFacts.
 
 **Stack:** Static frontend (HTML/CSS/JS) + Azure Functions (Node.js) + Azure Cosmos DB
+**Deployed on:** Azure Static Web Apps
 
 ---
 
@@ -14,6 +15,7 @@ noodle-classifier/
 ├── assets/
 │   ├── css/style.css       # Styles
 │   └── js/
+│       ├── auth.js         # Auth: token handling, dropdown, profile overlay
 │       ├── app.js          # Tab navigation, overlays, Noodle of the Day
 │       ├── list.js         # Listing, sorting, filtering
 │       ├── search.js       # Search with 300ms debounce
@@ -22,100 +24,123 @@ noodle-classifier/
 │   ├── host.json           # Functions runtime config (extension bundle)
 │   ├── package.json        # Node.js dependencies
 │   └── src/functions/
-│       └── noodles.js      # HTTP function: GET / POST / PUT /api/noodles
+│       ├── noodles.js      # GET / POST / PUT /api/noodles (write ops require owner JWT)
+│       └── auth.js         # OAuth login: GitHub + Google, JWT issuance
 └── tests/
     └── test-noodle.js      # Manual integration test (creates a test entry)
 ```
 
 ---
 
-## Prerequisites
+## Authentication
 
-- [Node.js](https://nodejs.org/) v18+
-- [Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local) v4
-- An [Azure Cosmos DB](https://azure.microsoft.com/en-us/products/cosmos-db) account
+The app uses custom OAuth (GitHub and Google) implemented via Azure Functions. There is no dependency on Azure SWA's built-in auth — the flow runs on the free plan.
+
+### How it works
+
+1. User clicks the profile icon (top-right) → dropdown opens
+2. User chooses **Login with GitHub** or **Login with Google**
+3. They are redirected to the provider's OAuth page
+4. On success, the backend exchanges the code for a user profile, signs a JWT, and redirects to `/#token=<jwt>`
+5. The frontend stores the JWT in `localStorage` and reads the user's name, avatar, and `isOwner` flag from it
+6. Tokens expire after 7 days
+
+### Owner access
+
+One user is designated as owner via environment variables. The owner gets access to:
+- The **Add** tab (create/edit noodles)
+- The **edit button** on noodle cards
+
+Everyone else (logged in or not) can only browse.
+
+### Auth endpoints
+
+| Route | Description |
+|---|---|
+| `GET /api/auth` | Redirect to GitHub OAuth |
+| `GET /api/auth/callback` | GitHub OAuth callback — issues JWT |
+| `GET /api/auth/google` | Redirect to Google OAuth |
+| `GET /api/auth/google/callback` | Google OAuth callback — issues JWT |
 
 ---
 
-## Local Development
+## Environment Variables
 
-### 1. Install dependencies
+Set these in **Azure Portal → Static Web App → Configuration → Application settings**.
 
-```bash
-cd api
-npm install
-```
+| Variable | Required | Description |
+|---|---|---|
+| `DATABASE_CONNECTION_STRING` | Yes | Cosmos DB primary connection string |
+| `GITHUB_CLIENT_ID` | Yes | GitHub OAuth App client ID |
+| `GITHUB_CLIENT_SECRET` | Yes | GitHub OAuth App client secret |
+| `GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Yes | Google OAuth client secret |
+| `JWT_SECRET` | Yes | Random secret used to sign tokens (any long string) |
+| `OWNER_GITHUB_USERNAME` | Yes | GitHub username of the owner (case-sensitive) |
+| `OWNER_EMAIL` | Yes | Gmail address of the owner (for Google login) |
+| `APP_URL` | Yes | Deployed app URL, no trailing slash — e.g. `https://your-app.azurestaticapps.net` |
 
-### 2. Configure environment
-
-Create `api/local.settings.json` (this file is gitignored and only used locally):
+For local development, create `api/local.settings.json` (gitignored):
 
 ```json
 {
   "IsEncrypted": false,
   "Values": {
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AzureWebJobsStorage": "",
     "FUNCTIONS_WORKER_RUNTIME": "node",
-    "DATABASE_CONNECTION_STRING": "AccountEndpoint=https://<your-account>.documents.azure.com:443/;AccountKey=<your-key>=="
+    "DATABASE_CONNECTION_STRING": "AccountEndpoint=https://...",
+    "GITHUB_CLIENT_ID": "...",
+    "GITHUB_CLIENT_SECRET": "...",
+    "GOOGLE_CLIENT_ID": "...",
+    "GOOGLE_CLIENT_SECRET": "...",
+    "JWT_SECRET": "...",
+    "OWNER_GITHUB_USERNAME": "...",
+    "OWNER_EMAIL": "...",
+    "APP_URL": "http://localhost:4280"
   }
 }
 ```
 
-> The `DATABASE_CONNECTION_STRING` is a Cosmos DB connection string. You can copy it from the Azure Portal under your Cosmos DB account > **Keys** > **Primary Connection String**.
+---
 
-### 3. Start the API
+## OAuth App Setup
 
-```bash
-cd api
-npm start        # runs: func start
-```
+### GitHub
 
-The API will be available at `http://localhost:7071/api/noodles`.
+1. Go to [github.com/settings/developers](https://github.com/settings/developers) → **OAuth Apps** → **New OAuth App**
+2. Set **Authorization callback URL** to `https://<your-app>/api/auth/callback`
+3. Copy the Client ID and Client Secret into Azure env vars
 
-### 4. Serve the frontend
+### Google
 
-Open `index.html` directly in a browser, or use the [VS Code Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension.
-
-### Debugging in VS Code
-
-Press **F5** — the pre-configured launch task starts `func host start` and attaches the Node.js debugger on port 9229.
+1. Go to [console.cloud.google.com](https://console.cloud.google.com) → **APIs & Services** → **Credentials** → **Create Credentials** → **OAuth 2.0 Client ID**
+2. Application type: **Web application**
+3. Add **Authorised redirect URI**: `https://<your-app>/api/auth/google/callback`
+4. Go to **OAuth consent screen** → configure app name and add your email as a test user
+5. Copy the Client ID and Client Secret into Azure env vars
 
 ---
 
 ## API Reference
 
-All endpoints are served at `/api/noodles` with `authLevel: anonymous`.
-
 ### GET /api/noodles
 
-Returns all noodles.
-
-**Query parameters:**
+Returns all noodles. Supports optional query parameters:
 
 | Parameter | Description |
-|-----------|-------------|
-| `id`      | Fetch a single noodle by its ID |
-| `search`  | Case-insensitive search across `name` and `brand` |
+|---|---|
+| `id` | Fetch a single noodle by its ID |
+| `search` | Case-insensitive search across `name` and `brand` |
 
-```bash
-# All noodles
-GET /api/noodles
+### POST /api/noodles *(owner only)*
 
-# Search
-GET /api/noodles?search=indomie
+Create a new noodle. Requires `Authorization: Bearer <token>` header. Returns `201`.
 
-# By ID
-GET /api/noodles?id=8991701051148
-```
+### PUT /api/noodles *(owner only)*
 
-### POST /api/noodles
+Upsert (create or update) a noodle. Requires `Authorization: Bearer <token>` header.
 
-Create a new noodle. Returns `201` with the created document.
-
-```bash
-POST /api/noodles
-Content-Type: application/json
-
+```json
 {
   "id": "8991701051148",
   "name": "Mi Goreng",
@@ -130,34 +155,28 @@ Content-Type: application/json
 }
 ```
 
-### PUT /api/noodles
-
-Upsert (create or update) a noodle. Same body as POST.
-
 ---
 
 ## Data Model
 
-| Field         | Type             | Description                      |
-|---------------|------------------|----------------------------------|
-| `id`          | `string`         | Barcode or unique product ID     |
-| `name`        | `string`         | Product name                     |
-| `brand`       | `string`         | Brand name                       |
-| `price`       | `number`         | Price (local currency)           |
-| `rating`      | `number` (0–5)   | Quality rating                   |
-| `spicy`       | `number` (0–5)   | Spice level                      |
-| `hasSoup`     | `boolean`        | Whether the product includes soup|
-| `description` | `string`         | Free-text description            |
-| `keywords`    | `string[]`       | Search tags                      |
-| `image`       | `string`         | URL or filename of product image |
+| Field | Type | Description |
+|---|---|---|
+| `id` | `string` | Barcode or unique product ID |
+| `name` | `string` | Product name |
+| `brand` | `string` | Brand name |
+| `price` | `number` | Price (local currency) |
+| `rating` | `number` (0–5) | Quality rating |
+| `spicy` | `number` (0–5) | Spice level |
+| `hasSoup` | `boolean` | Whether the product includes soup |
+| `description` | `string` | Free-text description |
+| `keywords` | `string[]` | Search tags |
+| `image` | `string` | URL or filename of product image |
 
 ---
 
 ## Cosmos DB Setup
 
-The function connects to a Cosmos DB database named `noodles`, container `packages`.
-
-Create these in the Azure Portal or with the Azure CLI:
+The function connects to a Cosmos DB database named `noodles`, container `packages`, partitioned by `/id`.
 
 ```bash
 az cosmosdb create --name <account-name> --resource-group <rg>
@@ -171,47 +190,27 @@ az cosmosdb sql container create \
 
 ---
 
-## Azure Functions Configuration
+## Local Development
 
-### host.json
-
-```json
-{
-  "version": "2.0",
-  "extensionBundle": {
-    "id": "Microsoft.Azure.Functions.ExtensionBundle",
-    "version": "[4.*, 5.0.0)"
-  }
-}
+```bash
+cd api && npm install
+# create api/local.settings.json (see above)
+npm start        # runs: func start — API at http://localhost:7071
 ```
 
-**Extension Bundle** — Instead of manually installing individual Azure Functions binding extensions (HTTP, Timer, Cosmos DB trigger, etc.), the runtime downloads a pre-tested bundle of compatible extensions. The version range `[4.*, 5.0.0)` means "latest 4.x bundle, but not 5.0 or higher". The runtime updates the bundle automatically on startup within this range.
-
-See the [official documentation](https://learn.microsoft.com/en-us/azure/azure-functions/extension-bundles) for available bundle versions and the extensions each one includes.
-
-### Runtime
-
-- **Runtime version:** `~4` (Azure Functions v4)
-- **Language:** JavaScript (Node.js v4 programming model)
-- **Auth level:** `anonymous` — no API key required
+Serve the frontend with [VS Code Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) or the [Azure Static Web Apps CLI](https://azure.github.io/static-web-apps-cli/) (`swa start`) for full local auth testing.
 
 ---
 
 ## Deployment
 
-The `api/` subdirectory is the deployable unit. The VS Code [Azure Functions extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) is pre-configured (see `.vscode/settings.json`):
-
-1. Open the Azure Functions panel in VS Code.
-2. Click **Deploy to Function App**.
-3. Set `DATABASE_CONNECTION_STRING` in the Function App's **Application Settings** (Azure Portal > Function App > Configuration).
-
-Pre-deploy, dev dependencies are pruned automatically (`npm prune --production`).
+Pushes to `main` trigger the GitHub Actions workflow (`.github/workflows/`) which deploys to Azure Static Web Apps automatically. The pipeline runs `npm install` in `api/` and deploys both the static frontend and the functions.
 
 ---
 
 ## Tests
 
-`tests/test-noodle.js` is a manual integration script that writes a test entry to Cosmos DB. It requires a `.env` file at the repo root (not `local.settings.json`):
+`tests/test-noodle.js` is a manual integration script that writes a test entry to Cosmos DB:
 
 ```bash
 node tests/test-noodle.js
@@ -221,4 +220,4 @@ node tests/test-noodle.js
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT
