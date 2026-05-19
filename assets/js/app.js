@@ -86,7 +86,6 @@ async function initAuth() {
     const user = data.clientPrincipal;
 
     if (user) {
-      isLoggedIn = true;
       const displayName = user.userDetails || user.userId;
       usernameEl.textContent = displayName;
       loginSection.hidden = true;
@@ -97,6 +96,7 @@ async function initAuth() {
       btn.title = displayName;
       btn.setAttribute("aria-label", "Account menu");
 
+      document.getElementById("list-tab-btn").hidden = false;
       document.getElementById("add-tab-btn").hidden = false;
     }
   } catch {
