@@ -62,8 +62,44 @@ async function loadNoodleOfTheDay() {
   showNoodleOverlay(noodle, "Noodle of the Day 🍜");
 }
 
+async function initAuth() {
+  const btn = document.getElementById("auth-btn");
+  const menu = document.getElementById("auth-menu");
+  const loginSection = document.getElementById("auth-menu-login");
+  const userSection = document.getElementById("auth-menu-user");
+  const usernameEl = document.getElementById("auth-username");
+
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    menu.hidden = !menu.hidden;
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!menu.hidden && !document.getElementById("auth-widget").contains(e.target)) {
+      menu.hidden = true;
+    }
+  });
+
+  try {
+    const res = await fetch("/.auth/me");
+    const data = await res.json();
+    const user = data.clientPrincipal;
+
+    if (user) {
+      usernameEl.textContent = user.userDetails || user.userId;
+      loginSection.hidden = true;
+      userSection.hidden = false;
+      btn.title = user.userDetails || "Signed in";
+      btn.setAttribute("aria-label", "Account menu");
+    }
+  } catch {
+    // not authenticated or endpoint unavailable — stay in logged-out state
+  }
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   list();
   listLoaded = true;
   loadNoodleOfTheDay();
+  initAuth();
 });
