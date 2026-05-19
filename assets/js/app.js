@@ -86,11 +86,18 @@ async function initAuth() {
     const user = data.clientPrincipal;
 
     if (user) {
-      usernameEl.textContent = user.userDetails || user.userId;
+      isLoggedIn = true;
+      const displayName = user.userDetails || user.userId;
+      usernameEl.textContent = displayName;
       loginSection.hidden = true;
       userSection.hidden = false;
-      btn.title = user.userDetails || "Signed in";
+
+      const initial = displayName.charAt(0).toUpperCase();
+      btn.innerHTML = `<span class="auth-avatar" aria-hidden="true">${initial}</span>`;
+      btn.title = displayName;
       btn.setAttribute("aria-label", "Account menu");
+
+      document.getElementById("add-tab-btn").hidden = false;
     }
   } catch {
     // not authenticated or endpoint unavailable — stay in logged-out state

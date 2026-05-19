@@ -457,6 +457,21 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     background: #eee;
 }
 
+.auth-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #333;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1;
+    user-select: none;
+}
+
 #auth-menu {
     position: absolute;
     right: 0;
