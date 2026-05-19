@@ -1,9 +1,12 @@
 let allNoodles = [];
+let currentPage = 1;
+const PAGE_SIZE = 10;
 
 async function list() {
   const response = await fetch("/api/noodles");
   allNoodles = await response.json();
-  renderList(sortNoodles(allNoodles), 'noodle-list');
+  currentPage = 1;
+  renderPagedList(sortNoodles(allNoodles));
 }
 
 function sortNoodles(items) {
@@ -14,11 +17,37 @@ function sortNoodles(items) {
   return [...items].sort((a, b) => dir === 'asc' ? a[key] - b[key] : b[key] - a[key]);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('sort-by').addEventListener('change', () => {
-    renderList(sortNoodles(allNoodles), 'noodle-list');
+function renderPagedList(data) {
+  const totalPages = Math.ceil(data.length / PAGE_SIZE);
+  currentPage = Math.min(currentPage, totalPages || 1);
+
+  renderList(data.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE), 'noodle-list');
+
+  const pg = document.getElementById('pagination');
+  if (totalPages <= 1) {
+    pg.hidden = true;
+    return;
+  }
+
+  pg.hidden = false;
+  pg.innerHTML = `
+    <button id="pg-prev" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>
+    <span>Page ${currentPage} of ${totalPages}</span>
+    <button id="pg-next" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>
+  `;
+
+  document.getElementById('pg-prev').addEventListener('click', () => {
+    currentPage--;
+    renderPagedList(data);
+    document.getElementById('tab-list').scrollIntoView({ behavior: 'smooth' });
   });
-});
+
+  document.getElementById('pg-next').addEventListener('click', () => {
+    currentPage++;
+    renderPagedList(data);
+    document.getElementById('tab-list').scrollIntoView({ behavior: 'smooth' });
+  });
+}
 
 function renderList(data, lname) {
   const list = document.getElementById(lname);
@@ -48,3 +77,10 @@ function renderList(data, lname) {
     list.appendChild(card);
   });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('sort-by').addEventListener('change', () => {
+    currentPage = 1;
+    renderPagedList(sortNoodles(allNoodles));
+  });
+});

@@ -15,12 +15,44 @@ function collectFormData() {
   };
 }
 
+let toastTimer;
+function showToast(message, type) {
+  const el = document.getElementById('toast');
+  clearTimeout(toastTimer);
+  el.className = `toast-${type}`;
+  el.hidden = false;
+
+  if (type === 'error') {
+    el.innerHTML = `${message} <button onclick="this.parentElement.hidden=true" aria-label="Dismiss">&times;</button>`;
+  } else {
+    el.textContent = message;
+    toastTimer = setTimeout(() => {
+      el.classList.add('toast-fade');
+      setTimeout(() => { el.hidden = true; el.classList.remove('toast-fade'); }, 400);
+    }, 1000);
+  }
+}
+
 async function save(method) {
-  await fetch("/api/noodles", {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(collectFormData())
-  });
+  let res;
+  try {
+    res = await fetch("/api/noodles", {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(collectFormData())
+    });
+  } catch {
+    showToast('Network error — changes not saved.', 'error');
+    return;
+  }
+
+  if (!res.ok) {
+    const msg = res.status === 401 ? 'Not authorised.' : `Error ${res.status} — changes not saved.`;
+    showToast(msg, 'error');
+    return;
+  }
+
+  showToast(method === 'PUT' ? 'Noodle updated.' : 'Noodle added.', 'success');
   list();
   document.getElementById('add-form').reset();
   isExistingNoodle = false;
@@ -69,7 +101,7 @@ async function tapToFocus(videoElement, e) {
       await track.applyConstraints({ advanced: [{ focusMode: 'manual' }] });
       await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
     }
-  } catch (_) {}
+  } catch (_) { }
 }
 
 async function startNativeScanner(videoElement) {
@@ -91,7 +123,7 @@ async function startNativeScanner(videoElement) {
         onBarcodeFound(barcodes[0].rawValue);
         return;
       }
-    } catch (_) {}
+    } catch (_) { }
     requestAnimationFrame(scan);
   };
   requestAnimationFrame(scan);
@@ -122,7 +154,7 @@ function stopScanner() {
   scannerRunning = false;
 
   if (codeReader) {
-    try { codeReader.stopDecoding(); } catch (_) {}
+    try { codeReader.stopDecoding(); } catch (_) { }
     codeReader = null;
   }
 
@@ -183,8 +215,8 @@ async function fillFromOpenFoodFacts(id) {
 
   const p = data.product;
   if (p.product_name) document.getElementById('name').value = p.product_name;
-  if (p.brands)       document.getElementById('brand').value = p.brands.split(',')[0].trim();
-  if (p.image_url)    document.getElementById('image').value = p.image_url;
+  if (p.brands) document.getElementById('brand').value = p.brands.split(',')[0].trim();
+  if (p.image_url) document.getElementById('image').value = p.image_url;
 
   const tags = (p.categories_tags ?? [])
     .map(t => t.replace(/^en:/, '').replace(/-/g, ' '))

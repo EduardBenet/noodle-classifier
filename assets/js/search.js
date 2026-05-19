@@ -5,13 +5,15 @@ document.getElementById("search").addEventListener("input", (e) => {
   clearTimeout(debounceTimeout);
 
   if (!searchTerm) {
-    renderList(sortNoodles(allNoodles), 'noodle-list');
+    currentPage = 1;
+    renderPagedList(sortNoodles(allNoodles));
     return;
   }
 
   debounceTimeout = setTimeout(async () => {
     const response = await fetch(`/api/noodles?search=${encodeURIComponent(searchTerm)}`);
     const items = await response.json();
+    document.getElementById('pagination').hidden = true;
     renderList(items, 'noodle-list');
   }, 300);
 });

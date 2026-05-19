@@ -523,6 +523,82 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     text-overflow: ellipsis;
 }
 
+/* ========== Pagination ========== */
+#pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+#pagination button {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+#pagination button:hover:not(:disabled) {
+    background: #f0f0f0;
+}
+
+#pagination button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+/* ========== Toast ========== */
+#toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.65rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    z-index: 300;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.4s;
+}
+
+#toast.toast-success {
+    background: #2e7d32;
+    color: #fff;
+}
+
+#toast.toast-error {
+    background: #c62828;
+    color: #fff;
+}
+
+#toast.toast-fade {
+    opacity: 0;
+}
+
+#toast button {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    margin-left: 0.75rem;
+    opacity: 0.8;
+    padding: 0;
+}
+
+#toast button:hover {
+    opacity: 1;
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 600px) {
     .card {
