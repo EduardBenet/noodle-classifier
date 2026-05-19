@@ -1,4 +1,6 @@
 /* ========== Base Styles ========== */
+[hidden] { display: none !important; }
+
 html {
     scrollbar-gutter: stable;
 }
