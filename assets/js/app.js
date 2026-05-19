@@ -98,6 +98,7 @@ async function initAuth() {
 
       document.getElementById("list-tab-btn").hidden = false;
       document.getElementById("add-tab-btn").hidden = false;
+      document.getElementById("overlay-edit").hidden = false;
     }
   } catch {
     // not authenticated or endpoint unavailable — stay in logged-out state

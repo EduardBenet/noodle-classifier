@@ -36,6 +36,12 @@ app.http('noodles', {
       return { jsonBody: resources };
     }
 
+    if (request.method === 'POST' || request.method === 'PUT') {
+      if (!request.headers.get('x-ms-client-principal')) {
+        return { status: 401, jsonBody: { error: 'Unauthorised' } };
+      }
+    }
+
     if (request.method === 'POST') {
       const data = await request.json();
       const { resource } = await container.items.create(data);
