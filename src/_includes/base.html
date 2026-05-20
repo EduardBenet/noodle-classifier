@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍜</text></svg>">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% if zxing %}<script type="text/javascript" src="https://unpkg.com/@zxing/browser@latest"></script>{% endif %}
+</head>
+
+<body>
+    {% include "header.html" %}
+
+    {{ content | safe }}
+
+    <div id="toast" hidden></div>
+
+    {% for script in localScripts %}
+    <script src="{{ script }}"></script>
+    {% endfor %}
+    <script src="assets/js/auth.js"></script>
+</body>
+
+</html>

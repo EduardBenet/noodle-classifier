@@ -1,0 +1,39 @@
+---
+layout: base.html
+title: "Noodle List 🍜"
+currentPage: "list"
+loginRedirect: "/list.html"
+logoutRedirect: "/list.html"
+permalink: list.html
+localScripts:
+  - assets/js/list.js
+  - assets/js/search.js
+---
+
+<div id="overlay">
+    <div id="overlay-card">
+        <div class="overlay-actions">
+            <button id="overlay-edit" title="Edit" hidden>✏️</button>
+            <button id="overlay-close">✕</button>
+        </div>
+        <h2 id="overlay-title"></h2>
+        <div id="overlay-body"></div>
+    </div>
+</div>
+
+<main>
+    <div class="list-filters">
+        <input type="text" id="search" placeholder="Search...">
+        <select id="sort-by">
+            <option value="">Sort by...</option>
+            <option value="rating-desc">★ Rating (best first)</option>
+            <option value="rating-asc">★ Rating (worst first)</option>
+            <option value="spicy-desc">🌶️ Spiciest first</option>
+            <option value="spicy-asc">🌶️ Mildest first</option>
+            <option value="price-asc">£ Price (low → high)</option>
+            <option value="price-desc">£ Price (high → low)</option>
+        </select>
+    </div>
+    <div id="noodle-list"></div>
+    <div id="pagination" hidden></div>
+</main>
