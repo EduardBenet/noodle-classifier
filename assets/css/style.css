@@ -48,30 +48,71 @@ textarea {
     resize: vertical;
 }
 
-/* ========== Navigation ========== */
-nav {
+/* ========== Header Actions ========== */
+.header-actions {
     display: flex;
-    gap: 0.25rem;
-    flex: 1;
-    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
 }
 
-.nav-link {
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    text-decoration: none;
+/* ========== Nav Menu (Burger) ========== */
+#nav-menu {
+    position: relative;
+}
+
+#nav-btn {
+    background: none;
+    border: 1.5px solid #ccc;
+    cursor: pointer;
     color: #444;
-    font-size: 0.95rem;
+    padding: 0.35rem 0.55rem;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+#nav-btn:hover {
+    border-color: #999;
+    background: #f5f5f5;
+}
+
+#nav-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.5rem);
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    min-width: 150px;
+    z-index: 50;
+    overflow: hidden;
+}
+
+#nav-dropdown a {
+    display: block;
+    padding: 0.7rem 1rem;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.9rem;
     transition: background 0.15s;
 }
 
-.nav-link:hover {
-    background: #f0f0f0;
+#nav-dropdown a:hover {
+    background: #f5f5f5;
 }
 
-.nav-link[aria-current="page"] {
-    background: #eee;
+#nav-dropdown a + a {
+    border-top: 1px solid #eee;
+}
+
+#nav-dropdown a[aria-current="page"] {
     font-weight: 600;
+    background: #f9f9f9;
 }
 
 /* ========== Home Page ========== */
@@ -494,7 +535,6 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
 #auth-widget {
     position: relative;
     flex-shrink: 0;
-    margin-left: auto;
 }
 
 #auth-btn {

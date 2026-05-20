@@ -5,14 +5,27 @@ window.addEventListener("DOMContentLoaded", async () => {
   const userSection = document.getElementById("auth-menu-user");
   const usernameEl = document.getElementById("auth-username");
 
+  const navBtn = document.getElementById("nav-btn");
+  const navDropdown = document.getElementById("nav-dropdown");
+
+  navBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    navDropdown.hidden = !navDropdown.hidden;
+    menu.hidden = true;
+  });
+
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
     menu.hidden = !menu.hidden;
+    navDropdown.hidden = true;
   });
 
   document.addEventListener("click", (e) => {
     if (!menu.hidden && !document.getElementById("auth-widget").contains(e.target)) {
       menu.hidden = true;
+    }
+    if (!navDropdown.hidden && !document.getElementById("nav-menu").contains(e.target)) {
+      navDropdown.hidden = true;
     }
   });
 
