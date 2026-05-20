@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById("overlay-edit").addEventListener("click", () => {
     if (!overlayNoodle) return;
-    window.location.href = `/add?id=${encodeURIComponent(overlayNoodle.id)}`;
+    window.location.href = `add.html?id=${encodeURIComponent(overlayNoodle.id)}`;
   });
 
   document.getElementById('sort-by').addEventListener('change', () => {
