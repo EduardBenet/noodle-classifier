@@ -53,7 +53,6 @@ async function save(method) {
   }
 
   showToast(method === 'PUT' ? 'Noodle updated.' : 'Noodle added.', 'success');
-  list();
   document.getElementById('add-form').reset();
   isExistingNoodle = false;
 }
@@ -256,4 +255,12 @@ document.getElementById('confirm-ok').addEventListener('click', () => {
 
 document.getElementById('confirm-cancel').addEventListener('click', () => {
   document.getElementById('confirm-dialog').classList.remove('visible');
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const id = new URLSearchParams(location.search).get('id');
+  if (id) {
+    document.getElementById('product-id').value = id;
+    fillFormById(id);
+  }
 });

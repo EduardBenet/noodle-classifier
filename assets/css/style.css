@@ -18,19 +18,24 @@ header {
     top: 0;
     background: #fff;
     border-bottom: 1px solid #ccc;
-    padding: 1rem;
-    text-align: center;
+    padding: 0.65rem 1rem;
     z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-header h1 a {
-    color: inherit;
+.site-brand {
+    font-size: 1rem;
+    font-weight: 600;
     text-decoration: none;
+    color: inherit;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-header h1 a:hover {
+.site-brand:hover {
     text-decoration: underline;
-    cursor: pointer;
 }
 
 main {
@@ -43,31 +48,82 @@ textarea {
     resize: vertical;
 }
 
-/* ========== Navigation Tabs ========== */
+/* ========== Navigation ========== */
 nav {
     display: flex;
+    gap: 0.25rem;
+    flex: 1;
     justify-content: center;
-    gap: 1rem;
-    margin-top: 0.5rem;
 }
 
-.tab-btn {
-    padding: 0.5rem 1rem;
-    border: none;
+.nav-link {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #444;
+    font-size: 0.95rem;
+    transition: background 0.15s;
+}
+
+.nav-link:hover {
+    background: #f0f0f0;
+}
+
+.nav-link[aria-current="page"] {
     background: #eee;
-    cursor: pointer;
+    font-weight: 600;
 }
 
-.tab-btn.active {
-    background: #ccc;
+/* ========== Home Page ========== */
+.home-main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 3rem 1rem 2rem;
+    text-align: center;
 }
 
-.tab {
-    display: none;
+.hero {
+    margin-bottom: 3rem;
 }
 
-.tab.active {
-    display: block;
+.hero h1 {
+    font-size: 2rem;
+    margin: 0 0 0.5rem;
+}
+
+.hero p {
+    color: #666;
+    margin: 0 0 1.5rem;
+}
+
+.btn-list {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: #333;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+.btn-list:hover {
+    background: #555;
+}
+
+.noodle-of-the-day-section {
+    text-align: left;
+}
+
+.noodle-of-the-day-section h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+#noodle-of-the-day .card {
+    cursor: default;
+    max-width: 480px;
+    margin: 0 auto;
 }
 
 /* ========== Confirm Dialog ========== */
@@ -436,9 +492,9 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
 
 /* ========== Auth Widget ========== */
 #auth-widget {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
+    position: relative;
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 #auth-btn {

@@ -1,6 +1,7 @@
 let allNoodles = [];
 let currentPage = 1;
 let currentData = [];
+let overlayNoodle = null;
 const PAGE_SIZE = 10;
 
 async function list() {
@@ -71,7 +72,35 @@ function renderList(data, lname) {
   });
 }
 
+function showNoodleOverlay(noodle) {
+  overlayNoodle = noodle;
+  document.getElementById("overlay-title").textContent = noodle.name;
+  document.getElementById("overlay-body").innerHTML = `
+    <img src="${noodle.image}" alt="${noodle.name}" style="max-width:100%;max-height:200px;object-fit:contain;display:block;margin:0 auto 1rem;">
+    <div class="price">£${noodle.price.toFixed(2)}</div>
+    <div class="rating-spice-row">
+      <div class="stars">${'★'.repeat(noodle.rating)}${'☆'.repeat(5 - noodle.rating)}</div>
+      <div class="spice">${'🌶️'.repeat(noodle.spicy)}${'<span class="inactive">🌶️</span>'.repeat(5 - noodle.spicy)}</div>
+    </div>
+    <small>${noodle.description}</small>
+  `;
+  document.getElementById("overlay").classList.add("visible");
+}
+
+function hideOverlay() {
+  document.getElementById("overlay").classList.remove("visible");
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById("overlay-close").addEventListener("click", hideOverlay);
+  document.getElementById("overlay").addEventListener("click", (e) => {
+    if (e.target === document.getElementById("overlay")) hideOverlay();
+  });
+  document.getElementById("overlay-edit").addEventListener("click", () => {
+    if (!overlayNoodle) return;
+    window.location.href = `/add?id=${encodeURIComponent(overlayNoodle.id)}`;
+  });
+
   document.getElementById('sort-by').addEventListener('change', () => {
     currentPage = 1;
     renderPagedList(sortNoodles(allNoodles));
@@ -81,11 +110,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.id === 'pg-prev') {
       currentPage--;
       renderPagedList(currentData);
-      document.getElementById('tab-list').scrollIntoView({ behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (e.target.id === 'pg-next') {
       currentPage++;
       renderPagedList(currentData);
-      document.getElementById('tab-list').scrollIntoView({ behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   });
+
+  list();
 });

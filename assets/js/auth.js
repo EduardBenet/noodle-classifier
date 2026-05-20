@@ -31,9 +31,8 @@ window.addEventListener("DOMContentLoaded", async () => {
       btn.title = displayName;
       btn.setAttribute("aria-label", "Account menu");
 
-      document.getElementById("list-tab-btn").hidden = false;
-      document.getElementById("add-tab-btn").hidden = false;
-      document.getElementById("overlay-edit").hidden = false;
+      document.getElementById("nav-add")?.removeAttribute("hidden");
+      document.getElementById("overlay-edit")?.removeAttribute("hidden");
     }
   } catch {
     // not authenticated or endpoint unavailable — stay in logged-out state

@@ -1,0 +1,18 @@
+{
+  "routes": [
+    {
+      "route": "/add",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/add.html",
+      "allowedRoles": ["authenticated"]
+    }
+  ],
+  "responseOverrides": {
+    "401": {
+      "redirect": "/.auth/login/aad",
+      "statusCode": 302
+    }
+  }
+}
