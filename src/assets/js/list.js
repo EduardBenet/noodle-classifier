@@ -47,30 +47,50 @@ function renderPagedList(data) {
   `;
 }
 
+function buildCard(noodle) {
+  const img = document.createElement('img');
+  img.src = noodle.image;
+  img.alt = noodle.name;
+  img.loading = 'lazy';
+
+  const cardTitle = document.createElement('div');
+  cardTitle.className = 'card-title';
+  const strong = document.createElement('strong');
+  strong.textContent = noodle.name;
+  const brandSpan = document.createElement('span');
+  brandSpan.className = 'brand';
+  brandSpan.textContent = `(${noodle.brand})`;
+  cardTitle.append(strong, ' ', brandSpan);
+
+  const price = document.createElement('div');
+  price.className = 'price';
+  price.textContent = `£${noodle.price.toFixed(2)}`;
+
+  const ratingSpiceRow = document.createElement('div');
+  ratingSpiceRow.className = 'rating-spice-row';
+  ratingSpiceRow.innerHTML = `
+    <div class="stars">${'★'.repeat(noodle.rating)}${'☆'.repeat(5 - noodle.rating)}</div>
+    <div class="spice">${'🌶️'.repeat(noodle.spicy)}${'<span class="inactive">🌶️</span>'.repeat(5 - noodle.spicy)}</div>
+  `;
+
+  const desc = document.createElement('small');
+  desc.textContent = noodle.description;
+
+  const content = document.createElement('div');
+  content.className = 'card-content';
+  content.append(cardTitle, price, ratingSpiceRow, desc);
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.append(img, content);
+  return card;
+}
+
 function renderList(data, lname) {
   const list = document.getElementById(lname);
   list.innerHTML = '';
-
   data.forEach(noodle => {
-    const card = document.createElement('div');
-    card.className = 'card';
-
-    card.innerHTML = `
-      <img src="${noodle.image}" alt="${noodle.name}" loading="lazy">
-      <div class="card-content">
-        <div class="card-title">
-         <strong>${noodle.name}</strong>
-         <span class="brand">(${noodle.brand})</span>
-        </div>
-        <div class="price">£${noodle.price.toFixed(2)}</div>
-        <div class="rating-spice-row">
-          <div class="stars">${'★'.repeat(noodle.rating)}${'☆'.repeat(5 - noodle.rating)}</div>
-          <div class="spice">${'🌶️'.repeat(noodle.spicy)}${'<span class="inactive">🌶️</span>'.repeat(5 - noodle.spicy)}</div>
-        </div>
-        <small>${noodle.description}</small>
-      </div>
-    `;
-
+    const card = buildCard(noodle);
     card.addEventListener('click', () => showNoodleOverlay(noodle));
     list.appendChild(card);
   });
@@ -79,15 +99,27 @@ function renderList(data, lname) {
 function showNoodleOverlay(noodle) {
   overlayNoodle = noodle;
   document.getElementById("overlay-title").textContent = noodle.name;
-  document.getElementById("overlay-body").innerHTML = `
-    <img src="${noodle.image}" alt="${noodle.name}" style="max-width:100%;max-height:200px;object-fit:contain;display:block;margin:0 auto 1rem;">
-    <div class="price">£${noodle.price.toFixed(2)}</div>
-    <div class="rating-spice-row">
-      <div class="stars">${'★'.repeat(noodle.rating)}${'☆'.repeat(5 - noodle.rating)}</div>
-      <div class="spice">${'🌶️'.repeat(noodle.spicy)}${'<span class="inactive">🌶️</span>'.repeat(5 - noodle.spicy)}</div>
-    </div>
-    <small>${noodle.description}</small>
+
+  const img = document.createElement('img');
+  img.src = noodle.image;
+  img.alt = noodle.name;
+  img.style.cssText = 'max-width:100%;max-height:200px;object-fit:contain;display:block;margin:0 auto 1rem;';
+
+  const price = document.createElement('div');
+  price.className = 'price';
+  price.textContent = `£${noodle.price.toFixed(2)}`;
+
+  const ratingSpiceRow = document.createElement('div');
+  ratingSpiceRow.className = 'rating-spice-row';
+  ratingSpiceRow.innerHTML = `
+    <div class="stars">${'★'.repeat(noodle.rating)}${'☆'.repeat(5 - noodle.rating)}</div>
+    <div class="spice">${'🌶️'.repeat(noodle.spicy)}${'<span class="inactive">🌶️</span>'.repeat(5 - noodle.spicy)}</div>
   `;
+
+  const desc = document.createElement('small');
+  desc.textContent = noodle.description;
+
+  document.getElementById("overlay-body").replaceChildren(img, price, ratingSpiceRow, desc);
   document.getElementById("overlay").classList.add("visible");
 }
 
