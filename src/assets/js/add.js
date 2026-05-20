@@ -79,7 +79,7 @@ async function startScanner() {
       await startZXingScanner(videoElement);
     }
   } catch (err) {
-    alert("Camera start failed: " + err.message);
+    showToast(`Camera error — ${err.message}`, 'error');
     stopScanner();
   }
 }
@@ -169,14 +169,6 @@ function stopScanner() {
   readerContainer.classList.remove('scanning');
 }
 
-document.getElementById('product-id').addEventListener('input', () => {
-  isExistingNoodle = false;
-});
-
-document.getElementById('product-id').addEventListener('blur', () => {
-  const id = document.getElementById('product-id').value.trim();
-  if (id) fillFormById(id);
-});
 
 async function fillFormById(id) {
   const response = await fetch(`/api/noodles?id=${encodeURIComponent(id)}`);
@@ -237,30 +229,39 @@ async function fillFromOpenFoodFacts(id) {
   if (tags.length) document.getElementById('keywords').value = tags.join(', ');
 }
 
-document.getElementById('add-form').addEventListener('submit', function (e) {
-  e.preventDefault();
-  if (isExistingNoodle) {
-    const name = document.getElementById('name').value;
-    document.getElementById('confirm-message').textContent = `"${name}" already exists. Overwrite it?`;
-    document.getElementById('confirm-dialog').classList.add('visible');
-  } else {
-    save('POST');
-  }
-});
-
-document.getElementById('confirm-ok').addEventListener('click', () => {
-  document.getElementById('confirm-dialog').classList.remove('visible');
-  save('PUT');
-});
-
-document.getElementById('confirm-cancel').addEventListener('click', () => {
-  document.getElementById('confirm-dialog').classList.remove('visible');
-});
-
 document.addEventListener('DOMContentLoaded', () => {
   const id = new URLSearchParams(location.search).get('id');
   if (id) {
     document.getElementById('product-id').value = id;
     fillFormById(id);
   }
+
+  document.getElementById('product-id').addEventListener('input', () => {
+    isExistingNoodle = false;
+  });
+
+  document.getElementById('product-id').addEventListener('blur', () => {
+    const id = document.getElementById('product-id').value.trim();
+    if (id) fillFormById(id);
+  });
+
+  document.getElementById('add-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (isExistingNoodle) {
+      const name = document.getElementById('name').value;
+      document.getElementById('confirm-message').textContent = `"${name}" already exists. Overwrite it?`;
+      document.getElementById('confirm-dialog').classList.add('visible');
+    } else {
+      save('POST');
+    }
+  });
+
+  document.getElementById('confirm-ok').addEventListener('click', () => {
+    document.getElementById('confirm-dialog').classList.remove('visible');
+    save('PUT');
+  });
+
+  document.getElementById('confirm-cancel').addEventListener('click', () => {
+    document.getElementById('confirm-dialog').classList.remove('visible');
+  });
 });

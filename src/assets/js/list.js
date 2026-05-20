@@ -5,8 +5,12 @@ let overlayNoodle = null;
 const PAGE_SIZE = 10;
 
 async function list() {
-  const response = await fetch("/api/noodles");
-  allNoodles = await response.json();
+  try {
+    const response = await fetch("/api/noodles");
+    allNoodles = await response.json();
+  } catch {
+    allNoodles = [];
+  }
   currentPage = 1;
   renderPagedList(sortNoodles(allNoodles));
 }
