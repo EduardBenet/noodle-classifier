@@ -42,21 +42,17 @@ localScripts:
         <div class="spice-row">
             <label>Spice Level:</label>
             <div class="spice-chilies">
-                <input type="radio" name="spice" id="spice5" value="5"><label for="spice5">🌶️</label>
-                <input type="radio" name="spice" id="spice4" value="4"><label for="spice4">🌶️</label>
-                <input type="radio" name="spice" id="spice3" value="3"><label for="spice3">🌶️</label>
-                <input type="radio" name="spice" id="spice2" value="2"><label for="spice2">🌶️</label>
-                <input type="radio" name="spice" id="spice1" value="1"><label for="spice1">🌶️</label>
+                {% for i in [5, 4, 3, 2, 1] %}
+                <input type="radio" name="spice" id="spice{{ i }}" value="{{ i }}"><label for="spice{{ i }}">🌶️</label>
+                {% endfor %}
             </div>
         </div>
         <div class="rating-row">
             <label>Rating:</label>
             <div class="rating-stars">
-                <input type="radio" name="rating" id="rating5" value="5"><label for="rating5">★</label>
-                <input type="radio" name="rating" id="rating4" value="4"><label for="rating4">★</label>
-                <input type="radio" name="rating" id="rating3" value="3"><label for="rating3">★</label>
-                <input type="radio" name="rating" id="rating2" value="2"><label for="rating2">★</label>
-                <input type="radio" name="rating" id="rating1" value="1"><label for="rating1">★</label>
+                {% for i in [5, 4, 3, 2, 1] %}
+                <input type="radio" name="rating" id="rating{{ i }}" value="{{ i }}"><label for="rating{{ i }}">★</label>
+                {% endfor %}
             </div>
         </div>
         <input type="text" id="keywords" placeholder="Keywords (comma-separated)">
