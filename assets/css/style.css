@@ -568,6 +568,13 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     cursor: default;
 }
 
+/* ========== Open Food Facts status ========== */
+#offf-status {
+    color: #888;
+    font-size: 0.8rem;
+    margin-top: -0.25rem;
+}
+
 /* ========== Toast ========== */
 #toast {
     position: fixed;

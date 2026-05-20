@@ -204,15 +204,29 @@ async function fillFormById(id) {
   }
 }
 
+function setOfffStatus(msg) {
+  const el = document.getElementById('offf-status');
+  el.textContent = msg;
+  el.hidden = !msg;
+}
+
 async function fillFromOpenFoodFacts(id) {
+  setOfffStatus('Searching Open Food Facts…');
   let data;
   try {
     const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${encodeURIComponent(id)}.json`);
     data = await response.json();
-  } catch (_) { return; }
+  } catch (_) {
+    setOfffStatus('Could not reach Open Food Facts.');
+    return;
+  }
 
-  if (data.status !== 1) return;
+  if (data.status !== 1) {
+    setOfffStatus('Not found in Open Food Facts.');
+    return;
+  }
 
+  setOfffStatus('');
   const p = data.product;
   if (p.product_name) document.getElementById('name').value = p.product_name;
   if (p.brands) document.getElementById('brand').value = p.brands.split(',')[0].trim();

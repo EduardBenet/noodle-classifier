@@ -1,5 +1,6 @@
 let allNoodles = [];
 let currentPage = 1;
+let currentData = [];
 const PAGE_SIZE = 10;
 
 async function list() {
@@ -13,11 +14,11 @@ function sortNoodles(items) {
   const val = document.getElementById('sort-by')?.value;
   if (!val) return items;
   const [field, dir] = val.split('-');
-  const key = field === 'spicy' ? 'spicy' : field;
-  return [...items].sort((a, b) => dir === 'asc' ? a[key] - b[key] : b[key] - a[key]);
+  return [...items].sort((a, b) => dir === 'asc' ? a[field] - b[field] : b[field] - a[field]);
 }
 
 function renderPagedList(data) {
+  currentData = data;
   const totalPages = Math.ceil(data.length / PAGE_SIZE);
   currentPage = Math.min(currentPage, totalPages || 1);
 
@@ -35,18 +36,6 @@ function renderPagedList(data) {
     <span>Page ${currentPage} of ${totalPages}</span>
     <button id="pg-next" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>
   `;
-
-  document.getElementById('pg-prev').addEventListener('click', () => {
-    currentPage--;
-    renderPagedList(data);
-    document.getElementById('tab-list').scrollIntoView({ behavior: 'smooth' });
-  });
-
-  document.getElementById('pg-next').addEventListener('click', () => {
-    currentPage++;
-    renderPagedList(data);
-    document.getElementById('tab-list').scrollIntoView({ behavior: 'smooth' });
-  });
 }
 
 function renderList(data, lname) {
@@ -82,5 +71,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('sort-by').addEventListener('change', () => {
     currentPage = 1;
     renderPagedList(sortNoodles(allNoodles));
+  });
+
+  document.getElementById('pagination').addEventListener('click', (e) => {
+    if (e.target.id === 'pg-prev') {
+      currentPage--;
+      renderPagedList(currentData);
+      document.getElementById('tab-list').scrollIntoView({ behavior: 'smooth' });
+    } else if (e.target.id === 'pg-next') {
+      currentPage++;
+      renderPagedList(currentData);
+      document.getElementById('tab-list').scrollIntoView({ behavior: 'smooth' });
+    }
   });
 });

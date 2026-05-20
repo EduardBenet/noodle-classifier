@@ -1,4 +1,3 @@
-let listLoaded = false;
 let overlayNoodle = null;
 
 document.querySelectorAll(".tab-btn").forEach(button => {
@@ -9,11 +8,6 @@ document.querySelectorAll(".tab-btn").forEach(button => {
     const target = button.getAttribute("data-tab");
     document.getElementById(`tab-${target}`).classList.add("active");
     button.classList.add("active");
-
-    if (target === "list" && !listLoaded) {
-      list();
-      listLoaded = true;
-    }
   });
 });
 
@@ -52,62 +46,14 @@ function hideOverlay() {
   document.getElementById("overlay").classList.remove("visible");
 }
 
-async function loadNoodleOfTheDay() {
-  const response = await fetch("/api/noodles");
-  const items = await response.json();
-  if (!items.length) return;
+function loadNoodleOfTheDay() {
+  if (!allNoodles.length) return;
   const today = new Date();
   const daySeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-  const noodle = items[daySeed % items.length];
-  showNoodleOverlay(noodle, "Noodle of the Day 🍜");
+  showNoodleOverlay(allNoodles[daySeed % allNoodles.length], "Noodle of the Day 🍜");
 }
 
-async function initAuth() {
-  const btn = document.getElementById("auth-btn");
-  const menu = document.getElementById("auth-menu");
-  const loginSection = document.getElementById("auth-menu-login");
-  const userSection = document.getElementById("auth-menu-user");
-  const usernameEl = document.getElementById("auth-username");
-
-  btn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    menu.hidden = !menu.hidden;
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!menu.hidden && !document.getElementById("auth-widget").contains(e.target)) {
-      menu.hidden = true;
-    }
-  });
-
-  try {
-    const res = await fetch("/.auth/me");
-    const data = await res.json();
-    const user = data.clientPrincipal;
-
-    if (user) {
-      const displayName = user.userDetails || user.userId;
-      usernameEl.textContent = displayName;
-      loginSection.hidden = true;
-      userSection.hidden = false;
-
-      const initial = displayName.charAt(0).toUpperCase();
-      btn.innerHTML = `<span class="auth-avatar" aria-hidden="true">${initial}</span>`;
-      btn.title = displayName;
-      btn.setAttribute("aria-label", "Account menu");
-
-      document.getElementById("list-tab-btn").hidden = false;
-      document.getElementById("add-tab-btn").hidden = false;
-      document.getElementById("overlay-edit").hidden = false;
-    }
-  } catch {
-    // not authenticated or endpoint unavailable — stay in logged-out state
-  }
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  list();
-  listLoaded = true;
+window.addEventListener("DOMContentLoaded", async () => {
+  await list();
   loadNoodleOfTheDay();
-  initAuth();
 });
