@@ -16,8 +16,8 @@ body {
 header {
     position: sticky;
     top: 0;
-    background: #fff;
-    border-bottom: 1px solid #ccc;
+    background: #ede6d8;
+    border-bottom: 1px solid #d0c4b0;
     padding: 0.65rem 1rem;
     z-index: 10;
     display: flex;
@@ -84,8 +84,8 @@ textarea {
     position: absolute;
     right: 0;
     top: calc(100% + 0.5rem);
-    background: #fff;
-    border: 1px solid #ddd;
+    background: #ede6d8;
+    border: 1px solid #d0c4b0;
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.12);
     min-width: 150px;
@@ -103,16 +103,16 @@ textarea {
 }
 
 #nav-dropdown a:hover {
-    background: #f5f5f5;
+    background: #d8cebf;
 }
 
 #nav-dropdown a + a {
-    border-top: 1px solid #eee;
+    border-top: 1px solid #d0c4b0;
 }
 
 #nav-dropdown a[aria-current="page"] {
     font-weight: 600;
-    background: #f9f9f9;
+    background: #e4d9c8;
 }
 
 /* ========== Home Page ========== */
@@ -128,10 +128,6 @@ textarea {
 }
 
 .site-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
     font-family: 'Playfair Display', serif;
     font-size: 2.8rem;
     font-weight: 700;
@@ -145,7 +141,7 @@ textarea {
     font-size: 1.05rem;
     line-height: 1.8;
     color: #5a4a38;
-    max-width: 660px;
+    max-width: 740px;
     margin: 0 auto 1.5rem;
 }
 
@@ -176,7 +172,6 @@ textarea {
 
 .noodle-of-the-day-section {
     text-align: left;
-    border-top: 1px solid #c8b89a;
     padding-top: 2rem;
 }
 
@@ -215,7 +210,7 @@ textarea {
 }
 
 .confirm-box {
-    background: #fff;
+    background: #f5f0e8;
     border-radius: 12px;
     padding: 1.5rem;
     max-width: 340px;
@@ -266,7 +261,7 @@ textarea {
 }
 
 #overlay-card {
-    background: #fff;
+    background: #f5f0e8;
     border-radius: 14px;
     padding: 1.5rem;
     max-width: 480px;
@@ -322,6 +317,9 @@ form button {
     font-size: 1rem;
     width: 100%;
     box-sizing: border-box;
+    background: #ede6d8;
+    border: 1px solid #c8b89a;
+    border-radius: 4px;
 }
 
 form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(.spice-row):not(.checkbox-row) {
@@ -404,9 +402,9 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
 .list-filters select {
     padding: 0.5rem;
     font-size: 1rem;
-    border: 1px solid #ccc;
+    border: 1px solid #c8b89a;
     border-radius: 6px;
-    background: #fff;
+    background: #ede6d8;
     box-sizing: border-box;
 }
 
@@ -428,7 +426,8 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
 }
 
 .card {
-    border: 1px solid #ccc;
+    border: 1px solid #d0c4b0;
+    background: #faf6f0;
     padding: 1rem;
     border-radius: 10px;
     display: flex;
@@ -613,8 +612,8 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     position: absolute;
     right: 0;
     top: calc(100% + 0.5rem);
-    background: #fff;
-    border: 1px solid #ddd;
+    background: #ede6d8;
+    border: 1px solid #d0c4b0;
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.12);
     min-width: 200px;
@@ -635,11 +634,11 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
 }
 
 #auth-menu a:hover {
-    background: #f5f5f5;
+    background: #d8cebf;
 }
 
 #auth-menu-login a + a {
-    border-top: 1px solid #eee;
+    border-top: 1px solid #d0c4b0;
 }
 
 #auth-menu-user {
@@ -671,15 +670,15 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
 
 #pagination button {
     padding: 0.4rem 0.9rem;
-    border: 1px solid #ccc;
+    border: 1px solid #c8b89a;
     border-radius: 6px;
-    background: #fff;
+    background: #ede6d8;
     cursor: pointer;
     font-size: 0.9rem;
 }
 
 #pagination button:hover:not(:disabled) {
-    background: #f0f0f0;
+    background: #d8cebf;
 }
 
 #pagination button:disabled {
@@ -747,7 +746,7 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     }
 
     .site-title {
-        font-size: 2rem;
+        font-size: 1.9rem;
     }
 
     .card {

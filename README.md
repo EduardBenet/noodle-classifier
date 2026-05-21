@@ -2,7 +2,7 @@
 
 A web app for cataloging and browsing instant noodle products. Users can search, filter, and add new products — including barcode scanning with auto-fill from OpenFoodFacts.
 
-**Stack:** Static frontend (HTML/CSS/JS) + Azure Functions (Node.js) + Azure Cosmos DB
+**Stack:** [Eleventy](https://www.11ty.dev/) (SSG) + Azure Static Web Apps + Azure Functions (Node.js) + Azure Cosmos DB
 
 ---
 
@@ -10,21 +10,32 @@ A web app for cataloging and browsing instant noodle products. Users can search,
 
 ```
 noodle-classifier/
-├── index.html              # Frontend entry point
-├── assets/
-│   ├── css/style.css       # Styles
-│   └── js/
-│       ├── app.js          # Tab navigation, overlays, Noodle of the Day
-│       ├── list.js         # Listing, sorting, filtering
-│       ├── search.js       # Search with 300ms debounce
-│       └── add.js          # Add form, barcode scanning, OpenFoodFacts integration
-├── api/                    # Azure Functions backend
-│   ├── host.json           # Functions runtime config (extension bundle)
-│   ├── package.json        # Node.js dependencies
+├── src/                        # Source files (input to Eleventy)
+│   ├── index.html              # Home page (Noodle of the Day + manifesto)
+│   ├── list.html               # Browse & search noodles (public)
+│   ├── add.html                # Add/edit noodles (authenticated only)
+│   ├── staticwebapp.config.json # Azure SWA route protection + auth config
+│   ├── _includes/
+│   │   ├── base.html           # Shared HTML shell (layout)
+│   │   └── header.html         # Sticky header with nav burger + auth widget
+│   └── assets/
+│       ├── css/style.css
+│       └── js/
+│           ├── home.js         # Noodle of the Day logic
+│           ├── list.js         # Listing, sorting, pagination
+│           ├── search.js       # Search with 300ms debounce
+│           ├── add.js          # Add form, barcode scanning, OpenFoodFacts
+│           └── auth.js         # Auth widget + burger menu
+├── _site/                      # Eleventy build output (gitignored, served by SWA)
+├── .eleventy.js                # Eleventy config
+├── package.json                # Root — Eleventy dev dependency + build scripts
+├── api/                        # Azure Functions backend
+│   ├── host.json
+│   ├── package.json
 │   └── src/functions/
-│       └── noodles.js      # HTTP function: GET / POST / PUT /api/noodles
+│       └── noodles.js          # HTTP function: GET / POST / PUT /api/noodles
 └── tests/
-    └── test-noodle.js      # Manual integration test (creates a test entry)
+    └── test-noodle.js          # Manual integration test
 ```
 
 ---
@@ -42,13 +53,16 @@ noodle-classifier/
 ### 1. Install dependencies
 
 ```bash
-cd api
+# Root (Eleventy)
 npm install
+
+# API
+cd api && npm install
 ```
 
 ### 2. Configure environment
 
-Create `api/local.settings.json` (this file is gitignored and only used locally):
+Create `api/local.settings.json` (gitignored, local only):
 
 ```json
 {
@@ -61,20 +75,27 @@ Create `api/local.settings.json` (this file is gitignored and only used locally)
 }
 ```
 
-> The `DATABASE_CONNECTION_STRING` is a Cosmos DB connection string. You can copy it from the Azure Portal under your Cosmos DB account > **Keys** > **Primary Connection String**.
+> Copy `DATABASE_CONNECTION_STRING` from the Azure Portal: Cosmos DB account → **Keys** → **Primary Connection String**.
 
-### 3. Start the API
+### 3. Build the frontend
+
+```bash
+npm run build       # one-off build → outputs to _site/
+npm run dev         # build + watch + local dev server (hot reload)
+```
+
+Eleventy serves the dev server at `http://localhost:8080`. The `_site/` directory is the build output and is gitignored.
+
+### 4. Start the API
 
 ```bash
 cd api
-npm start        # runs: func start
+npm start           # runs: func start
 ```
 
 The API will be available at `http://localhost:7071/api/noodles`.
 
-### 4. Serve the frontend
-
-Open `index.html` directly in a browser, or use the [VS Code Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension.
+> **Note:** when running locally via `npm run dev`, API calls to `/api/noodles` won't resolve unless you also run the Functions host. For read-only browsing the frontend works standalone; write operations require the API.
 
 ### Debugging in VS Code
 
@@ -82,15 +103,50 @@ Press **F5** — the pre-configured launch task starts `func host start` and att
 
 ---
 
+## How Eleventy Works Here
+
+[Eleventy](https://www.11ty.dev/) (11ty) is a static site generator used to eliminate repeated HTML across pages. The key ideas:
+
+- **Input:** `src/` — HTML files with [Nunjucks](https://mozilla.github.io/nunjucks/) templating
+- **Output:** `_site/` — plain static HTML ready to serve
+- **Layouts:** `src/_includes/base.html` wraps every page with the shared `<head>`, header, and footer scripts
+- **Includes:** `src/_includes/header.html` is the shared sticky nav, included once by the layout
+- **Front matter:** each page declares its layout, title, active nav item, and which JS files to load:
+
+```yaml
+---
+layout: base.html
+title: "Add Noodle 🍜"
+currentPage: "add"
+loginRedirect: "/add.html"
+localScripts:
+  - assets/js/add.js
+---
+```
+
+- **Passthrough copy:** `assets/` and `staticwebapp.config.json` are copied to `_site/` as-is
+- **Config:** `.eleventy.js` at the repo root
+
+---
+
+## Authentication
+
+Authentication is handled by Azure Static Web Apps built-in auth (no custom code):
+
+- **GitHub** and **Entra ID (AAD)** are configured as providers
+- The `/add` and `/add.html` routes are restricted to `authenticated` role in `staticwebapp.config.json`; unauthenticated requests are redirected to Entra ID login
+- The auth widget in the header reads `/.auth/me` to determine login state
+- Post-login/logout redirects are controlled per-page via the `loginRedirect` / `logoutRedirect` front matter variables
+
+---
+
 ## API Reference
 
-All endpoints are served at `/api/noodles` with `authLevel: anonymous`.
+All endpoints are served at `/api/noodles` with `authLevel: anonymous` (Azure SWA enforces auth at the route level before requests reach the function).
 
 ### GET /api/noodles
 
-Returns all noodles.
-
-**Query parameters:**
+Returns all noodles, or a filtered subset.
 
 | Parameter | Description |
 |-----------|-------------|
@@ -98,24 +154,20 @@ Returns all noodles.
 | `search`  | Case-insensitive search across `name` and `brand` |
 
 ```bash
-# All noodles
 GET /api/noodles
-
-# Search
 GET /api/noodles?search=indomie
-
-# By ID
 GET /api/noodles?id=8991701051148
 ```
 
 ### POST /api/noodles
 
-Create a new noodle. Returns `201` with the created document.
+Create a new noodle. Requires authentication (`x-ms-client-principal` header, injected by SWA). Returns `201`.
 
-```bash
-POST /api/noodles
-Content-Type: application/json
+### PUT /api/noodles
 
+Upsert an existing noodle. Same auth requirement and body shape as POST.
+
+```json
 {
   "id": "8991701051148",
   "name": "Mi Goreng",
@@ -130,34 +182,28 @@ Content-Type: application/json
 }
 ```
 
-### PUT /api/noodles
-
-Upsert (create or update) a noodle. Same body as POST.
-
 ---
 
 ## Data Model
 
-| Field         | Type             | Description                      |
-|---------------|------------------|----------------------------------|
-| `id`          | `string`         | Barcode or unique product ID     |
-| `name`        | `string`         | Product name                     |
-| `brand`       | `string`         | Brand name                       |
-| `price`       | `number`         | Price (local currency)           |
-| `rating`      | `number` (0–5)   | Quality rating                   |
-| `spicy`       | `number` (0–5)   | Spice level                      |
-| `hasSoup`     | `boolean`        | Whether the product includes soup|
-| `description` | `string`         | Free-text description            |
-| `keywords`    | `string[]`       | Search tags                      |
-| `image`       | `string`         | URL or filename of product image |
+| Field         | Type           | Description                       |
+|---------------|----------------|-----------------------------------|
+| `id`          | `string`       | Barcode or unique product ID      |
+| `name`        | `string`       | Product name                      |
+| `brand`       | `string`       | Brand name                        |
+| `price`       | `number`       | Price in GBP                      |
+| `rating`      | `number` (0–5) | Quality rating                    |
+| `spicy`       | `number` (0–5) | Spice level                       |
+| `hasSoup`     | `boolean`      | Whether the product includes soup |
+| `description` | `string`       | Free-text description             |
+| `keywords`    | `string[]`     | Search tags                       |
+| `image`       | `string`       | URL or filename of product image  |
 
 ---
 
 ## Cosmos DB Setup
 
-The function connects to a Cosmos DB database named `noodles`, container `packages`.
-
-Create these in the Azure Portal or with the Azure CLI:
+Database: `noodles`, container: `packages`, partition key: `/id`.
 
 ```bash
 az cosmosdb create --name <account-name> --resource-group <rg>
@@ -171,47 +217,23 @@ az cosmosdb sql container create \
 
 ---
 
-## Azure Functions Configuration
-
-### host.json
-
-```json
-{
-  "version": "2.0",
-  "extensionBundle": {
-    "id": "Microsoft.Azure.Functions.ExtensionBundle",
-    "version": "[4.*, 5.0.0)"
-  }
-}
-```
-
-**Extension Bundle** — Instead of manually installing individual Azure Functions binding extensions (HTTP, Timer, Cosmos DB trigger, etc.), the runtime downloads a pre-tested bundle of compatible extensions. The version range `[4.*, 5.0.0)` means "latest 4.x bundle, but not 5.0 or higher". The runtime updates the bundle automatically on startup within this range.
-
-See the [official documentation](https://learn.microsoft.com/en-us/azure/azure-functions/extension-bundles) for available bundle versions and the extensions each one includes.
-
-### Runtime
-
-- **Runtime version:** `~4` (Azure Functions v4)
-- **Language:** JavaScript (Node.js v4 programming model)
-- **Auth level:** `anonymous` — no API key required
-
----
-
 ## Deployment
 
-The `api/` subdirectory is the deployable unit. The VS Code [Azure Functions extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) is pre-configured (see `.vscode/settings.json`):
+The app is deployed via the [Azure Static Web Apps GitHub Action](https://docs.microsoft.com/en-us/azure/static-web-apps/github-actions-workflow):
 
-1. Open the Azure Functions panel in VS Code.
-2. Click **Deploy to Function App**.
-3. Set `DATABASE_CONNECTION_STRING` in the Function App's **Application Settings** (Azure Portal > Function App > Configuration).
+- `app_location: "/"` — repo root (where `package.json` and `.eleventy.js` live)
+- `output_location: "_site"` — Eleventy's build output
+- `api_location: "api"` — Azure Functions source
 
-Pre-deploy, dev dependencies are pruned automatically (`npm prune --production`).
+The Oryx build system detects `package.json` at the root, runs `npm run build` (which runs `eleventy`), and serves `_site/`.
+
+Set `DATABASE_CONNECTION_STRING` in the Function App's **Application Settings** (Azure Portal → Function App → Configuration).
 
 ---
 
 ## Tests
 
-`tests/test-noodle.js` is a manual integration script that writes a test entry to Cosmos DB. It requires a `.env` file at the repo root (not `local.settings.json`):
+`tests/test-noodle.js` is a manual integration script that writes a test entry to Cosmos DB. Requires a `.env` file at the repo root:
 
 ```bash
 node tests/test-noodle.js
