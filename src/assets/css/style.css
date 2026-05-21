@@ -838,6 +838,10 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     text-align: center;
 }
 
+.highlight-card:hover {
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}
+
 .highlight-card img {
     max-width: 80px;
     height: auto;

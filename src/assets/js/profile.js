@@ -80,6 +80,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   highlights.forEach(({ label, noodle }) => {
     const section = document.createElement("div");
     section.className = "highlight-card";
+    section.style.cursor = "pointer";
+    section.addEventListener("click", () => showNoodleOverlay(noodle));
 
     const heading = document.createElement("div");
     heading.className = "highlight-label";
