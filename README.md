@@ -223,19 +223,9 @@ The app is deployed via the [Azure Static Web Apps GitHub Action](https://docs.m
 - `output_location: "_site"` — Eleventy's build output
 - `api_location: "api"` — Azure Functions source
 
-The Oryx build system detects `package.json` at the root, runs `npm run build` (which runs `eleventy`), and serves `_site/`.
+The Oryx build system detects `paskage.json` at the root, runs `npm run build` (which runs `eleventy`), and serves `_site/`.
 
 Set `DATABASE_CONNECTION_STRING` in the Function App's **Application Settings** (Azure Portal → Function App → Configuration).
-
----
-
-## Tests
-
-`tests/test-noodle.js` is a manual integration script that writes a test entry to Cosmos DB. Requires a `.env` file at the repo root:
-
-```bash
-node tests/test-noodle.js
-```
 
 ---
 
