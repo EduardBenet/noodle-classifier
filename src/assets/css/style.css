@@ -905,8 +905,8 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
 
     .card img {
         grid-area: image;
-        width: 70%;
-        height: auto;
+        width: 72px;
+        height: 72px;
         margin: 0.5rem 0;
     }
 
