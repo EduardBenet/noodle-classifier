@@ -99,10 +99,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     const meta = document.createElement("div");
     meta.className = "rating-spice-row";
-    meta.innerHTML = `
-      <div class="stars">${"★".repeat(noodle.rating)}${"☆".repeat(5 - noodle.rating)}</div>
-      <div class="spice">${"🌶️".repeat(noodle.spicy)}${'<span class="inactive">🌶️</span>'.repeat(5 - noodle.spicy)}</div>
-    `;
+    meta.innerHTML = ratingSpiceHTML(noodle.rating, noodle.spicy);
 
     const price = document.createElement("div");
     price.className = "price";

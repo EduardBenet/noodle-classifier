@@ -15,10 +15,7 @@ function showNoodleOverlay(noodle) {
 
   const ratingSpiceRow = document.createElement('div');
   ratingSpiceRow.className = 'rating-spice-row';
-  ratingSpiceRow.innerHTML = `
-    <div class="stars">${'★'.repeat(noodle.rating)}${'☆'.repeat(5 - noodle.rating)}</div>
-    <div class="spice">${'🌶️'.repeat(noodle.spicy)}${'<span class="inactive">🌶️</span>'.repeat(5 - noodle.spicy)}</div>
-  `;
+  ratingSpiceRow.innerHTML = ratingSpiceHTML(noodle.rating, noodle.spicy);
 
   const desc = document.createElement('small');
   desc.textContent = noodle.description;

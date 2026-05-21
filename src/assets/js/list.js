@@ -1,6 +1,7 @@
 let allNoodles = [];
 let currentPage = 1;
 let currentData = [];
+let debounceTimeout;
 const PAGE_SIZE = 10;
 
 async function list() {
@@ -54,47 +55,11 @@ function renderPagedList(data) {
   `;
 }
 
-function buildCard(noodle) {
-  const img = document.createElement('img');
-  img.src = noodle.image;
-  img.alt = noodle.name;
-  img.loading = 'lazy';
-
-  const cardTitle = document.createElement('div');
-  cardTitle.className = 'card-title';
-  const strong = document.createElement('strong');
-  strong.textContent = noodle.name;
-  const brandSpan = document.createElement('span');
-  brandSpan.className = 'brand';
-  brandSpan.textContent = `(${noodle.brand})`;
-  cardTitle.append(strong, ' ', brandSpan);
-
-  const price = document.createElement('div');
-  price.className = 'price';
-  price.textContent = `£${noodle.price.toFixed(2)}`;
-
-  const ratingSpiceRow = document.createElement('div');
-  ratingSpiceRow.className = 'rating-spice-row';
-  ratingSpiceRow.innerHTML = `
-    <div class="stars">${'★'.repeat(noodle.rating)}${'☆'.repeat(5 - noodle.rating)}</div>
-    <div class="spice">${'🌶️'.repeat(noodle.spicy)}${'<span class="inactive">🌶️</span>'.repeat(5 - noodle.spicy)}</div>
-  `;
-
-  const content = document.createElement('div');
-  content.className = 'card-content';
-  content.append(cardTitle, price, ratingSpiceRow);
-
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.append(img, content);
-  return card;
-}
-
 function renderList(data, lname) {
   const list = document.getElementById(lname);
   list.innerHTML = '';
   data.forEach(noodle => {
-    const card = buildCard(noodle);
+    const card = buildNoodleCard(noodle);
     card.addEventListener('click', () => showNoodleOverlay(noodle));
     list.appendChild(card);
   });
@@ -104,6 +69,22 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('sort-by').addEventListener('change', () => {
     currentPage = 1;
     renderPagedList(sortNoodles(allNoodles));
+  });
+
+  document.getElementById('search').addEventListener('input', (e) => {
+    const searchTerm = e.target.value.trim();
+    clearTimeout(debounceTimeout);
+    if (!searchTerm) {
+      currentPage = 1;
+      renderPagedList(sortNoodles(allNoodles));
+      return;
+    }
+    debounceTimeout = setTimeout(async () => {
+      const response = await fetch(`/api/noodles?search=${encodeURIComponent(searchTerm)}`);
+      const items = await response.json();
+      document.getElementById('pagination').hidden = true;
+      renderList(items, 'noodle-list');
+    }, 300);
   });
 
   document.getElementById('pagination').addEventListener('click', (e) => {

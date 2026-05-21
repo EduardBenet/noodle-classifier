@@ -16,6 +16,7 @@
 
 <body>
     {% include "header.html" %}
+    {% include "overlay.html" %}
 
     {{ content | safe }}
 
@@ -24,6 +25,8 @@
     {% for script in localScripts %}
     <script src="{{ script }}"></script>
     {% endfor %}
+    <script src="assets/js/cards.js"></script>
+    <script src="assets/js/overlay.js"></script>
     <script src="assets/js/auth.js"></script>
 </body>
 
