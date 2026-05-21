@@ -30,12 +30,10 @@ noodle-classifier/
 ├── .eleventy.js                # Eleventy config
 ├── package.json                # Root — Eleventy dev dependency + build scripts
 ├── api/                        # Azure Functions backend
-│   ├── host.json
-│   ├── package.json
-│   └── src/functions/
-│       └── noodles.js          # HTTP function: GET / POST / PUT /api/noodles
-└── tests/
-    └── test-noodle.js          # Manual integration test
+    ├── host.json
+    ├── package.json
+    └── src/functions/
+        └── noodles.js          # HTTP function: GET / POST / PUT /api/noodles
 ```
 
 ---
