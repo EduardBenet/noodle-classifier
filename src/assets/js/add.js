@@ -236,6 +236,8 @@ document.addEventListener('DOMContentLoaded', () => {
     fillFormById(id);
   }
 
+  document.getElementById('scanner-btn').addEventListener('click', startScanner);
+
   document.getElementById('product-id').addEventListener('input', () => {
     isExistingNoodle = false;
   });
