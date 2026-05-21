@@ -9,7 +9,7 @@ body {
     font-family: sans-serif;
     margin: 0;
     padding: 0;
-    background: #f9f9f9;
+    background: #f5f0e8;
     color: #333;
 }
 
@@ -119,7 +119,7 @@ textarea {
 .home-main {
     max-width: 800px;
     margin: 0 auto;
-    padding: 3rem 1rem 2rem;
+    padding: 4rem 1rem 2rem;
     text-align: center;
 }
 
@@ -127,44 +127,76 @@ textarea {
     margin-bottom: 3rem;
 }
 
-.hero h1 {
-    font-size: 2rem;
-    margin: 0 0 0.5rem;
+.site-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin: 0 0 1.5rem;
+    letter-spacing: -0.01em;
 }
 
 .hero p {
-    color: #666;
-    margin: 0 0 1.5rem;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #5a4a38;
+    max-width: 660px;
+    margin: 0 auto 1.5rem;
+}
+
+.hero hr {
+    border: none;
+    border-top: 1px solid #c8b89a;
+    max-width: 180px;
+    margin: 1.5rem auto;
 }
 
 .btn-list {
     display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: #333;
-    color: #fff;
+    padding: 0.55rem 1.2rem;
+    background: transparent;
+    color: #5a3e28;
     text-decoration: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: background 0.2s;
+    border: 1.5px solid #5a3e28;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    transition: background 0.2s, color 0.2s;
 }
 
 .btn-list:hover {
-    background: #555;
+    background: #5a3e28;
+    color: #f5f0e8;
 }
 
 .noodle-of-the-day-section {
     text-align: left;
+    border-top: 1px solid #c8b89a;
+    padding-top: 2rem;
 }
 
 .noodle-of-the-day-section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
     text-align: center;
-    margin-bottom: 1rem;
+    color: #8a6a4a;
+    margin-bottom: 1.25rem;
 }
 
 #noodle-of-the-day .card {
     cursor: default;
     max-width: 480px;
     margin: 0 auto;
+    background: #fff8f0;
+    border-color: #e0ccb0;
 }
 
 /* ========== Confirm Dialog ========== */
@@ -710,6 +742,14 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
 
 /* ========== Responsive ========== */
 @media (max-width: 600px) {
+    .hero p {
+        text-align: justify;
+    }
+
+    .site-title {
+        font-size: 2rem;
+    }
+
     .card {
         flex-direction: column;
         align-items: center;
