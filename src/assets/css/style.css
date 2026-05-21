@@ -186,7 +186,6 @@ textarea {
 }
 
 #noodle-of-the-day .card {
-    cursor: default;
     max-width: 480px;
     margin: 0 auto;
     background: #fff8f0;
@@ -441,9 +440,10 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
 }
 
 .card img {
-    max-width: 100px;
-    height: auto;
+    width: 72px;
+    height: 72px;
     object-fit: cover;
+    border-radius: 6px;
     flex-shrink: 0;
 }
 
@@ -458,9 +458,6 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     text-align: center;
 }
 
-.card-content small {
-    text-align: justify;
-}
 
 .price {
     font-weight: bold;
@@ -469,11 +466,11 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
 
 .stars {
     color: gold;
-    font-size: 1.2em;
+    font-size: 1.1rem;
 }
 
 .spice {
-    font-size: 1.2em;
+    font-size: 0.95rem;
     line-height: 1.2;
 }
 

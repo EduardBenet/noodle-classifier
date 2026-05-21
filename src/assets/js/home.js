@@ -42,6 +42,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     const card = document.createElement('div');
     card.className = 'card';
+    card.addEventListener('click', () => showNoodleOverlay(noodle));
     card.append(img, cardContent);
 
     document.getElementById("noodle-of-the-day").replaceChildren(card);
