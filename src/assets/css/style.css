@@ -16,7 +16,7 @@ body {
 header {
     position: sticky;
     top: 0;
-    background: #ede6d8;
+    background: #fdf9f4;
     border-bottom: 1px solid #d0c4b0;
     padding: 0.65rem 1rem;
     z-index: 10;
@@ -84,7 +84,7 @@ textarea {
     position: absolute;
     right: 0;
     top: calc(100% + 0.5rem);
-    background: #ede6d8;
+    background: #fdf9f4;
     border: 1px solid #d0c4b0;
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.12);
@@ -316,7 +316,7 @@ form button {
     font-size: 1rem;
     width: 100%;
     box-sizing: border-box;
-    background: #ede6d8;
+    background: #fdf9f4;
     border: 1px solid #c8b89a;
     border-radius: 4px;
 }
@@ -403,7 +403,7 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     font-size: 1rem;
     border: 1px solid #c8b89a;
     border-radius: 6px;
-    background: #ede6d8;
+    background: #fdf9f4;
     box-sizing: border-box;
 }
 
@@ -611,7 +611,7 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     position: absolute;
     right: 0;
     top: calc(100% + 0.5rem);
-    background: #ede6d8;
+    background: #fdf9f4;
     border: 1px solid #d0c4b0;
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.12);
@@ -671,7 +671,7 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     padding: 0.4rem 0.9rem;
     border: 1px solid #c8b89a;
     border-radius: 6px;
-    background: #ede6d8;
+    background: #fdf9f4;
     cursor: pointer;
     font-size: 0.9rem;
 }
