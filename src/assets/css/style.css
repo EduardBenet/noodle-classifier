@@ -482,6 +482,21 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     filter: grayscale(100%);
 }
 
+.card-stats {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    width: 100%;
+}
+
+.card-stats .price {
+    text-align: center;
+}
+
+.card-stats .spice {
+    text-align: right;
+}
+
 .rating-spice-row {
     display: flex;
     gap: 0.5rem;
@@ -888,14 +903,5 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
         margin-bottom: 0.25rem;
     }
 
-    .rating-spice-row {
-        justify-content: space-between;
-        width: 100%;
-    }
-
-    .rating-spice-row .stars,
-    .rating-spice-row .spice {
-        flex: 1 1 auto;
-    }
 
 }
