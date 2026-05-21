@@ -19,10 +19,18 @@ function sortNoodles(items) {
   const val = document.getElementById('sort-by')?.value;
   if (!val) return items;
   const [field, dir] = val.split('-');
+  const asc = dir === 'asc';
   return [...items].sort((a, b) => {
-    const primary = dir === 'asc' ? a[field] - b[field] : b[field] - a[field];
-    if (primary !== 0 || field === 'spicy') return primary;
-    return a.spicy - b.spicy;
+    const primary = asc ? a[field] - b[field] : b[field] - a[field];
+    if (primary !== 0) return primary;
+    if (field !== 'spicy') {
+      const spicyTie = asc ? b.spicy - a.spicy : a.spicy - b.spicy;
+      if (spicyTie !== 0) return spicyTie;
+    }
+    if (field !== 'price') {
+      return asc ? b.price - a.price : a.price - b.price;
+    }
+    return 0;
   });
 }
 
