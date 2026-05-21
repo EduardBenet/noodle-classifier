@@ -432,7 +432,7 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     padding: 1rem;
     border-radius: 10px;
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 1rem;
     cursor: pointer;
     transition: box-shadow 0.15s;
@@ -894,17 +894,33 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     }
 
     .card {
-        flex-direction: column;
-        align-items: center;
+        display: grid;
+        grid-template-areas:
+            "title"
+            "image"
+            "stats";
+        grid-template-columns: 1fr;
+        justify-items: center;
     }
 
     .card img {
-        max-width: 70%;
+        grid-area: image;
+        width: 70%;
         height: auto;
-        margin-bottom: 0.25rem;
+        margin: 0.5rem 0;
     }
 
     .card-content {
+        display: contents;
+    }
+
+    .card-title {
+        grid-area: title;
+        width: 100%;
+    }
+
+    .card-stats {
+        grid-area: stats;
         width: 100%;
     }
 
