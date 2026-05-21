@@ -1,0 +1,38 @@
+---
+layout: base.html
+title: "Profile 🍜"
+currentPage: "profile"
+loginRedirect: "/profile.html"
+logoutRedirect: "/"
+permalink: profile.html
+localScripts:
+  - assets/js/profile.js
+---
+
+<main>
+    <h1 class="profile-heading">Collection Stats</h1>
+
+    <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><span class="stat-value" id="stat-total">—</span><span class="stat-label">Noodles indexed</span></div>
+        <div class="stat-card"><span class="stat-value" id="stat-avg-rating">—</span><span class="stat-label">Avg rating</span></div>
+        <div class="stat-card"><span class="stat-value" id="stat-avg-spice">—</span><span class="stat-label">Avg spice</span></div>
+        <div class="stat-card"><span class="stat-value" id="stat-avg-price">—</span><span class="stat-label">Avg price</span></div>
+        <div class="stat-card"><span class="stat-value" id="stat-price-range">—</span><span class="stat-label">Price range</span></div>
+        <div class="stat-card"><span class="stat-value" id="stat-soup">—</span><span class="stat-label">Soup / dry</span></div>
+    </div>
+
+    <section class="profile-section">
+        <h2 class="profile-section-title">Rating distribution</h2>
+        <div id="rating-dist"></div>
+    </section>
+
+    <section class="profile-section">
+        <h2 class="profile-section-title">Top brands</h2>
+        <div id="top-brands"></div>
+    </section>
+
+    <section class="profile-section">
+        <h2 class="profile-section-title">Highlights</h2>
+        <div class="highlights-grid" id="highlights"></div>
+    </section>
+</main>

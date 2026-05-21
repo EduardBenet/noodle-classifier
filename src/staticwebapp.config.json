@@ -7,6 +7,14 @@
     {
       "route": "/add.html",
       "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/profile",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/profile.html",
+      "allowedRoles": ["authenticated"]
     }
   ],
   "responseOverrides": {
