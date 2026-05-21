@@ -2,19 +2,27 @@
   "routes": [
     {
       "route": "/add",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": [
+        "owner"
+      ]
     },
     {
       "route": "/add.html",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": [
+        "authenticated"
+      ]
     },
     {
       "route": "/profile",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": [
+        "authenticated"
+      ]
     },
     {
       "route": "/profile.html",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": [
+        "authenticated"
+      ]
     }
   ],
   "responseOverrides": {
