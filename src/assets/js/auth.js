@@ -44,8 +44,15 @@ window.addEventListener("DOMContentLoaded", async () => {
       btn.title = displayName;
       btn.setAttribute("aria-label", "Account menu");
 
-      document.getElementById("nav-add")?.removeAttribute("hidden");
-      document.getElementById("overlay-edit")?.removeAttribute("hidden");
+      const isOwner = user.userRoles?.includes('owner');
+      window.currentUser = { userId: user.userId, userDetails: user.userDetails, isOwner };
+
+      const navAdd = document.getElementById("nav-add");
+      if (navAdd) {
+        navAdd.href = isOwner ? 'add.html' : 'submit.html';
+        navAdd.removeAttribute("hidden");
+      }
+      if (isOwner) document.getElementById("overlay-edit")?.removeAttribute("hidden");
     }
   } catch {
     // not authenticated or endpoint unavailable — stay in logged-out state
