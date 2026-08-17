@@ -1,0 +1,18 @@
+version: 2
+updates:
+  # Keeps actions/checkout, Azure/static-web-apps-deploy and any future
+  # actions in .github/workflows on current versions.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+    groups:
+      # One PR for all action bumps rather than one per action.
+      actions:
+        patterns:
+          - "*"

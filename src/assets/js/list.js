@@ -1,6 +1,8 @@
 let allNoodles = [];
 let currentPage = 1;
 let currentData = [];
+// Non-null while a search is active, so a re-render knows which set to show.
+let searchResults = null;
 let debounceTimeout;
 const PAGE_SIZE = 10;
 
@@ -70,7 +72,22 @@ function renderPagedList(data) {
 }
 
 // Lets the overlay refresh the visible cards after a rating is saved.
-window.refreshNoodleCards = () => renderPagedList(currentData);
+// `updated` is the noodle the overlay just changed: search results are freshly
+// fetched objects, so the copy held in allNoodles has to be patched too or the
+// new average is lost as soon as the search is cleared.
+window.refreshNoodleCards = (updated) => {
+  if (updated) {
+    const cached = allNoodles.find(n => n.id === updated.id);
+    if (cached && cached !== updated) Object.assign(cached, updated);
+  }
+  // Re-rendering the paged list while a search is active would throw the
+  // results away and bring the pagination back.
+  if (searchResults) {
+    renderList(searchResults, 'noodle-list');
+  } else {
+    renderPagedList(currentData);
+  }
+};
 
 function renderList(data, lname) {
   const list = document.getElementById(lname);
@@ -92,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchTerm = e.target.value.trim();
     clearTimeout(debounceTimeout);
     if (!searchTerm) {
+      searchResults = null;
       currentPage = 1;
       renderPagedList(sortNoodles(allNoodles));
       return;
@@ -100,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const response = await fetch(`/api/noodles?search=${encodeURIComponent(searchTerm)}`);
         const items = await response.json();
+        searchResults = items;
         document.getElementById('pagination').hidden = true;
         renderList(items, 'noodle-list');
       } catch {

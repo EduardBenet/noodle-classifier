@@ -4,10 +4,9 @@ const { parsePrincipal } = require('../lib/auth');
 const { withRatingDefaults } = require('../lib/noodle');
 const {
   submissions: submissionsContainer,
-  packages: packagesContainer,
-  ratings: ratingsContainer,
-  aggregates: aggregatesContainer
+  packages: packagesContainer
 } = require('../lib/cosmos');
+const { applyRating } = require('../lib/rating');
 
 app.http('submissions', {
   methods: ['GET', 'POST', 'PUT'],
@@ -48,18 +47,29 @@ app.http('submissions', {
       if (action === 'approve') {
         if (!noodle) return { status: 400, jsonBody: { error: 'noodle data required for approve' } };
         const approved = withRatingDefaults(noodle);
-        const ops = [
-          packagesContainer.items.upsert(approved),
-          submissionsContainer.item(id, id).delete()
-        ];
+
+        // Sequential, not Promise.all: publishing must succeed before the
+        // submission is dropped, or a failure loses the queue entry too.
+        await packagesContainer.items.upsert(approved);
+
+        // applyRating rather than a blind aggregate upsert — if this noodle
+        // already exists and carries community ratings (the same barcode can
+        // be queued twice), overwriting would reset ratingCount to 1 and
+        // discard every real rating.
         if (approved.id) {
-          const ratingId = `${user.userId}_${approved.id}`;
-          ops.push(
-            ratingsContainer.items.upsert({ id: ratingId, userId: user.userId, noodleId: approved.id, rating: approved.rating, spicy: approved.spicy, ratedAt: new Date().toISOString() }),
-            aggregatesContainer.items.upsert({ id: approved.id, avgRating: approved.rating, avgSpicy: approved.spicy, ratingCount: 1 })
-          );
+          await applyRating({
+            userId: user.userId,
+            noodleId: approved.id,
+            rating: approved.rating,
+            spicy: approved.spicy
+          });
         }
-        await Promise.all(ops);
+
+        // A double-clicked Approve would otherwise 404 here and report a 500
+        // for work that actually succeeded.
+        await submissionsContainer.item(id, id).delete().catch(err => {
+          if (err.code !== 404) throw err;
+        });
         return { jsonBody: { ok: true } };
       }
 

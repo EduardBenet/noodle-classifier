@@ -42,9 +42,18 @@ async function save(method) {
   isExistingNoodle = false;
 }
 
+// Never rejects: called from event handlers, where an unhandled rejection
+// would silently do nothing.
 async function fillFormById(id) {
-  const response = await fetch(`/api/noodles?id=${encodeURIComponent(id)}`);
-  const items = await response.json();
+  let items;
+  try {
+    const response = await fetch(`/api/noodles?id=${encodeURIComponent(id)}`);
+    if (!response.ok) throw new Error(response.status);
+    items = await response.json();
+  } catch {
+    showToast('Could not look that up — you can still fill it in.', 'error');
+    return;
+  }
 
   if (items.length) {
     isExistingNoodle = true;

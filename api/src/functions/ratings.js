@@ -5,8 +5,7 @@ const {
   aggregates: aggregatesContainer,
   packages: packagesContainer
 } = require('../lib/cosmos');
-
-const MAX_RETRIES = 3;
+const { applyRating, parseScore, SCORE_MIN, SCORE_MAX } = require('../lib/rating');
 
 // Every noodle the caller has rated, joined with the noodle document and the
 // community aggregate. `ratings` is partitioned by userId, so the first query
@@ -62,57 +61,20 @@ app.http('ratings', {
     }
 
     const { noodleId, rating, spicy } = await request.json();
-    if (!noodleId || rating == null || spicy == null) {
-      return { status: 400, jsonBody: { error: 'noodleId, rating and spicy are required' } };
-    }
-
-    const ratingId = `${userId}_${noodleId}`;
-
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      const [existingRatingResp, existingAggResp] = await Promise.all([
-        ratingsContainer.item(ratingId, userId).read().catch(() => null),
-        aggregatesContainer.item(noodleId, noodleId).read().catch(() => null)
-      ]);
-
-      const existingRating = existingRatingResp?.resource ?? null;
-      const existingAgg = existingAggResp?.resource ?? null;
-
-      let newAvgRating, newAvgSpicy, newCount;
-      if (!existingAgg) {
-        newAvgRating = rating;
-        newAvgSpicy = spicy;
-        newCount = 1;
-      } else if (existingRating) {
-        newCount = existingAgg.ratingCount;
-        newAvgRating = (existingAgg.avgRating * newCount - existingRating.rating + rating) / newCount;
-        newAvgSpicy  = (existingAgg.avgSpicy  * newCount - existingRating.spicy  + spicy)  / newCount;
-      } else {
-        newCount = existingAgg.ratingCount + 1;
-        newAvgRating = (existingAgg.avgRating * existingAgg.ratingCount + rating) / newCount;
-        newAvgSpicy  = (existingAgg.avgSpicy  * existingAgg.ratingCount + spicy)  / newCount;
-      }
-
-      const newAgg = {
-        id: noodleId,
-        avgRating: Math.round(newAvgRating * 100) / 100,
-        avgSpicy:  Math.round(newAvgSpicy  * 100) / 100,
-        ratingCount: newCount
+    const score = parseScore(rating);
+    const heat = parseScore(spicy);
+    if (!noodleId || score === null || heat === null) {
+      return {
+        status: 400,
+        jsonBody: { error: `noodleId is required; rating and spicy must be whole numbers from ${SCORE_MIN} to ${SCORE_MAX}` }
       };
-
-      try {
-        await Promise.all([
-          ratingsContainer.items.upsert({ id: ratingId, userId, noodleId, rating, spicy, ratedAt: new Date().toISOString() }),
-          existingAgg
-            ? aggregatesContainer.item(noodleId, noodleId).replace(newAgg, { accessCondition: { type: 'IfMatch', condition: existingAgg._etag } })
-            : aggregatesContainer.items.create(newAgg)
-        ]);
-        // Return what was stored, not the raw maths, so the caller's copy
-        // matches a subsequent read.
-        return { status: 200, jsonBody: { avgRating: newAgg.avgRating, avgSpicy: newAgg.avgSpicy, ratingCount: newAgg.ratingCount } };
-      } catch (err) {
-        if ((err.code === 409 || err.code === 412) && attempt < MAX_RETRIES - 1) continue;
-        throw err;
-      }
     }
+
+    // Returns what was stored, so the caller's copy matches a later read.
+    const agg = await applyRating({ userId, noodleId, rating: score, spicy: heat });
+    return {
+      status: 200,
+      jsonBody: { avgRating: agg.avgRating, avgSpicy: agg.avgSpicy, ratingCount: agg.ratingCount }
+    };
   }
 });

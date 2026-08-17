@@ -1,7 +1,8 @@
 const { app } = require('@azure/functions');
 const { parsePrincipal } = require('../lib/auth');
 const { withRatingDefaults } = require('../lib/noodle');
-const { packages, ratings, aggregates } = require('../lib/cosmos');
+const { packages, aggregates } = require('../lib/cosmos');
+const { applyRating } = require('../lib/rating');
 
 function withAggregate(noodle, agg) {
   return agg ? { ...noodle, avgRating: agg.avgRating, avgSpicy: agg.avgSpicy, ratingCount: agg.ratingCount } : noodle;
@@ -55,23 +56,19 @@ app.http('noodles', {
       return { jsonBody: await mergeAggregates(resources) };
     }
 
-    let isOwner = false, userId;
-    if (request.method === 'POST' || request.method === 'PUT') {
-      const principal = parsePrincipal(request);
-      isOwner = principal?.userRoles?.includes('owner') ?? false;
-      userId = principal?.userId;
-      if (!isOwner) return { status: 403, jsonBody: { error: 'Forbidden' } };
-    }
+    // 401 and 403 mean different things to the client: the add form offers a
+    // login prompt on 401, and an expired session must not look like a
+    // permissions problem.
+    const principal = parsePrincipal(request);
+    if (!principal) return { status: 401, jsonBody: { error: 'Unauthorised' } };
+    if (!principal.userRoles?.includes('owner')) return { status: 403, jsonBody: { error: 'Forbidden' } };
+    const userId = principal.userId;
 
     if (request.method === 'POST') {
       const data = withRatingDefaults(await request.json());
       const { resource } = await packages.items.create(data);
       if (userId) {
-        const ratingId = `${userId}_${data.id}`;
-        await Promise.all([
-          ratings.items.upsert({ id: ratingId, userId, noodleId: data.id, rating: data.rating, spicy: data.spicy, ratedAt: new Date().toISOString() }),
-          aggregates.items.upsert({ id: data.id, avgRating: data.rating, avgSpicy: data.spicy, ratingCount: 1 })
-        ]);
+        await applyRating({ userId, noodleId: data.id, rating: data.rating, spicy: data.spicy });
       }
       return { jsonBody: resource, status: 201 };
     }
@@ -79,6 +76,12 @@ app.http('noodles', {
     if (request.method === 'PUT') {
       const data = withRatingDefaults(await request.json());
       const { resource } = await packages.items.upsert(data);
+      // The form edits the owner's own score, so put it through the same path
+      // a rating takes — otherwise the edit changes nothing the site displays,
+      // which all reads from the aggregate now.
+      if (userId) {
+        await applyRating({ userId, noodleId: data.id, rating: data.rating, spicy: data.spicy });
+      }
       return { jsonBody: resource };
     }
   }

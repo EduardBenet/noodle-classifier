@@ -98,8 +98,9 @@ async function submitRating(e) {
 
     renderCommunityScores(overlayNoodle);
     status.textContent = 'Saved';
-    // The list holds the same object, so a re-render picks up the new average.
-    window.refreshNoodleCards?.();
+    // Pass the noodle along: search results are not the same objects the list
+    // page caches, so the receiver may need to patch its own copy.
+    window.refreshNoodleCards?.(overlayNoodle);
   } catch {
     status.textContent = 'Could not save — try again';
   } finally {
