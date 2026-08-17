@@ -1,20 +1,26 @@
 const { app } = require('@azure/functions');
-const { CosmosClient } = require('@azure/cosmos');
 const { parsePrincipal } = require('../lib/auth');
 const { withRatingDefaults } = require('../lib/noodle');
+const { packages, ratings, aggregates } = require('../lib/cosmos');
 
-const client = new CosmosClient(process.env.DATABASE_CONNECTION_STRING);
-const container = client.database('noodles').container('packages');
-const ratingsContainer = client.database('noodles').container('ratings');
-const aggregatesContainer = client.database('noodles').container('aggregates');
+function withAggregate(noodle, agg) {
+  return agg ? { ...noodle, avgRating: agg.avgRating, avgSpicy: agg.avgSpicy, ratingCount: agg.ratingCount } : noodle;
+}
 
 async function mergeAggregates(noodles) {
-  const { resources } = await aggregatesContainer.items.query('SELECT * FROM c').fetchAll();
+  if (!noodles.length) return noodles;
+
+  // A single result (the `?id=` lookup, or a search that matched one noodle)
+  // only needs a point read.
+  if (noodles.length === 1) {
+    const id = noodles[0].id;
+    const { resource } = await aggregates.item(id, id).read().catch(() => ({}));
+    return [withAggregate(noodles[0], resource)];
+  }
+
+  const { resources } = await aggregates.items.query('SELECT * FROM c').fetchAll();
   const aggMap = new Map(resources.map(a => [a.id, a]));
-  return noodles.map(n => {
-    const agg = aggMap.get(n.id);
-    return agg ? { ...n, avgRating: agg.avgRating, avgSpicy: agg.avgSpicy, ratingCount: agg.ratingCount } : n;
-  });
+  return noodles.map(n => withAggregate(n, aggMap.get(n.id)));
 }
 
 app.http('noodles', {
@@ -25,14 +31,14 @@ app.http('noodles', {
       const params = new URL(request.url).searchParams;
       const search = params.get('search');
       const id = params.get('id');
-      let querySpec;
 
       if (id) {
-        querySpec = {
-          query: 'SELECT * FROM c WHERE c.id = @id',
-          parameters: [{ name: '@id', value: id }]
-        };
-      } else if (search) {
+        const { resource } = await packages.item(id, id).read().catch(() => ({}));
+        return { jsonBody: await mergeAggregates(resource ? [resource] : []) };
+      }
+
+      let querySpec;
+      if (search) {
         const term = search.toLowerCase();
         querySpec = {
           query: `SELECT * FROM c WHERE
@@ -45,7 +51,7 @@ app.http('noodles', {
         querySpec = { query: 'SELECT * FROM c' };
       }
 
-      const { resources } = await container.items.query(querySpec).fetchAll();
+      const { resources } = await packages.items.query(querySpec).fetchAll();
       return { jsonBody: await mergeAggregates(resources) };
     }
 
@@ -59,12 +65,12 @@ app.http('noodles', {
 
     if (request.method === 'POST') {
       const data = withRatingDefaults(await request.json());
-      const { resource } = await container.items.create(data);
+      const { resource } = await packages.items.create(data);
       if (userId) {
         const ratingId = `${userId}_${data.id}`;
         await Promise.all([
-          ratingsContainer.items.upsert({ id: ratingId, userId, noodleId: data.id, rating: data.rating, spicy: data.spicy }),
-          aggregatesContainer.items.upsert({ id: data.id, avgRating: data.rating, avgSpicy: data.spicy, ratingCount: 1 })
+          ratings.items.upsert({ id: ratingId, userId, noodleId: data.id, rating: data.rating, spicy: data.spicy }),
+          aggregates.items.upsert({ id: data.id, avgRating: data.rating, avgSpicy: data.spicy, ratingCount: 1 })
         ]);
       }
       return { jsonBody: resource, status: 201 };
@@ -72,7 +78,7 @@ app.http('noodles', {
 
     if (request.method === 'PUT') {
       const data = withRatingDefaults(await request.json());
-      const { resource } = await container.items.upsert(data);
+      const { resource } = await packages.items.upsert(data);
       return { jsonBody: resource };
     }
   }
