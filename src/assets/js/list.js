@@ -20,11 +20,16 @@ function sortNoodles(items) {
   if (!val) return items;
   const [field, dir] = val.split('-');
   const asc = dir === 'asc';
+  const score = (noodle, key) => {
+    if (key === 'avgRating') return communityRating(noodle);
+    if (key === 'avgSpicy') return communitySpicy(noodle);
+    return noodle[key];
+  };
   return [...items].sort((a, b) => {
-    const primary = asc ? a[field] - b[field] : b[field] - a[field];
+    const primary = asc ? score(a, field) - score(b, field) : score(b, field) - score(a, field);
     if (primary !== 0) return primary;
-    if (field !== 'spicy') {
-      const spicyTie = asc ? b.spicy - a.spicy : a.spicy - b.spicy;
+    if (field !== 'avgSpicy') {
+      const spicyTie = asc ? communitySpicy(b) - communitySpicy(a) : communitySpicy(a) - communitySpicy(b);
       if (spicyTie !== 0) return spicyTie;
     }
     if (field !== 'price') {

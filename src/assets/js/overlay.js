@@ -15,12 +15,17 @@ function showNoodleOverlay(noodle) {
 
   const ratingSpiceRow = document.createElement('div');
   ratingSpiceRow.className = 'rating-spice-row';
-  ratingSpiceRow.innerHTML = ratingSpiceHTML(noodle.rating, noodle.spicy);
+  ratingSpiceRow.innerHTML = ratingSpiceHTML(communityRating(noodle), communitySpicy(noodle), noodle.ratingCount);
+  wireScoreTips(ratingSpiceRow);
+
+  const community = document.createElement('div');
+  community.className = 'community-summary';
+  community.textContent = `${formatScore(communityRating(noodle))} ★ · ${formatScore(communitySpicy(noodle))} 🌶️${noodle.ratingCount != null ? ` · ${countLabel(noodle.ratingCount)}` : ''}`;
 
   const desc = document.createElement('small');
   desc.textContent = noodle.description;
 
-  document.getElementById("overlay-body").replaceChildren(img, price, ratingSpiceRow, desc);
+  document.getElementById("overlay-body").replaceChildren(img, price, ratingSpiceRow, community, desc);
   document.getElementById("overlay").classList.add("visible");
 }
 

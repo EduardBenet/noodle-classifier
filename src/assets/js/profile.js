@@ -14,8 +14,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // Summary stats
   document.getElementById("stat-total").textContent = noodles.length;
-  document.getElementById("stat-avg-rating").textContent = `${fmt(avg(noodles.map(n => n.rating)))} ★`;
-  document.getElementById("stat-avg-spice").textContent = `${fmt(avg(noodles.map(n => n.spicy)))} 🌶️`;
+  document.getElementById("stat-avg-rating").textContent = `${fmt(avg(noodles.map(communityRating)))} ★`;
+  document.getElementById("stat-avg-spice").textContent = `${fmt(avg(noodles.map(communitySpicy)))} 🌶️`;
   document.getElementById("stat-avg-price").textContent = `£${fmt(avg(noodles.map(n => n.price)))}`;
 
   const prices = noodles.map(n => n.price);
@@ -25,8 +25,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   const soups = noodles.filter(n => n.hasSoup).length;
   document.getElementById("stat-soup").textContent = `${soups} / ${noodles.length - soups}`;
 
-  // Rating distribution
-  const dist = [1, 2, 3, 4, 5].map(r => ({ stars: r, count: noodles.filter(n => n.rating === r).length }));
+  // Rating distribution — community averages are fractional, so bucket to the
+  // nearest whole star.
+  const bucket = (n) => Math.min(5, Math.max(1, Math.round(communityRating(n))));
+  const dist = [1, 2, 3, 4, 5].map(r => ({ stars: r, count: noodles.filter(n => bucket(n) === r).length }));
   const maxCount = Math.max(...dist.map(d => d.count));
   const distEl = document.getElementById("rating-dist");
   dist.reverse().forEach(({ stars, count }) => {
@@ -71,9 +73,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // Highlights
   const highlights = [
-    { label: "Highest rated", noodle: [...noodles].sort((a, b) => b.rating - a.rating || a.spicy - b.spicy)[0] },
-    { label: "Spiciest", noodle: [...noodles].sort((a, b) => b.spicy - a.spicy || b.rating - a.rating)[0] },
-    { label: "Best value", noodle: [...noodles].sort((a, b) => a.price - b.price || b.rating - a.rating)[0] },
+    { label: "Highest rated", noodle: [...noodles].sort((a, b) => communityRating(b) - communityRating(a) || communitySpicy(a) - communitySpicy(b))[0] },
+    { label: "Spiciest", noodle: [...noodles].sort((a, b) => communitySpicy(b) - communitySpicy(a) || communityRating(b) - communityRating(a))[0] },
+    { label: "Best value", noodle: [...noodles].sort((a, b) => a.price - b.price || communityRating(b) - communityRating(a))[0] },
   ];
 
   const hlEl = document.getElementById("highlights");
@@ -101,7 +103,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     const meta = document.createElement("div");
     meta.className = "rating-spice-row";
-    meta.innerHTML = ratingSpiceHTML(noodle.rating, noodle.spicy);
+    meta.innerHTML = ratingSpiceHTML(communityRating(noodle), communitySpicy(noodle), noodle.ratingCount);
+    wireScoreTips(meta);
 
     const price = document.createElement("div");
     price.className = "price";
