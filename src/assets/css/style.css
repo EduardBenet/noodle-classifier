@@ -462,6 +462,14 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     text-align: center;
 }
 
+.card-title .brand::before {
+    content: "(";
+}
+
+.card-title .brand::after {
+    content: ")";
+}
+
 
 .price {
     font-weight: bold;
@@ -1019,36 +1027,91 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
         font-size: 1.9rem;
     }
 
+    /* Compact list row: thumbnail left, name/brand and scores stacked beside
+       it. Stacking these vertically wastes most of a phone's width. */
     .card {
-        display: grid;
-        grid-template-areas:
-            "title"
-            "image"
-            "stats";
-        grid-template-columns: 1fr;
-        justify-items: center;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
     }
 
     .card img {
-        grid-area: image;
-        width: 72px;
-        height: 72px;
-        margin: 0.5rem 0;
+        width: 64px;
+        height: 64px;
     }
 
     .card-content {
-        display: contents;
+        gap: 0.2rem;
+        justify-content: center;
+        /* Without this a long name refuses to shrink and pushes the row wide. */
+        min-width: 0;
     }
 
     .card-title {
-        grid-area: title;
-        width: 100%;
+        text-align: left;
+        line-height: 1.25;
     }
 
+    .card-title .brand {
+        display: block;
+        font-size: 0.8rem;
+    }
+
+    /* On its own line the parentheses just add noise. */
+    .card-title .brand::before,
+    .card-title .brand::after {
+        content: none;
+    }
+
+    /* One line: score, heat, price hard right. */
     .card-stats {
-        grid-area: stats;
-        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
     }
 
+    /* Keep the meter and its count on one line — without this the count wraps
+       below the stars on narrow phones and the row becomes three lines. */
+    .card-stats .stars {
+        font-size: 1rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
 
+    .card-stats .rating-count {
+        font-size: 0.7rem;
+    }
+
+    /* Reordered so both meters sit together on the left and the price is
+       pinned right, rather than the price landing mid-row. */
+    .card-stats .spice {
+        order: 2;
+        font-size: 0.8rem;
+        text-align: left;
+    }
+
+    .card-stats .price {
+        order: 3;
+        margin-left: auto;
+        text-align: right;
+        white-space: nowrap;
+    }
+}
+
+/* Very narrow phones: the meters plus price no longer fit one line, so drop
+   the rating count — it is still on the tooltip and in the overlay. */
+@media (max-width: 359px) {
+    .card-stats .rating-count {
+        display: none;
+    }
+
+    .card-stats .stars {
+        font-size: 0.9rem;
+    }
+
+    .card-stats .spice {
+        font-size: 0.7rem;
+    }
 }

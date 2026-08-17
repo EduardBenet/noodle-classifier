@@ -91,9 +91,11 @@ function buildNoodleCard(noodle, { showDescription = false } = {}) {
 
   const strong = document.createElement('strong');
   strong.textContent = noodle.name;
+  // Parentheses come from CSS so the mobile layout can drop them when the
+  // brand moves onto its own line.
   const brandSpan = document.createElement('span');
   brandSpan.className = 'brand';
-  brandSpan.textContent = `(${noodle.brand})`;
+  brandSpan.textContent = noodle.brand;
   const cardTitle = document.createElement('div');
   cardTitle.className = 'card-title';
   cardTitle.append(strong, ' ', brandSpan);
