@@ -1,0 +1,32 @@
+---
+layout: base.html
+title: "My List 🍜"
+currentPage: "mylist"
+loginRedirect: "/mylist.html"
+logoutRedirect: "/"
+permalink: mylist.html
+localScripts:
+  - assets/js/mylist.js
+---
+
+<main>
+    <h2 class="page-heading">My list</h2>
+    <p class="page-intro">Every noodle you've rated, with your score next to the community average. Tap one to change
+        your rating.</p>
+
+    <div class="list-filters">
+        <select id="sort-by">
+            <option value="ratedAt-desc">🕒 Recently rated</option>
+            <option value="myRating-desc">★ My rating (best first)</option>
+            <option value="myRating-asc">★ My rating (worst first)</option>
+            <option value="mySpicy-desc">🌶️ Spiciest first</option>
+            <option value="price-asc">£ Price (low → high)</option>
+        </select>
+    </div>
+
+    <div id="mylist-empty" hidden>
+        <p>You haven't rated anything yet. Open a noodle from the <a href="list.html">list</a> and give it a score.</p>
+    </div>
+
+    <div id="noodle-list"></div>
+</main>
