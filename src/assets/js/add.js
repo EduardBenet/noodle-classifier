@@ -72,7 +72,11 @@ async function fillFormById(id) {
     const ratingInput = document.querySelector(`input[name="rating"][value="${n.rating}"]`);
     if (ratingInput) ratingInput.checked = true;
   } else {
-    await fillFromOpenFoodFacts(id);
+    try {
+      await fillFromOpenFoodFacts(id);
+    } catch {
+      setOfffStatus('Could not reach Open Food Facts.');
+    }
   }
 }
 
