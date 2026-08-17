@@ -69,7 +69,7 @@ app.http('noodles', {
       if (userId) {
         const ratingId = `${userId}_${data.id}`;
         await Promise.all([
-          ratings.items.upsert({ id: ratingId, userId, noodleId: data.id, rating: data.rating, spicy: data.spicy }),
+          ratings.items.upsert({ id: ratingId, userId, noodleId: data.id, rating: data.rating, spicy: data.spicy, ratedAt: new Date().toISOString() }),
           aggregates.items.upsert({ id: data.id, avgRating: data.rating, avgSpicy: data.spicy, ratingCount: 1 })
         ]);
       }

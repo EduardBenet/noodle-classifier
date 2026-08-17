@@ -341,6 +341,43 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     }
 }
 
+/* ========== My List ========== */
+.my-score-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+    padding-top: 0.35rem;
+    border-top: 1px dashed #e0d6c4;
+}
+
+.my-score-label {
+    color: #888;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.my-score-row .stars {
+    font-size: 0.95rem;
+}
+
+.my-score-row .spice {
+    font-size: 0.75rem;
+}
+
+/* ========== Page Intro ========== */
+.page-heading {
+    margin: 1.25rem 0 0.25rem;
+}
+
+.page-intro {
+    margin: 0 0 1.25rem;
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
 /* ========== Star Rating & Spice Level (form) ========== */
 .rating-row,
 .spice-row {

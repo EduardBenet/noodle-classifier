@@ -55,7 +55,7 @@ app.http('submissions', {
         if (approved.id) {
           const ratingId = `${user.userId}_${approved.id}`;
           ops.push(
-            ratingsContainer.items.upsert({ id: ratingId, userId: user.userId, noodleId: approved.id, rating: approved.rating, spicy: approved.spicy }),
+            ratingsContainer.items.upsert({ id: ratingId, userId: user.userId, noodleId: approved.id, rating: approved.rating, spicy: approved.spicy, ratedAt: new Date().toISOString() }),
             aggregatesContainer.items.upsert({ id: approved.id, avgRating: approved.rating, avgSpicy: approved.spicy, ratingCount: 1 })
           );
         }

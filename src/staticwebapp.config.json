@@ -13,6 +13,30 @@
       ]
     },
     {
+      "route": "/mylist",
+      "allowedRoles": [
+        "authenticated"
+      ]
+    },
+    {
+      "route": "/mylist.html",
+      "allowedRoles": [
+        "authenticated"
+      ]
+    },
+    {
+      "route": "/submit",
+      "allowedRoles": [
+        "authenticated"
+      ]
+    },
+    {
+      "route": "/submit.html",
+      "allowedRoles": [
+        "authenticated"
+      ]
+    },
+    {
       "route": "/profile",
       "allowedRoles": [
         "authenticated"

@@ -5,7 +5,8 @@
             <button id="nav-btn" aria-label="Navigation menu" title="Menu">☰</button>
             <div id="nav-dropdown" class="dropdown" hidden>
                 <a href="list.html"{% if currentPage == "list" %} aria-current="page"{% endif %}>List</a>
-                <a href="add.html" id="nav-add"{% if currentPage == "add" %} aria-current="page"{% else %} hidden{% endif %}>Add</a>
+                <a href="mylist.html" id="nav-mylist"{% if currentPage == "mylist" %} aria-current="page"{% else %} hidden{% endif %}>My List</a>
+                <a href="add.html" id="nav-add"{% if currentPage == "add" or currentPage == "submit" %} aria-current="page"{% else %} hidden{% endif %}>Add</a>
             </div>
         </div>
         <div id="auth-widget">

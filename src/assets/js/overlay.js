@@ -91,6 +91,10 @@ async function submitRating(e) {
     overlayNoodle.avgRating = updated.avgRating;
     overlayNoodle.avgSpicy = updated.avgSpicy;
     overlayNoodle.ratingCount = updated.ratingCount;
+    // Keep the caller's own score current too — My List renders from these.
+    overlayNoodle.myRating = Number(rating.value);
+    overlayNoodle.mySpicy = Number(spicy.value);
+    overlayNoodle.ratedAt = new Date().toISOString();
 
     renderCommunityScores(overlayNoodle);
     status.textContent = 'Saved';

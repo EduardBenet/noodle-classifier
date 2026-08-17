@@ -13,6 +13,15 @@ async function list() {
   }
   currentPage = 1;
   renderPagedList(sortNoodles(allNoodles));
+
+  // `?search=` lets other pages deep-link here — the submit form uses it to
+  // point at the noodle behind a duplicate barcode.
+  const term = new URLSearchParams(location.search).get('search');
+  if (term) {
+    const input = document.getElementById('search');
+    input.value = term;
+    input.dispatchEvent(new Event('input'));
+  }
 }
 
 function sortNoodles(items) {

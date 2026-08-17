@@ -52,9 +52,12 @@ window.addEventListener("DOMContentLoaded", async () => {
       const isOwner = user.userRoles?.includes('owner');
       window.currentUser = { userId: user.userId, userDetails: user.userDetails, isOwner };
 
+      document.getElementById("nav-mylist")?.removeAttribute("hidden");
+
       const navAdd = document.getElementById("nav-add");
       if (navAdd) {
         navAdd.href = isOwner ? 'add.html' : 'submit.html';
+        navAdd.textContent = isOwner ? 'Add' : 'Suggest';
         navAdd.removeAttribute("hidden");
       }
       if (isOwner) document.getElementById("overlay-edit")?.removeAttribute("hidden");
