@@ -6,5 +6,28 @@
         </div>
         <h2 id="overlay-title"></h2>
         <div id="overlay-body"></div>
+        <form id="rating-widget" hidden>
+            <div class="rating-widget-heading">Your rating</div>
+            <div class="rating-row">
+                <label>Rating:</label>
+                <div class="rating-stars">
+                    {% for i in [5, 4, 3, 2, 1] %}
+                    <input type="radio" name="my-rating" id="my-rating{{ i }}" value="{{ i }}"><label for="my-rating{{ i }}">★</label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="spice-row">
+                <label>Spice:</label>
+                <div class="spice-chilies">
+                    {% for i in [5, 4, 3, 2, 1] %}
+                    <input type="radio" name="my-spice" id="my-spice{{ i }}" value="{{ i }}"><label for="my-spice{{ i }}">🌶️</label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="rating-widget-footer">
+                <button type="submit" id="rating-submit" disabled>Save rating</button>
+                <span id="rating-status" role="status"></span>
+            </div>
+        </form>
     </div>
 </div>

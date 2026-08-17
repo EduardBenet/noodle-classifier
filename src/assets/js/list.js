@@ -60,6 +60,9 @@ function renderPagedList(data) {
   `;
 }
 
+// Lets the overlay refresh the visible cards after a rating is saved.
+window.refreshNoodleCards = () => renderPagedList(currentData);
+
 function renderList(data, lname) {
   const list = document.getElementById(lname);
   list.innerHTML = '';

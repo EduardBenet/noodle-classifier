@@ -1,3 +1,8 @@
+// Resolves once /.auth/me has been checked, so anything that depends on
+// window.currentUser can wait rather than race the fetch.
+let markAuthReady;
+window.authReady = new Promise(resolve => { markAuthReady = resolve; });
+
 window.addEventListener("DOMContentLoaded", async () => {
   const btn = document.getElementById("auth-btn");
   const menu = document.getElementById("auth-menu");
@@ -56,5 +61,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   } catch {
     // not authenticated or endpoint unavailable — stay in logged-out state
+  } finally {
+    markAuthReady(window.currentUser ?? null);
   }
 });
