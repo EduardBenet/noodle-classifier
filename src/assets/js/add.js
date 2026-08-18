@@ -3,6 +3,14 @@
 
 let isExistingNoodle = false;
 
+// null, not 0, when nothing is selected — 0 is a real spice level, so using it
+// as the "unset" marker would make a not-spicy noodle indistinguishable from an
+// unanswered question.
+function selectedScore(name) {
+  const checked = document.querySelector(`input[name="${name}"]:checked`);
+  return checked ? Number(checked.value) : null;
+}
+
 function collectFormData() {
   return {
     id: document.getElementById('product-id').value,
@@ -10,10 +18,10 @@ function collectFormData() {
     brand: document.getElementById('brand').value,
     keywords: document.getElementById('keywords').value.split(',').map(k => k.trim()),
     description: document.getElementById('description').value,
-    spicy: parseInt(document.querySelector('input[name="spice"]:checked')?.value || "0"),
+    spicy: selectedScore('spice'),
     hasSoup: document.getElementById('hasSoup').checked,
     price: parseFloat(document.getElementById('price').value),
-    rating: parseInt(document.querySelector('input[name="rating"]:checked')?.value || "0"),
+    rating: selectedScore('rating'),
     image: document.getElementById('image').value
   };
 }

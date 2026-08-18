@@ -393,6 +393,36 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     gap: 5px;
 }
 
+/* "None" sits outside .spice-chilies so the checked~label fill trick still
+   works for 1-5, while 0 highlights nothing. */
+.spice-picker {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.spice-none-input {
+    display: none;
+}
+
+.spice-none {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #999;
+    border: 1px solid #d0c4b0;
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.spice-none-input:checked + .spice-none {
+    background: #444;
+    border-color: #444;
+    color: #fff;
+}
+
 .rating-stars input,
 .spice-chilies input {
     display: none;

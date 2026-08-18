@@ -1,15 +1,15 @@
 const { ratings, aggregates } = require('./cosmos');
 
 const MAX_RETRIES = 3;
-const SCORE_MIN = 1;
-const SCORE_MAX = 5;
+const { RATING_MIN, SPICY_MIN, SCORE_MAX } = require('./noodle');
 
 // Scores come straight off a form, so coerce and bound them. An out-of-range
 // value would skew the community average permanently — the UI meter clamps, so
 // it would look merely "maxed out" and could never be pulled back down.
-function parseScore(value) {
+// `min` differs per field: spice accepts 0, stars start at 1.
+function parseScore(value, min) {
   const n = Number(value);
-  if (!Number.isInteger(n) || n < SCORE_MIN || n > SCORE_MAX) return null;
+  if (!Number.isInteger(n) || n < min || n > SCORE_MAX) return null;
   return n;
 }
 
@@ -25,8 +25,10 @@ async function applyRating({ userId, noodleId, rating, spicy }) {
   // it per attempt is what made a lost etag race silently drop the rating: the
   // retry would see the row this call had just written, treat a brand-new
   // rating as an edit, and leave the average and count untouched.
+  // `ratings` uses a hierarchical partition key (/userId, /noodleId), so a
+  // point read needs both levels as an array — a scalar would not resolve.
   const existingRating =
-    (await ratings.item(ratingId, userId).read().catch(() => null))?.resource ?? null;
+    (await ratings.item(ratingId, [userId, noodleId]).read().catch(() => null))?.resource ?? null;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     const existingAgg =
@@ -77,4 +79,4 @@ async function applyRating({ userId, noodleId, rating, spicy }) {
   }
 }
 
-module.exports = { applyRating, parseScore, SCORE_MIN, SCORE_MAX };
+module.exports = { applyRating, parseScore, RATING_MIN, SPICY_MIN, SCORE_MAX };

@@ -18,10 +18,14 @@
             </div>
             <div class="spice-row">
                 <label>Spice:</label>
-                <div class="spice-chilies">
-                    {% for i in [5, 4, 3, 2, 1] %}
-                    <input type="radio" name="my-spice" id="my-spice{{ i }}" value="{{ i }}"><label for="my-spice{{ i }}">🌶️</label>
-                    {% endfor %}
+                <div class="spice-picker">
+                    <input type="radio" name="my-spice" id="my-spice0" value="0" class="spice-none-input">
+                    <label for="my-spice0" class="spice-none" title="Not spicy at all">None</label>
+                    <div class="spice-chilies">
+                        {% for i in [5, 4, 3, 2, 1] %}
+                        <input type="radio" name="my-spice" id="my-spice{{ i }}" value="{{ i }}"><label for="my-spice{{ i }}">🌶️</label>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
             <div class="rating-widget-footer">

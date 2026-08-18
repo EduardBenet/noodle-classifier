@@ -5,19 +5,20 @@ const {
   aggregates: aggregatesContainer,
   packages: packagesContainer
 } = require('../lib/cosmos');
-const { applyRating, parseScore, SCORE_MIN, SCORE_MAX } = require('../lib/rating');
+const { applyRating, parseScore, RATING_MIN, SPICY_MIN, SCORE_MAX } = require('../lib/rating');
 
 // Every noodle the caller has rated, joined with the noodle document and the
-// community aggregate. `ratings` is partitioned by userId, so the first query
-// touches a single partition and the follow-up reads scale with how much the
-// caller has rated — not with the size of the catalogue.
+// community aggregate. `ratings` has a hierarchical partition key
+// (/userId, /noodleId); passing just the first level as a prefix keeps this to
+// the caller's own partitions, so cost scales with how much the caller has
+// rated — not with the size of the catalogue.
 async function listOwnRatings(userId) {
   const { resources: own } = await ratingsContainer.items.query(
     {
       query: 'SELECT * FROM c WHERE c.userId = @userId',
       parameters: [{ name: '@userId', value: userId }]
     },
-    { partitionKey: userId }
+    { partitionKey: [userId] }
   ).fetchAll();
 
   const rows = await Promise.all(own.map(async (r) => {
@@ -56,17 +57,22 @@ app.http('ratings', {
       const noodleId = new URL(request.url).searchParams.get('noodleId');
       // No noodleId: the caller's whole rating history, for "My List".
       if (!noodleId) return { jsonBody: await listOwnRatings(userId) };
-      const { resource } = await ratingsContainer.item(`${userId}_${noodleId}`, userId).read().catch(() => ({}));
+      // Hierarchical partition key: both levels required for a point read.
+      const { resource } = await ratingsContainer
+        .item(`${userId}_${noodleId}`, [userId, noodleId]).read().catch(() => ({}));
       return { jsonBody: resource ? { rating: resource.rating, spicy: resource.spicy } : null };
     }
 
     const { noodleId, rating, spicy } = await request.json();
-    const score = parseScore(rating);
-    const heat = parseScore(spicy);
+    const score = parseScore(rating, RATING_MIN);
+    const heat = parseScore(spicy, SPICY_MIN);
     if (!noodleId || score === null || heat === null) {
       return {
         status: 400,
-        jsonBody: { error: `noodleId is required; rating and spicy must be whole numbers from ${SCORE_MIN} to ${SCORE_MAX}` }
+        jsonBody: {
+          error: `noodleId is required; rating must be a whole number from ${RATING_MIN} to ${SCORE_MAX} `
+            + `and spicy from ${SPICY_MIN} to ${SCORE_MAX}`
+        }
       };
     }
 

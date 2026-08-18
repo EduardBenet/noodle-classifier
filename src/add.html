@@ -42,10 +42,15 @@ localScripts:
         </div>
         <div class="spice-row">
             <label>Spice Level:</label>
-            <div class="spice-chilies">
-                {% for i in [5, 4, 3, 2, 1] %}
-                <input type="radio" name="spice" id="spice{{ i }}" value="{{ i }}"><label for="spice{{ i }}">🌶️</label>
-                {% endfor %}
+            <div class="spice-picker">
+                {# 0 is a real level — not spicy at all — so it needs its own control. #}
+                <input type="radio" name="spice" id="spice0" value="0" class="spice-none-input">
+                <label for="spice0" class="spice-none" title="Not spicy at all">None</label>
+                <div class="spice-chilies">
+                    {% for i in [5, 4, 3, 2, 1] %}
+                    <input type="radio" name="spice" id="spice{{ i }}" value="{{ i }}"><label for="spice{{ i }}">🌶️</label>
+                    {% endfor %}
+                </div>
             </div>
         </div>
         <div class="rating-row">
