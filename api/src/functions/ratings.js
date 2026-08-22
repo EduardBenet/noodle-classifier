@@ -9,17 +9,24 @@ const { applyRating, parseScore, RATING_MIN, SPICY_MIN, SCORE_MAX } = require('.
 
 // Every noodle the caller has rated, joined with the noodle document and the
 // community aggregate. `ratings` has a hierarchical partition key
-// (/userId, /noodleId); passing just the first level as a prefix keeps this to
-// the caller's own partitions, so cost scales with how much the caller has
-// rated — not with the size of the catalogue.
+// (/userId, /noodleId), and the routing to the caller's own partitions comes
+// from the `c.userId` equality filter below: the backend resolves an equality
+// filter on the first level of a hierarchical key to just the physical
+// partitions holding that prefix. So cost still scales with how much the
+// caller has rated, not with the size of the catalogue.
+//
+// Do NOT pass `{ partitionKey: [userId] }` as a feed option to get the same
+// effect. @azure/cosmos 4.x implements prefix partition keys only for the
+// change feed (`getEPKRangeForPrefixPartitionKey` lives under
+// client/ChangeFeed/); on the query path the SDK forwards the one-component
+// key verbatim and the gateway rejects it against the two-component
+// definition with "Partition key provided either doesn't correspond to
+// definition in the collection", surfacing as a 500.
 async function listOwnRatings(userId) {
-  const { resources: own } = await ratingsContainer.items.query(
-    {
-      query: 'SELECT * FROM c WHERE c.userId = @userId',
-      parameters: [{ name: '@userId', value: userId }]
-    },
-    { partitionKey: [userId] }
-  ).fetchAll();
+  const { resources: own } = await ratingsContainer.items.query({
+    query: 'SELECT * FROM c WHERE c.userId = @userId',
+    parameters: [{ name: '@userId', value: userId }]
+  }).fetchAll();
 
   const rows = await Promise.all(own.map(async (r) => {
     const [noodleRes, aggRes] = await Promise.all([
