@@ -172,9 +172,13 @@ textarea {
     color: #f5f0e8;
 }
 
+/* `.home-main` pads 2rem at the sides but the list page's `main` pads 1rem, so
+   half of it is cancelled here — otherwise this card is 32px narrower than a
+   list row at every width below 1032px. */
 .noodle-of-the-day-section {
     text-align: left;
     padding-top: 2rem;
+    margin-inline: -1rem;
 }
 
 .noodle-of-the-day-section h2 {
@@ -189,8 +193,6 @@ textarea {
 }
 
 #noodle-of-the-day .card {
-    max-width: 480px;
-    margin: 0 auto;
     background: #fff8f0;
     border-color: #e0ccb0;
 }
@@ -300,8 +302,18 @@ textarea {
     color: #333;
 }
 
+/* Matches the geometry of `main` on the list page (800px content box) so the
+   card here is exactly as wide as a list row rather than a narrower variant —
+   the narrow version could not fit the one-line mobile stats row and pushed
+   the price outside the border. */
 #noodle-of-the-day {
-    margin-top: 0;
+    margin: 0 auto;
+    max-width: 800px;
+    /* Same grid as #noodle-list. As a plain block the card could not grow past
+       its container, so a stats row too wide to fit spilled the price outside
+       the border instead of widening the card the way a list row does. */
+    display: grid;
+    grid-template-columns: 1fr;
 }
 
 /* ========== Form Styles ========== */
@@ -1088,6 +1100,16 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
 @media (max-width: 600px) {
     .hero p {
         text-align: justify;
+    }
+
+    /* Same horizontal padding as `main`, so the card gets the same width it
+       would on the list page — which leaves nothing to cancel out. */
+    .home-main {
+        padding: 2rem 1rem 1rem;
+    }
+
+    .noodle-of-the-day-section {
+        margin-inline: 0;
     }
 
     .site-title {
