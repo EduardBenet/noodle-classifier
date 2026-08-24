@@ -151,6 +151,12 @@ function hideOverlay() {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById("overlay-close").addEventListener("click", hideOverlay);
+
+  // A third way out, alongside the close button and the backdrop. The card is
+  // as tall as the screen on a phone, which leaves little backdrop to tap.
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") hideOverlay();
+  });
   document.getElementById("overlay").addEventListener("click", (e) => {
     if (e.target === document.getElementById("overlay")) hideOverlay();
   });

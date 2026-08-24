@@ -253,10 +253,23 @@ textarea {
     display: none;
     position: fixed;
     inset: 0;
+    /* dvh tracks the browser's address bar as it shows and hides. Without it
+       the overlay is sized to the viewport with the bar retracted, so on a
+       browser that keeps its bar on screen (Brave, notably) the bottom of the
+       overlay sits behind it. The vh line is the fallback. */
+    height: 100vh;
+    height: 100dvh;
     background: rgba(0, 0, 0, 0.55);
     z-index: 100;
-    align-items: center;
-    justify-content: center;
+    /* Deliberately not align-items/justify-content: centring an over-tall card
+       splits the overflow evenly above and below, putting the close button off
+       the top of the screen — under the address bar — with no way to scroll up
+       to it. Auto margins on the card centre it identically when it fits and
+       collapse to zero when it does not, so it starts at the top instead. */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 1rem;
+    box-sizing: border-box;
 }
 
 #overlay.visible {
@@ -268,9 +281,33 @@ textarea {
     border-radius: 14px;
     padding: 1.5rem;
     max-width: 480px;
-    width: calc(100% - 2rem);
+    width: 100%;
+    /* There is no global border-box rule, so without this the 1.5rem padding
+       is added outside width/max-height and the card overflows the cap by
+       exactly its own padding. */
+    box-sizing: border-box;
+    margin: auto;
     position: relative;
     box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    /* Column so the body can be the only part that scrolls, keeping the title
+       and the close button pinned. 100% is the overlay's content box, which
+       already excludes its padding. */
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+}
+
+/* The scrolling part. min-height:0 because a flex item refuses to shrink below
+   its content otherwise, which would push the card past the cap again. */
+#overlay-body {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    min-height: 0;
+}
+
+#overlay-card h2,
+#rating-widget {
+    flex-shrink: 0;
 }
 
 #overlay-card h2 {
