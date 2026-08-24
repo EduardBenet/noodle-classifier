@@ -60,7 +60,10 @@ window.addEventListener("DOMContentLoaded", async () => {
         navAdd.textContent = isOwner ? 'Add' : 'Suggest';
         navAdd.removeAttribute("hidden");
       }
-      if (isOwner) document.getElementById("overlay-edit")?.removeAttribute("hidden");
+      if (isOwner) {
+        document.getElementById("nav-queue")?.removeAttribute("hidden");
+        document.getElementById("overlay-edit")?.removeAttribute("hidden");
+      }
     }
   } catch {
     // not authenticated or endpoint unavailable — stay in logged-out state

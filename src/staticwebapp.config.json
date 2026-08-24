@@ -13,6 +13,18 @@
       ]
     },
     {
+      "route": "/queue",
+      "allowedRoles": [
+        "owner"
+      ]
+    },
+    {
+      "route": "/queue.html",
+      "allowedRoles": [
+        "owner"
+      ]
+    },
+    {
       "route": "/mylist",
       "allowedRoles": [
         "authenticated"

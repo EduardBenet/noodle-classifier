@@ -1,0 +1,33 @@
+---
+layout: base.html
+title: "Review Queue 🍜"
+currentPage: "queue"
+loginRedirect: "/queue.html"
+logoutRedirect: "/"
+permalink: queue.html
+localScripts:
+  - assets/js/noodle-form.js
+  - assets/js/queue.js
+---
+
+<div id="confirm-dialog" class="confirm-backdrop">
+    <div class="confirm-box">
+        <p id="confirm-message"></p>
+        <div class="confirm-buttons">
+            <button id="confirm-cancel">Cancel</button>
+            <button id="confirm-ok" class="confirm-ok">Reject</button>
+        </div>
+    </div>
+</div>
+
+<main>
+    <h2 class="page-heading">Review queue</h2>
+    <p class="page-intro">Suggestions waiting to join the index. Correct anything the submitter got wrong, give it a
+        rating and spice level, then approve it — or reject it to drop the suggestion.</p>
+
+    <div id="queue-empty" hidden>
+        <p>Nothing waiting. New suggestions from the <a href="list.html">index</a> show up here.</p>
+    </div>
+
+    <div id="queue-list"></div>
+</main>
