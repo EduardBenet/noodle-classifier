@@ -26,6 +26,15 @@ function collectFormData() {
   };
 }
 
+function showQueueConflict() {
+  const el = document.getElementById('toast');
+  el.className = 'toast-error';
+  el.hidden = false;
+  el.innerHTML = 'Someone already suggested this barcode. '
+    + '<a href="queue.html">Review it in the queue</a> '
+    + '<button onclick="this.parentElement.hidden=true" aria-label="Dismiss">&times;</button>';
+}
+
 async function save(method) {
   let res;
   try {
@@ -36,6 +45,14 @@ async function save(method) {
     });
   } catch {
     showToast('Network error — changes not saved.', 'error');
+    return;
+  }
+
+  // 409 means someone has already suggested this barcode. The suggestion has
+  // to be approved rather than sidestepped: adding the noodle here would leave
+  // a queue entry whose later approval overwrites it.
+  if (res.status === 409) {
+    showQueueConflict();
     return;
   }
 

@@ -1,7 +1,7 @@
 const { app } = require('@azure/functions');
 const { parsePrincipal } = require('../lib/auth');
 const { withRatingDefaults } = require('../lib/noodle');
-const { packages, aggregates } = require('../lib/cosmos');
+const { packages, aggregates, submissions } = require('../lib/cosmos');
 const { applyRating } = require('../lib/rating');
 
 function withAggregate(noodle, agg) {
@@ -66,6 +66,28 @@ app.http('noodles', {
 
     if (request.method === 'POST') {
       const data = withRatingDefaults(await request.json());
+
+      // A pending suggestion for this barcode has to go through the review
+      // queue rather than be bypassed here. Approving it afterwards upserts
+      // the submitter's name, brand, price and description over whatever is
+      // added now — the one path by which a non-owner can rewrite catalogue
+      // text. Refusing the add keeps the queue the only way in.
+      if (data.id) {
+        const { resources: queued } = await submissions.items.query({
+          query: 'SELECT c.id FROM c WHERE c.noodle.id = @id',
+          parameters: [{ name: '@id', value: data.id }]
+        }).fetchAll();
+        if (queued.length) {
+          return {
+            status: 409,
+            jsonBody: {
+              error: 'A suggestion for this barcode is waiting in the review queue',
+              submissionId: queued[0].id
+            }
+          };
+        }
+      }
+
       const { resource } = await packages.items.create(data);
       if (userId) {
         await applyRating({ userId, noodleId: data.id, rating: data.rating, spicy: data.spicy });
