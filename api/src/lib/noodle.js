@@ -23,4 +23,24 @@ function withRatingDefaults(noodle) {
   };
 }
 
-module.exports = { withRatingDefaults, RATING_MIN, SPICY_MIN, SCORE_MAX };
+// The factual fields a non-owner may propose changing on an existing noodle.
+// Deliberately excludes `id` (a different barcode is a different noodle, not an
+// edit) and `rating`/`spicy` (an opinion, not a fact — those go through the
+// rating widget, which every signed-in user already has).
+const EDITABLE_FIELDS = ['name', 'brand', 'price', 'description', 'keywords', 'hasSoup', 'image'];
+
+// Whitelist rather than spread: an edit suggestion is written by a non-owner,
+// so anything not named here — id, rating, spicy, or a field invented by a
+// hand-rolled request — must not survive into the stored document.
+function pickEditable(noodle = {}) {
+  const out = {};
+  for (const field of EDITABLE_FIELDS) {
+    if (noodle[field] !== undefined) out[field] = noodle[field];
+  }
+  return out;
+}
+
+module.exports = {
+  withRatingDefaults, pickEditable, EDITABLE_FIELDS,
+  RATING_MIN, SPICY_MIN, SCORE_MAX
+};

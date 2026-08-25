@@ -490,9 +490,54 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     text-align: right;
 }
 
+/* Tells the two kinds of queue card apart at a glance, before reading either. */
+.queue-badge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #fff;
+    background: #8a6a4a;
+    border-radius: 999px;
+    padding: 0.15rem 0.5rem;
+    flex-shrink: 0;
+}
+
+.queue-card-edit {
+    border-left: 3px solid #8a6a4a;
+}
+
+.queue-gone {
+    font-size: 0.85rem;
+    color: #a33;
+    margin: 0.75rem 0 0;
+}
+
 .queue-field {
     display: grid;
     gap: 0.2rem;
+}
+
+/* Only fields the submitter actually changed get the marker and the `now:`
+   line, so the owner can review the diff rather than re-read the whole card. */
+.queue-field-changed {
+    border-left: 3px solid #c9a227;
+    padding-left: 0.6rem;
+    margin-left: -0.6rem;
+}
+
+.queue-was {
+    font-size: 0.7rem;
+    color: #8a6a4a;
+    font-style: italic;
+}
+
+/* Names the noodle being edited on the suggest-edit form, which has no
+   barcode field to identify it. */
+.edit-target {
+    font-weight: 600;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e0d6c4;
 }
 
 .queue-field span {

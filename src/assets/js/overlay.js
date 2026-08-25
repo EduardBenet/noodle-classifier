@@ -162,7 +162,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById("overlay-edit").addEventListener("click", () => {
     if (!overlayNoodle) return;
-    window.location.href = `add.html?id=${encodeURIComponent(overlayNoodle.id)}`;
+    // The owner edits the catalogue directly; everyone else files an edit
+    // suggestion for the review queue. auth.js reveals the button for both.
+    const page = window.currentUser?.isOwner ? 'add.html' : 'suggest-edit.html';
+    window.location.href = `${page}?id=${encodeURIComponent(overlayNoodle.id)}`;
   });
 
   const form = document.getElementById("rating-widget");

@@ -49,6 +49,18 @@
       ]
     },
     {
+      "route": "/suggest-edit",
+      "allowedRoles": [
+        "authenticated"
+      ]
+    },
+    {
+      "route": "/suggest-edit.html",
+      "allowedRoles": [
+        "authenticated"
+      ]
+    },
+    {
       "route": "/profile",
       "allowedRoles": [
         "authenticated"

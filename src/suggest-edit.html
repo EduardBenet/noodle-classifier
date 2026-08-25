@@ -1,0 +1,39 @@
+---
+layout: base.html
+title: "Suggest an Edit 🍜"
+currentPage: "suggest-edit"
+loginRedirect: "/suggest-edit.html"
+logoutRedirect: "/"
+permalink: suggest-edit.html
+localScripts:
+  - assets/js/noodle-form.js
+  - assets/js/suggest-edit.js
+---
+
+<main>
+    <h2 class="page-heading">Suggest an edit</h2>
+    <p class="page-intro" id="edit-intro">Spotted a wrong price or a typo? Change what's off and send it for review —
+        the owner approves it before it goes live. Only the fields you change are worth touching.</p>
+
+    {# No barcode input and no scanner: a different barcode is a different
+       noodle, not an edit. The id rides along in the query string. #}
+    <form id="edit-form" hidden>
+        <div class="edit-target" id="edit-target"></div>
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="text" id="brand" placeholder="Brand" required>
+        <input type="number" id="price" placeholder="Price (£)" step="0.01" min="0" required>
+        <textarea id="description" placeholder="Description" required></textarea>
+        <div class="checkbox-row">
+            <label for="hasSoup">Comes with soup:</label>
+            <input type="checkbox" id="hasSoup">
+        </div>
+        <input type="text" id="keywords" placeholder="Keywords (comma-separated)">
+        <input type="text" id="image" placeholder="Image URL">
+        <button type="submit" id="edit-btn">Send edit for review</button>
+    </form>
+
+    {# Shown when ?id= is missing or names a noodle that is not in the index. #}
+    <div id="edit-missing" hidden>
+        <p>That noodle isn't in the index. <a href="list.html">Back to the list</a>.</p>
+    </div>
+</main>

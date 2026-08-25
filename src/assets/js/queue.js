@@ -31,7 +31,31 @@ function queueField(labelText, field, value, opts = {}) {
   input.value = value ?? '';
 
   wrap.append(caption, input);
+
+  // On an edit card, show the live value under any field the submitter
+  // changed. Without it a proposed price is just a number with nothing to
+  // judge it against. textContent — this is submitter-adjacent text.
+  if (opts.was !== undefined) {
+    const was = document.createElement('small');
+    was.className = 'queue-was';
+    was.textContent = `now: ${opts.was === '' || opts.was == null ? '(empty)' : opts.was}`;
+    wrap.append(was);
+    wrap.classList.add('queue-field-changed');
+  }
+
   return wrap;
+}
+
+// Same normalisation the suggest-edit form uses, so "changed" means the same
+// thing on both sides and an unchanged field never renders a `now:` hint.
+function sameValue(a, b) {
+  return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+}
+
+function displayValue(field, value) {
+  if (field === 'hasSoup') return value ? 'yes' : 'no';
+  if (field === 'keywords') return Array.isArray(value) ? value.join(', ') : (value ?? '');
+  return value;
 }
 
 // Mirrors the add form's markup so the pure-CSS `input:checked ~ label` fill
@@ -77,14 +101,15 @@ function submittedLabel(sub) {
   return `Suggested by ${who} · ${shown}`;
 }
 
+// Two shapes share this queue: a new-noodle suggestion, and an edit proposed
+// against a noodle already in the index. They review differently enough to be
+// built separately — an edit has no barcode and no rating, and every field it
+// touches wants the live value beside it.
 function buildQueueCard(sub, idx) {
-  const n = sub.noodle ?? {};
+  return sub.kind === 'edit' ? buildEditCard(sub, idx) : buildNewCard(sub, idx);
+}
 
-  const card = document.createElement('form');
-  card.className = 'queue-card';
-  card.dataset.id = sub.id;
-  card.dataset.name = n.name || 'this suggestion';
-
+function cardHead(sub, n, badgeText) {
   const head = document.createElement('div');
   head.className = 'queue-card-head';
 
@@ -96,6 +121,13 @@ function buildQueueCard(sub, idx) {
   meta.textContent = submittedLabel(sub);
 
   head.append(title, meta);
+
+  if (badgeText) {
+    const badge = document.createElement('span');
+    badge.className = 'queue-badge';
+    badge.textContent = badgeText;
+    head.prepend(badge);
+  }
 
   // A thumbnail is most of the review: it is the fastest way to tell whether
   // the submitter attached the right product. A broken URL hides itself
@@ -110,18 +142,10 @@ function buildQueueCard(sub, idx) {
     head.prepend(thumb);
   }
 
-  const soup = document.createElement('div');
-  soup.className = 'checkbox-row';
-  const soupLabel = document.createElement('label');
-  soupLabel.textContent = 'Comes with soup:';
-  soupLabel.htmlFor = `q-soup-${idx}`;
-  const soupInput = document.createElement('input');
-  soupInput.type = 'checkbox';
-  soupInput.id = `q-soup-${idx}`;
-  soupInput.dataset.field = 'hasSoup';
-  soupInput.checked = !!n.hasSoup;
-  soup.append(soupLabel, soupInput);
+  return head;
+}
 
+function cardActions(card) {
   const actions = document.createElement('div');
   actions.className = 'queue-actions';
 
@@ -137,9 +161,111 @@ function buildQueueCard(sub, idx) {
   reject.addEventListener('click', () => askReject(card));
 
   actions.append(approve, reject);
+  return actions;
+}
+
+// An edit card renders the proposed value in every field and the live value
+// underneath the ones that actually changed. Approving sends the whole set —
+// the API merges it over the live document, so untouched fields round-trip
+// unchanged and rating, spice and the aggregate are never involved.
+function buildEditCard(sub, idx) {
+  const proposed = sub.noodle ?? {};
+  const current = sub.current ?? {};
+  const merged = { ...current, ...proposed };
+
+  const card = document.createElement('form');
+  card.className = 'queue-card queue-card-edit';
+  card.dataset.id = sub.id;
+  card.dataset.kind = 'edit';
+  card.dataset.targetId = sub.targetId ?? '';
+  card.dataset.name = current.name || 'this noodle';
+
+  // The joined document is missing only if the noodle was deleted after the
+  // edit was queued. Approving would 404, so say so and offer only Reject.
+  if (!sub.current) {
+    const gone = document.createElement('p');
+    gone.className = 'queue-gone';
+    gone.textContent = 'That noodle is no longer in the index — this edit can only be rejected.';
+    card.append(cardHead(sub, merged, 'EDIT'), gone);
+    const actions = cardActions(card);
+    actions.querySelector('.queue-approve').remove();
+    card.append(actions);
+    return card;
+  }
+
+  const soup = document.createElement('div');
+  soup.className = 'checkbox-row';
+  const soupLabel = document.createElement('label');
+  soupLabel.textContent = 'Comes with soup:';
+  soupLabel.htmlFor = `q-soup-${idx}`;
+  const soupInput = document.createElement('input');
+  soupInput.type = 'checkbox';
+  soupInput.id = `q-soup-${idx}`;
+  soupInput.dataset.field = 'hasSoup';
+  soupInput.checked = !!merged.hasSoup;
+  soup.append(soupLabel, soupInput);
+  if (!sameValue(proposed.hasSoup, current.hasSoup) && proposed.hasSoup !== undefined) {
+    soup.classList.add('queue-field-changed');
+    const was = document.createElement('small');
+    was.className = 'queue-was';
+    was.textContent = `now: ${displayValue('hasSoup', current.hasSoup)}`;
+    soup.append(was);
+  }
+
+  // `was` is passed only where the submitter changed something, which is what
+  // drives both the hint and the highlight.
+  const hint = (field) =>
+    proposed[field] !== undefined && !sameValue(proposed[field], current[field])
+      ? { was: displayValue(field, current[field]) }
+      : {};
 
   card.append(
-    head,
+    cardHead(sub, merged, 'EDIT'),
+    queueField('Name', 'name', merged.name, { required: true, ...hint('name') }),
+    queueField('Brand', 'brand', merged.brand, { required: true, ...hint('brand') }),
+    queueField('Price (£)', 'price', merged.price,
+      { type: 'number', step: '0.01', min: 0, required: true, ...hint('price') }),
+    queueField('Description', 'description', merged.description,
+      { textarea: true, required: true, ...hint('description') }),
+    soup,
+    queueField('Keywords (comma-separated)', 'keywords',
+      Array.isArray(merged.keywords) ? merged.keywords.join(', ') : merged.keywords,
+      hint('keywords')),
+    queueField('Image URL', 'image', merged.image, hint('image')),
+    cardActions(card)
+  );
+
+  card.addEventListener('submit', (e) => {
+    e.preventDefault();
+    decide(card, 'approve');
+  });
+
+  return card;
+}
+
+function buildNewCard(sub, idx) {
+  const n = sub.noodle ?? {};
+
+  const card = document.createElement('form');
+  card.className = 'queue-card';
+  card.dataset.id = sub.id;
+  card.dataset.kind = 'new';
+  card.dataset.name = n.name || 'this suggestion';
+
+  const soup = document.createElement('div');
+  soup.className = 'checkbox-row';
+  const soupLabel = document.createElement('label');
+  soupLabel.textContent = 'Comes with soup:';
+  soupLabel.htmlFor = `q-soup-${idx}`;
+  const soupInput = document.createElement('input');
+  soupInput.type = 'checkbox';
+  soupInput.id = `q-soup-${idx}`;
+  soupInput.dataset.field = 'hasSoup';
+  soupInput.checked = !!n.hasSoup;
+  soup.append(soupLabel, soupInput);
+
+  card.append(
+    cardHead(sub, n, 'NEW'),
     queueField('Product ID (barcode)', 'id', n.id, { required: true }),
     queueField('Name', 'name', n.name, { required: true }),
     queueField('Brand', 'brand', n.brand, { required: true }),
@@ -151,7 +277,7 @@ function buildQueueCard(sub, idx) {
     queueField('Keywords (comma-separated)', 'keywords',
       Array.isArray(n.keywords) ? n.keywords.join(', ') : n.keywords),
     queueField('Image URL', 'image', n.image),
-    actions
+    cardActions(card)
   );
 
   card.addEventListener('submit', (e) => {
@@ -167,6 +293,21 @@ function buildQueueCard(sub, idx) {
 function pickedScore(card, group) {
   const checked = card.querySelector(`input[name^="q-${group}-"]:checked`);
   return checked ? Number(checked.value) : null;
+}
+
+// An edit card has no barcode, no rating and no spice — approving it sends
+// only the factual fields, which the API merges over the live document.
+function collectEdit(card) {
+  const val = (field) => card.querySelector(`[data-field="${field}"]`).value;
+  return {
+    name: val('name'),
+    brand: val('brand'),
+    keywords: val('keywords').split(',').map(k => k.trim()).filter(Boolean),
+    description: val('description'),
+    hasSoup: card.querySelector('[data-field="hasSoup"]').checked,
+    price: parseFloat(val('price')),
+    image: val('image')
+  };
 }
 
 function collectNoodle(card) {
@@ -189,8 +330,15 @@ async function decide(card, action) {
   const buttons = card.querySelectorAll('button');
   buttons.forEach(b => { b.disabled = true; });
 
+  const isEdit = card.dataset.kind === 'edit';
   const body = { id: card.dataset.id, action };
-  if (action === 'approve') body.noodle = collectNoodle(card);
+  if (action === 'approve') {
+    // kind and targetId ride along so a double-clicked Approve still resolves
+    // correctly after the first click deleted the queue entry.
+    body.kind = isEdit ? 'edit' : 'new';
+    body.noodle = isEdit ? collectEdit(card) : collectNoodle(card);
+    if (isEdit) body.targetId = card.dataset.targetId;
+  }
 
   let res;
   try {
@@ -217,17 +365,19 @@ async function decide(card, action) {
   card.remove();
   queueCount--;
   updateEmptyState();
-  showToast(action === 'approve'
-    ? `"${body.noodle.name}" is in the index.`
-    : 'Suggestion rejected.', 'success');
+  const label = action === 'approve'
+    ? (isEdit ? `Edit to "${body.noodle.name}" applied.` : `"${body.noodle.name}" is in the index.`)
+    : (isEdit ? 'Edit rejected.' : 'Suggestion rejected.');
+  showToast(label, 'success');
 }
 
 // Reject deletes the submission outright, and nothing else records it — worth
 // a confirmation, unlike approve which publishes what is on screen.
 function askReject(card) {
   pendingReject = card;
-  document.getElementById('confirm-message').textContent =
-    `Reject "${card.dataset.name}"? The suggestion is deleted.`;
+  document.getElementById('confirm-message').textContent = card.dataset.kind === 'edit'
+    ? `Reject the edit to "${card.dataset.name}"? The noodle is left as it is and the edit is deleted.`
+    : `Reject "${card.dataset.name}"? The suggestion is deleted.`;
   document.getElementById('confirm-dialog').classList.add('visible');
 }
 
