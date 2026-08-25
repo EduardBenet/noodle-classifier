@@ -35,7 +35,14 @@ app.http('submissions', {
 
       const submission = {
         id: randomUUID(),
+        // Two identity fields, deliberately. `submittedBy` is the opaque SWA
+        // userId — the ratings partition key, so it is what approval writes the
+        // submitter's rating against and must never change. `submittedByName`
+        // is the provider's display handle, stored for the review queue only:
+        // it can change (a renamed GitHub account, a new email) and is not safe
+        // to key anything on.
         submittedBy: user.userId,
+        submittedByName: user.userDetails ?? null,
         submittedAt: new Date().toISOString(),
         noodle: { ...data, rating, spicy }
       };

@@ -67,8 +67,10 @@ function spiceRow(idx, selected) {
   return row;
 }
 
+// Display handle when we captured one, opaque userId otherwise — entries
+// queued before submittedByName existed still name someone, just less kindly.
 function submittedLabel(sub) {
-  const who = sub.submittedBy || 'unknown';
+  const who = sub.submittedByName || sub.submittedBy || 'unknown';
   if (!sub.submittedAt) return `Suggested by ${who}`;
   const when = new Date(sub.submittedAt);
   const shown = isNaN(when) ? sub.submittedAt : when.toLocaleDateString();
