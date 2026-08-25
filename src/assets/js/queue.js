@@ -428,6 +428,9 @@ async function loadQueue() {
 
   queueCount = submissions.length;
   list.replaceChildren(...submissions.map(buildQueueCard));
+  // These cards are built after DOMContentLoaded, so the resize bars have to be
+  // attached here rather than by textarea-resize.js's own load handler.
+  window.enhanceTextareas?.(list);
   updateEmptyState();
 }
 

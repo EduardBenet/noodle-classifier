@@ -44,13 +44,63 @@ main {
     margin: auto;
 }
 
-/* Drag handle in the bottom-right corner. `both` rather than `vertical` so the
-   grip pulls sideways too; max-width keeps a wide drag from breaking out of the
-   form grid, and min-height stops it being collapsed to nothing. */
+/* The native grip is replaced by the grab bar below (textarea-resize.js), so
+   turn it off — two resize affordances on one field is worse than either.
+   `resize: vertical` is restored if the script never runs. */
 textarea {
-    resize: both;
+    resize: vertical;
     min-height: 4.5rem;
     max-width: 100%;
+}
+
+.ta-wrap {
+    position: relative;
+    display: grid;
+}
+
+.ta-wrap textarea {
+    resize: none;
+    display: block;
+    /* Square off the edge the bar butts against. */
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* Full width, so resizing needs no horizontal aim — the whole bar is the
+   target, which is the point on a touchscreen. `touch-action: none` is what
+   stops Android treating the drag as a page scroll. */
+.ta-handle {
+    height: 26px;
+    width: 100%;
+    padding: 0;
+    border: 1px solid #c8b89a;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    background: #f1e9dc;
+    cursor: ns-resize;
+    touch-action: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Three short rules as the grip texture — drawn rather than a glyph so it
+   stays crisp and needs no font. */
+.ta-handle::after {
+    content: "";
+    width: 28px;
+    height: 6px;
+    background:
+        linear-gradient(#a89575 0 1px, transparent 1px) 0 0 / 100% 3px repeat-y;
+}
+
+.ta-handle:hover {
+    background: #e8ddcb;
+}
+
+.ta-handle:focus-visible {
+    outline: 2px solid #8a6a4a;
+    outline-offset: 2px;
 }
 
 /* ========== Header Actions ========== */
