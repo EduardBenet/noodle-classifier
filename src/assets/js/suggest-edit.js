@@ -13,18 +13,28 @@ const EDIT_FIELDS = ['name', 'brand', 'price', 'description', 'keywords', 'hasSo
 
 let target = null;
 
+// Both sides of the comparison go through this. A field the live document
+// simply lacks reads back as `undefined`, while an untouched empty input reads
+// as `''`/`false` — comparing those directly reported every absent field as
+// changed, so editing only the price also posted `image: ''` and
+// `hasSoup: false`. Mirrored by the same function in queue.js.
+function normalise(field, value) {
+  if (field === 'hasSoup') return !!value;
+  if (field === 'keywords') return Array.isArray(value) ? value : (value ? [value] : []);
+  if (field === 'price') return value === '' || value === null || value === undefined ? null : Number(value);
+  return value ?? '';
+}
+
 function readField(field) {
   const el = document.getElementById(field);
-  if (field === 'hasSoup') return el.checked;
-  if (field === 'price') return parseFloat(el.value);
-  if (field === 'keywords') return el.value.split(',').map(k => k.trim()).filter(Boolean);
-  return el.value;
+  const raw = field === 'hasSoup' ? el.checked
+    : field === 'keywords' ? el.value.split(',').map(k => k.trim()).filter(Boolean)
+      : el.value;
+  return normalise(field, raw);
 }
 
 function currentValue(field) {
-  const v = target?.[field];
-  if (field === 'keywords') return Array.isArray(v) ? v : (v ? [v] : []);
-  return v;
+  return normalise(field, target?.[field]);
 }
 
 // Compared as JSON so keywords arrays and the hasSoup boolean behave. Sending

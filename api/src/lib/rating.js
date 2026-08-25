@@ -8,6 +8,13 @@ const { RATING_MIN, SPICY_MIN, SCORE_MAX } = require('./noodle');
 // it would look merely "maxed out" and could never be pulled back down.
 // `min` differs per field: spice accepts 0, stars start at 1.
 function parseScore(value, min) {
+  // Type-check before coercing. `Number(null)`, `Number('')`, `Number(false)`
+  // and `Number([])` are all 0, which is a valid spice level — so without this
+  // a missing or junk value silently becomes a deliberate "not spicy" and gets
+  // recorded as somebody's rating. (`true` would likewise become 1.)
+  if (typeof value !== 'number' && typeof value !== 'string') return null;
+  if (typeof value === 'string' && value.trim() === '') return null;
+
   const n = Number(value);
   if (!Number.isInteger(n) || n < min || n > SCORE_MAX) return null;
   return n;

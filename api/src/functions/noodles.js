@@ -73,13 +73,10 @@ app.http('noodles', {
       // added now — the one path by which a non-owner can rewrite catalogue
       // text. Refusing the add keeps the queue the only way in.
       if (data.id) {
-        // Only new-noodle suggestions block an add. An edit suggestion targets
-        // a noodle that already exists, so it can never collide with adding a
-        // fresh one, and approving it merges rather than overwrites.
-        // `NOT IS_DEFINED` covers entries queued before `kind` was stamped.
+        // Edit suggestions cannot match: pickEditable strips `id`, so their
+        // stored noodle has no `id` for this predicate to hit.
         const { resources: queued } = await submissions.items.query({
-          query: `SELECT c.id FROM c WHERE c.noodle.id = @id
-            AND (NOT IS_DEFINED(c.kind) OR c.kind = 'new')`,
+          query: 'SELECT c.id FROM c WHERE c.noodle.id = @id',
           parameters: [{ name: '@id', value: data.id }]
         }).fetchAll();
         if (queued.length) {

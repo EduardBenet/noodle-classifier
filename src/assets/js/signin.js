@@ -4,23 +4,18 @@
 // completed silently, landing them on the page signed in as an identity they
 // never chose. This page makes the choice explicit instead.
 
-// `?to=` decides where login returns. It ends up in a redirect, so it has to be
-// a path on this site and nothing else: a value like `//evil.example` or
-// `https://evil.example` is protocol-relative or absolute and would send the
-// visitor off-site after a login they trusted us with.
-function safeTarget() {
-  const raw = new URLSearchParams(location.search).get('to');
-  if (!raw) return null;
-  if (!raw.startsWith('/')) return null;
-  if (raw.startsWith('//')) return null;
-  // Backslashes are normalised to forward slashes by some browsers, so `/\evil`
-  // can end up protocol-relative after all.
-  if (raw.includes('\\')) return null;
-  return raw;
-}
+// Login always returns to the home page. The only route to this page is the
+// 401 responseOverride in staticwebapp.config.json, which is a static redirect
+// that does not carry the URL the visitor was refused — and nothing else in the
+// site links here, so a `?to=` parameter that was read and validated here could
+// never actually be set. If return-to-page is wanted later, the way in is to
+// link here as `signin.html?to=<path>` from the client and validate that the
+// value starts with a single `/` — rejecting `//host` and backslashes, which
+// some browsers normalise into a protocol-relative URL.
+const LOGIN_TARGET = '/';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const target = safeTarget() ?? '/';
+  const target = LOGIN_TARGET;
   const query = `?post_login_redirect_uri=${encodeURIComponent(target)}`;
 
   document.getElementById('signin-github').href = `/.auth/login/github${query}`;

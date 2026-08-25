@@ -8,6 +8,21 @@ const {
 } = require('../lib/cosmos');
 const { applyRating, parseScore, RATING_MIN, SPICY_MIN } = require('../lib/rating');
 
+// A point read that distinguishes "not there" from "could not tell". Swallowing
+// every error made a throttled read indistinguishable from a deleted document,
+// which downstream turned into destroyed data: an edit whose target looked
+// deleted could only be rejected, and an approval whose submission looked
+// missing dropped the submitter's rating and deleted the queue entry anyway.
+async function readOrNull(container, id, partitionKey = id) {
+  try {
+    const { resource } = await container.item(id, partitionKey).read();
+    return resource ?? null;
+  } catch (err) {
+    if (err.code === 404) return null;
+    throw err;
+  }
+}
+
 app.http('submissions', {
   methods: ['GET', 'POST', 'PUT'],
   authLevel: 'anonymous',
@@ -28,7 +43,7 @@ app.http('submissions', {
         const targetId = String(data.targetId ?? '').trim();
         if (!targetId) return { status: 400, jsonBody: { error: 'targetId is required for an edit' } };
 
-        const { resource: target } = await packagesContainer.item(targetId, targetId).read().catch(() => ({}));
+        const target = await readOrNull(packagesContainer, targetId);
         if (!target) return { status: 404, jsonBody: { error: 'That noodle is not in the catalogue' } };
 
         const proposed = pickEditable(data.noodle ?? data);
@@ -37,7 +52,13 @@ app.http('submissions', {
         }
 
         const editSubmission = {
-          id: randomUUID(),
+          // Deterministic, not a UUID: one pending edit per user per noodle.
+          // With items.upsert below, re-sending replaces the pending row rather
+          // than queueing a duplicate — the form's local "nothing changed"
+          // check resets on reload, so without this a reload-and-resend spams
+          // the queue and costs a point read per stale row on every load.
+          // Different users still get different rows.
+          id: `${user.userId}_${targetId}`,
           kind: 'edit',
           targetId,
           submittedBy: user.userId,
@@ -45,12 +66,12 @@ app.http('submissions', {
           submittedAt: new Date().toISOString(),
           noodle: proposed
         };
-        await submissionsContainer.items.create(editSubmission);
+        await submissionsContainer.items.upsert(editSubmission);
         return { status: 201, jsonBody: { id: editSubmission.id } };
       }
 
       if (data.id) {
-        const { resource: existing } = await packagesContainer.item(data.id, data.id).read().catch(() => ({}));
+        const existing = await readOrNull(packagesContainer, data.id);
         if (existing) return { status: 409, jsonBody: { error: 'This noodle is already in the catalogue' } };
       }
 
@@ -93,9 +114,7 @@ app.http('submissions', {
       await Promise.all(resources
         .filter(sub => sub.kind === 'edit' && sub.targetId)
         .map(async (sub) => {
-          const { resource } =
-            await packagesContainer.item(sub.targetId, sub.targetId).read().catch(() => ({}));
-          sub.current = resource ?? null;
+          sub.current = await readOrNull(packagesContainer, sub.targetId);
         }));
 
       return { jsonBody: resources };
@@ -112,8 +131,7 @@ app.http('submissions', {
         // score THEY gave, and what the suggestion actually is all live here,
         // and none of it can be trusted from the request body — that is the
         // owner's edited copy of the form.
-        const { resource: submission } =
-          await submissionsContainer.item(id, id).read().catch(() => ({}));
+        const submission = await readOrNull(submissionsContainer, id);
 
         // The body is the fallback only for a double-clicked Approve, where the
         // first click already deleted the queue entry. This endpoint is
@@ -128,11 +146,27 @@ app.http('submissions', {
           const targetId = submission?.targetId ?? bodyTargetId;
           if (!targetId) return { status: 400, jsonBody: { error: 'targetId missing for an edit' } };
 
-          const { resource: current } =
-            await packagesContainer.item(targetId, targetId).read().catch(() => ({}));
+          const current = await readOrNull(packagesContainer, targetId);
           if (!current) return { status: 404, jsonBody: { error: 'That noodle is no longer in the catalogue' } };
 
-          await packagesContainer.items.upsert({ ...current, ...pickEditable(noodle) });
+          // IfMatch on the document just read. Without it, two approvals in
+          // quick succession — or an owner edit through add.html while this
+          // card sat open — silently lose the earlier write. `replace` rather
+          // than `upsert` so the precondition is actually enforced.
+          try {
+            await packagesContainer.item(targetId, targetId).replace(
+              { ...current, ...pickEditable(noodle) },
+              { accessCondition: { type: 'IfMatch', condition: current._etag } }
+            );
+          } catch (err) {
+            if (err.code === 412) {
+              return {
+                status: 409,
+                jsonBody: { error: 'That noodle changed while you were reviewing — reload the queue and try again' }
+              };
+            }
+            throw err;
+          }
 
           await submissionsContainer.item(id, id).delete().catch(err => {
             if (err.code !== 404) throw err;
@@ -141,6 +175,10 @@ app.http('submissions', {
         }
 
         const approved = withRatingDefaults(noodle);
+        // Without an id Cosmos assigns a GUID, producing a catalogue entry no
+        // barcode lookup can ever reach — and its ratings would be keyed to
+        // that invisible id too. Refuse rather than publish it.
+        if (!approved.id) return { status: 400, jsonBody: { error: 'noodle.id is required to approve' } };
 
         // Sequential, not Promise.all: publishing must succeed before the
         // submission is dropped, or a failure loses the queue entry too.
@@ -155,31 +193,29 @@ app.http('submissions', {
         // already exists and carries community ratings (the same barcode can
         // be queued twice), overwriting would reset ratingCount to 1 and
         // discard every real rating.
-        if (approved.id) {
+        await applyRating({
+          userId: user.userId,
+          noodleId: approved.id,
+          rating: approved.rating,
+          spicy: approved.spicy
+        });
+
+        const submitterId = submission?.submittedBy;
+        const submittedRating = parseScore(submission?.noodle?.rating, RATING_MIN);
+        const submittedSpicy = parseScore(submission?.noodle?.spicy, SPICY_MIN);
+
+        // Skipped when the owner submitted it themselves (one person, one
+        // rating), and when the queue entry predates the submit form asking
+        // for a score — defaulting there would invent an opinion and inflate
+        // ratingCount with it.
+        if (submitterId && submitterId !== user.userId
+            && submittedRating !== null && submittedSpicy !== null) {
           await applyRating({
-            userId: user.userId,
+            userId: submitterId,
             noodleId: approved.id,
-            rating: approved.rating,
-            spicy: approved.spicy
+            rating: submittedRating,
+            spicy: submittedSpicy
           });
-
-          const submitterId = submission?.submittedBy;
-          const submittedRating = parseScore(submission?.noodle?.rating, RATING_MIN);
-          const submittedSpicy = parseScore(submission?.noodle?.spicy, SPICY_MIN);
-
-          // Skipped when the owner submitted it themselves (one person, one
-          // rating), and when the queue entry predates the submit form asking
-          // for a score — defaulting there would invent an opinion and inflate
-          // ratingCount with it.
-          if (submitterId && submitterId !== user.userId
-              && submittedRating !== null && submittedSpicy !== null) {
-            await applyRating({
-              userId: submitterId,
-              noodleId: approved.id,
-              rating: submittedRating,
-              spicy: submittedSpicy
-            });
-          }
         }
 
         // A double-clicked Approve would otherwise 404 here and report a 500

@@ -38,7 +38,7 @@ function queueField(labelText, field, value, opts = {}) {
   if (opts.was !== undefined) {
     const was = document.createElement('small');
     was.className = 'queue-was';
-    was.textContent = `now: ${opts.was === '' || opts.was == null ? '(empty)' : opts.was}`;
+    was.textContent = `now: ${opts.was === '' ? '(empty)' : opts.was}`;
     wrap.append(was);
     wrap.classList.add('queue-field-changed');
   }
@@ -46,16 +46,32 @@ function queueField(labelText, field, value, opts = {}) {
   return wrap;
 }
 
-// Same normalisation the suggest-edit form uses, so "changed" means the same
-// thing on both sides and an unchanged field never renders a `now:` hint.
+// Mirrors normalise() in suggest-edit.js. Both sides must agree on what an
+// absent field means, or a field the live document never had reads as
+// `undefined` here and silently skips both the `now:` line and the highlight —
+// exactly the case the diff exists for, a submitter filling in a description
+// that was previously empty.
+function normalise(field, value) {
+  if (field === 'hasSoup') return !!value;
+  if (field === 'keywords') return Array.isArray(value) ? value : (value ? [value] : []);
+  if (field === 'price') return value === '' || value === null || value === undefined ? null : Number(value);
+  return value ?? '';
+}
+
 function sameValue(a, b) {
   return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 }
 
+function changed(proposed, current, field) {
+  return proposed[field] !== undefined
+    && !sameValue(normalise(field, proposed[field]), normalise(field, current[field]));
+}
+
 function displayValue(field, value) {
-  if (field === 'hasSoup') return value ? 'yes' : 'no';
-  if (field === 'keywords') return Array.isArray(value) ? value.join(', ') : (value ?? '');
-  return value;
+  const v = normalise(field, value);
+  if (field === 'hasSoup') return v ? 'yes' : 'no';
+  if (field === 'keywords') return v.join(', ');
+  return v === null ? '' : String(v);
 }
 
 // Mirrors the add form's markup so the pure-CSS `input:checked ~ label` fill
@@ -178,7 +194,7 @@ function buildEditCard(sub, idx) {
   card.dataset.id = sub.id;
   card.dataset.kind = 'edit';
   card.dataset.targetId = sub.targetId ?? '';
-  card.dataset.name = current.name || 'this noodle';
+  card.dataset.name = current.name || proposed.name || sub.targetId || 'this noodle';
 
   // The joined document is missing only if the noodle was deleted after the
   // edit was queued. Approving would 404, so say so and offer only Reject.
@@ -186,7 +202,10 @@ function buildEditCard(sub, idx) {
     const gone = document.createElement('p');
     gone.className = 'queue-gone';
     gone.textContent = 'That noodle is no longer in the index — this edit can only be rejected.';
-    card.append(cardHead(sub, merged, 'EDIT'), gone);
+    // `merged` is only the proposed fields here, so it may carry no name at
+    // all — fall back to the barcode rather than rendering "(unnamed)" on the
+    // one card whose only action is destructive.
+    card.append(cardHead(sub, { ...merged, name: card.dataset.name }, 'EDIT'), gone);
     const actions = cardActions(card);
     actions.querySelector('.queue-approve').remove();
     card.append(actions);
@@ -204,7 +223,7 @@ function buildEditCard(sub, idx) {
   soupInput.dataset.field = 'hasSoup';
   soupInput.checked = !!merged.hasSoup;
   soup.append(soupLabel, soupInput);
-  if (!sameValue(proposed.hasSoup, current.hasSoup) && proposed.hasSoup !== undefined) {
+  if (changed(proposed, current, 'hasSoup')) {
     soup.classList.add('queue-field-changed');
     const was = document.createElement('small');
     was.className = 'queue-was';
@@ -215,9 +234,7 @@ function buildEditCard(sub, idx) {
   // `was` is passed only where the submitter changed something, which is what
   // drives both the hint and the highlight.
   const hint = (field) =>
-    proposed[field] !== undefined && !sameValue(proposed[field], current[field])
-      ? { was: displayValue(field, current[field]) }
-      : {};
+    changed(proposed, current, field) ? { was: displayValue(field, current[field]) } : {};
 
   card.append(
     cardHead(sub, merged, 'EDIT'),

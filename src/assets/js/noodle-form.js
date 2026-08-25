@@ -1,23 +1,6 @@
-// Shared between add.html (owner) and submit.html (any signed-in user):
-// toasts, the barcode scanner and the Open Food Facts lookup.
-
-let toastTimer;
-function showToast(message, type) {
-  const el = document.getElementById('toast');
-  clearTimeout(toastTimer);
-  el.className = `toast-${type}`;
-  el.hidden = false;
-
-  if (type === 'error') {
-    el.innerHTML = `${message} <button onclick="this.parentElement.hidden=true" aria-label="Dismiss">&times;</button>`;
-  } else {
-    el.textContent = message;
-    toastTimer = setTimeout(() => {
-      el.classList.add('toast-fade');
-      setTimeout(() => { el.hidden = true; el.classList.remove('toast-fade'); }, 400);
-    }, 1000);
-  }
-}
+// Shared between add.html (owner) and submit.html (any signed-in user): the
+// barcode scanner and the Open Food Facts lookup. Both pages must also load
+// toast.js, which showToast lives in and this file calls.
 
 /* ========== Barcode scanner ========== */
 
