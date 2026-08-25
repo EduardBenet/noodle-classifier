@@ -1,7 +1,11 @@
 // Owner-only review queue. Each pending submission renders as an editable
-// card: the owner corrects whatever the submitter got wrong and assigns the
-// rating and spice the submit form never asks for, then approves (publishes to
-// the catalogue and drops the queue entry) or rejects (drops it).
+// card: the owner corrects whatever the submitter got wrong, then approves
+// (publishes to the catalogue and drops the queue entry) or rejects (drops it).
+//
+// Rating and spice are pre-filled with the submitter's own score and are the
+// OWNER's rating — approval writes two rating rows, one each. Leave them alone
+// and both scores match; change them and the submitter keeps what they sent,
+// which the API reads from the stored submission rather than from this form.
 //
 // Every field is written with `.value`/`.textContent`, never innerHTML — this
 // is the one page that renders text other people typed. The only innerHTML

@@ -1,6 +1,15 @@
 // Suggestion form for signed-in non-owners. Posts to /api/submissions, which
-// queues the noodle for owner review. Rating and spice are deliberately absent
-// — the owner assigns those at approval.
+// queues the noodle for owner review. The submitter rates it here: on approval
+// that score is written as their own rating, so an approved suggestion lands in
+// the submitter's My List without them having to go and rate it again.
+
+// null, not 0, when nothing is selected — 0 is a real spice level, so using it
+// as the "unset" marker would make a not-spicy noodle indistinguishable from an
+// unanswered question. Matches add.js.
+function selectedScore(name) {
+  const checked = document.querySelector(`input[name="${name}"]:checked`);
+  return checked ? Number(checked.value) : null;
+}
 
 function collectSubmission() {
   return {
@@ -11,6 +20,8 @@ function collectSubmission() {
     description: document.getElementById('description').value,
     hasSoup: document.getElementById('hasSoup').checked,
     price: parseFloat(document.getElementById('price').value),
+    spicy: selectedScore('spice'),
+    rating: selectedScore('rating'),
     image: document.getElementById('image').value
   };
 }
@@ -28,6 +39,13 @@ function showDuplicate(id) {
 async function sendSubmission() {
   const btn = document.getElementById('submit-btn');
   const payload = collectSubmission();
+
+  // The radios are `display: none` (the label is the visible control), so a
+  // native `required` would fail with "not focusable". Check them here instead.
+  if (payload.rating === null || payload.spicy === null) {
+    showToast('Pick a rating and a spice level — your score goes in with the suggestion.', 'error');
+    return;
+  }
 
   btn.disabled = true;
   let res;

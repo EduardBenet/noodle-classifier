@@ -44,8 +44,13 @@ main {
     margin: auto;
 }
 
+/* Drag handle in the bottom-right corner. `both` rather than `vertical` so the
+   grip pulls sideways too; max-width keeps a wide drag from breaking out of the
+   form grid, and min-height stops it being collapsed to nothing. */
 textarea {
-    resize: vertical;
+    resize: both;
+    min-height: 4.5rem;
+    max-width: 100%;
 }
 
 /* ========== Header Actions ========== */
@@ -415,6 +420,38 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     font-size: 0.75rem;
 }
 
+/* ========== Sign In ========== */
+.signin-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 320px;
+}
+
+.signin-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d0c4b0;
+    border-radius: 8px;
+    background: #fdf9f4;
+    color: #333;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.signin-btn:hover {
+    background: #f0e7d8;
+    border-color: #b9a888;
+}
+
+.signin-links {
+    display: flex;
+    gap: 1rem;
+}
+
 /* ========== Review Queue ========== */
 .queue-card {
     border: 1px solid #d0c4b0;
@@ -465,9 +502,6 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     color: #8a6a4a;
 }
 
-.queue-card textarea {
-    min-height: 4.5rem;
-}
 
 .queue-actions {
     display: flex;
