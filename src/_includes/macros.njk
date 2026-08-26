@@ -1,0 +1,43 @@
+{# Shared markup fragments. Imported as:  {% import "macros.njk" as ui %}
+
+   The score pickers were written out three times (add, submit, overlay) and
+   differ only in the radio group name. That mattered because the fill effect is
+   pure CSS — `input:checked ~ label` over a 5→1 reversed list — so each copy was
+   an independent chance to break the sibling order silently. Ids are derived
+   from the group name, which is what every existing copy already did. #}
+
+{% macro spicePicker(name, label) %}
+<div class="spice-row">
+    <label>{{ label }}</label>
+    <div class="spice-picker">
+        {# 0 is a real level — not spicy at all — so it needs its own control,
+           and it sits outside .spice-chilies so it highlights no chillies. #}
+        <input type="radio" name="{{ name }}" id="{{ name }}0" value="0" class="spice-none-input">
+        <label for="{{ name }}0" class="spice-none" title="Not spicy at all">None</label>
+        <div class="spice-chilies">
+            {% for i in [5, 4, 3, 2, 1] %}
+            <input type="radio" name="{{ name }}" id="{{ name }}{{ i }}" value="{{ i }}"><label for="{{ name }}{{ i }}">🌶️</label>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro ratingPicker(name, label) %}
+<div class="rating-row">
+    <label>{{ label }}</label>
+    <div class="rating-stars">
+        {% for i in [5, 4, 3, 2, 1] %}
+        <input type="radio" name="{{ name }}" id="{{ name }}{{ i }}" value="{{ i }}"><label for="{{ name }}{{ i }}">★</label>
+        {% endfor %}
+    </div>
+</div>
+{% endmacro %}
+
+{# Provider icons. Only the path data was duplicated between the header menu and
+   signin.html — the surrounding link markup genuinely differs between the two,
+   so it stays where it is. #}
+
+{% macro githubIcon(size) %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="{{ size }}" height="{{ size }}" aria-hidden="true"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.1.1 1.7 1.2 1.7 1.2 1 1.7 2.6 1.2 3.2.9.1-.7.4-1.2.7-1.5-2.5-.3-5.2-1.3-5.2-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0C17.3 5.5 18.3 5.8 18.3 5.8c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.2 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6C20.2 21.4 23.5 17.1 23.5 12 23.5 5.7 18.3.5 12 .5z"/></svg>{% endmacro %}
+
+{% macro microsoftIcon(size) %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="{{ size }}" height="{{ size }}" aria-hidden="true"><path d="M11.5 2L2 7v10l9.5 5 9.5-5V7L11.5 2zm0 2.3 7.2 3.8-7.2 3.8-7.2-3.8 7.2-3.8zM4 9.2l7 3.7v7l-7-3.7V9.2zm9 10.7v-7l7-3.7v7l-7 3.7z"/></svg>{% endmacro %}

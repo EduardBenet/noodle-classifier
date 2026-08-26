@@ -1,0 +1,11 @@
+{# Confirmation dialog, byte-identical in add.html and queue.html apart from the
+   action button's label. Set `confirmLabel` before including. #}
+<div id="confirm-dialog" class="confirm-backdrop">
+    <div class="confirm-box">
+        <p id="confirm-message"></p>
+        <div class="confirm-buttons">
+            <button id="confirm-cancel">Cancel</button>
+            <button id="confirm-ok" class="confirm-ok">{{ confirmLabel }}</button>
+        </div>
+    </div>
+</div>
