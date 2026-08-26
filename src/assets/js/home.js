@@ -36,9 +36,16 @@ window.addEventListener('DOMContentLoaded', async () => {
     showNoodleOfDayError('Could not load today’s noodle.');
     return;
   }
-  if (!noodles.length) return;
+  // Skip records that cannot render as a card. A single malformed row would
+  // otherwise blank the home page on whichever day the seed happened to land
+  // on it — which is exactly what happened: an approval that reached Cosmos
+  // with no id produced a document with a GUID for an id and every field
+  // empty. Filtering keeps the rotation deterministic over the rows that can
+  // actually be shown.
+  const candidates = noodles.filter(n => n && typeof n.name === 'string' && n.name.trim() !== '');
+  if (!candidates.length) return;
 
-  const noodle = noodles[todaySeed() % noodles.length];
+  const noodle = candidates[todaySeed() % candidates.length];
 
   // This used to be one try/catch around the fetch AND the render, swallowing
   // everything — so a single malformed record (a null price throwing in

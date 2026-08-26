@@ -119,7 +119,14 @@ function buildNoodleCard(noodle, { showDescription = false } = {}) {
   // any page rendering it. An approved edit that cleared the price field
   // stores null (parseFloat('') is NaN, which serialises to null), so this is
   // reachable from ordinary use, not just bad seed data.
-  const priceNumber = Number(noodle.price);
+  // Type-check BEFORE coercing. `Number(null)` is 0, so a bare
+  // Number.isFinite check passes a null price straight through and prints
+  // "£0.00" — a wrong number, which is worse than an obvious dash. Same trap
+  // as parseScore in the API.
+  const rawPrice = noodle.price;
+  const priceNumber = typeof rawPrice === 'number' || (typeof rawPrice === 'string' && rawPrice.trim() !== '')
+    ? Number(rawPrice)
+    : NaN;
   price.textContent = Number.isFinite(priceNumber) ? `£${priceNumber.toFixed(2)}` : '—';
 
   const spice = document.createElement('div');

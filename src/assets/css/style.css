@@ -247,6 +247,15 @@ textarea {
     margin-bottom: 1.25rem;
 }
 
+/* Shown when the catalogue cannot be loaded or the chosen noodle fails to
+   render. home.js used to swallow both silently, leaving an empty section. */
+.notd-error {
+    color: #8a6a4a;
+    font-style: italic;
+    text-align: center;
+    margin: 0;
+}
+
 #noodle-of-the-day .card {
     background: #fff8f0;
     border-color: #e0ccb0;
