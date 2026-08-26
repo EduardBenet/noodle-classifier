@@ -3,6 +3,20 @@
 // behalf — and on a phone holding a live Microsoft session that redirect
 // completed silently, landing them on the page signed in as an identity they
 // never chose. This page makes the choice explicit instead.
+//
+// NOT DEAD CODE, despite nothing in the site linking here. That is by design:
+// the header's own menu (header.html) is the fast path for a normal sign-in,
+// and every gated nav link is hidden until auth.js reveals it, so a signed-out
+// visitor has no in-app route to a gated URL. This page exists for the one
+// route that remains — a typed or bookmarked gated URL — which is exactly the
+// deep link that produced the silent sign-in above. It will therefore look
+// unused in normal browsing. Deleting it and repointing the 401 override at a
+// provider reintroduces that bug; see PLAN.md, "Sign-In Page".
+//
+// It does not affect a cancelled login: both this page and the header menu link
+// to an identical /.auth/login/<provider> URL, and post_login_redirect_uri
+// governs only the success path. A cancel returns an error to the Static Web
+// Apps callback, which the managed provider gives us no hook for.
 
 // Login always returns to the home page. The only route to this page is the
 // 401 responseOverride in staticwebapp.config.json, which is a static redirect
