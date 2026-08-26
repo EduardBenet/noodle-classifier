@@ -1,10 +1,5 @@
 ---
-layout: base.html
-title: "Add Noodle 🍜"
-currentPage: "add"
-loginRedirect: "/add.html"
-logoutRedirect: "/"
-permalink: add.html
+title: "Add Noodle"
 zxing: true
 localScripts:
   - assets/js/textarea-resize.js
@@ -13,15 +8,8 @@ localScripts:
   - assets/js/add.js
 ---
 
-<div id="confirm-dialog" class="confirm-backdrop">
-    <div class="confirm-box">
-        <p id="confirm-message"></p>
-        <div class="confirm-buttons">
-            <button id="confirm-cancel">Cancel</button>
-            <button id="confirm-ok" class="confirm-ok">Update</button>
-        </div>
-    </div>
-</div>
+{% set confirmLabel = "Update" %}
+{% include "confirm-dialog.html" %}
 
 <main>
     <form id="add-form">
@@ -34,37 +22,9 @@ localScripts:
             <video id="video-preview" autoplay muted playsinline
                 style="width: 100%; max-height: 300px; display: block;"></video>
         </div>
-        <input type="text" id="name" placeholder="Name" required>
-        <input type="text" id="brand" placeholder="Brand" required>
-        <input type="number" id="price" placeholder="Price (£)" step="0.01" min="0" required>
-        <textarea id="description" placeholder="Description" required></textarea>
-        <div class="checkbox-row">
-            <label for="hasSoup">Comes with soup:</label>
-            <input type="checkbox" id="hasSoup">
-        </div>
-        <div class="spice-row">
-            <label>Spice Level:</label>
-            <div class="spice-picker">
-                {# 0 is a real level — not spicy at all — so it needs its own control. #}
-                <input type="radio" name="spice" id="spice0" value="0" class="spice-none-input">
-                <label for="spice0" class="spice-none" title="Not spicy at all">None</label>
-                <div class="spice-chilies">
-                    {% for i in [5, 4, 3, 2, 1] %}
-                    <input type="radio" name="spice" id="spice{{ i }}" value="{{ i }}"><label for="spice{{ i }}">🌶️</label>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        <div class="rating-row">
-            <label>Rating:</label>
-            <div class="rating-stars">
-                {% for i in [5, 4, 3, 2, 1] %}
-                <input type="radio" name="rating" id="rating{{ i }}" value="{{ i }}"><label for="rating{{ i }}">★</label>
-                {% endfor %}
-            </div>
-        </div>
-        <input type="text" id="keywords" placeholder="Keywords (comma-separated)">
-        <input type="text" id="image" placeholder="Image filename (e.g. shin.jpg)">
+        {% set showScores = true %}
+        {% set ratingLabel = "Rating:" %}
+        {% include "noodle-fields.html" %}
         <button type="submit">Add Noodle</button>
     </form>
 </main>

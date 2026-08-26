@@ -113,7 +113,14 @@ function buildNoodleCard(noodle, { showDescription = false } = {}) {
 
   const price = document.createElement('div');
   price.className = 'price';
-  price.textContent = `£${noodle.price.toFixed(2)}`;
+  // The only field here that can throw: every other one goes through
+  // textContent, which tolerates undefined, but `.toFixed` on a null or
+  // missing price is a TypeError that takes down the whole card — and with it
+  // any page rendering it. An approved edit that cleared the price field
+  // stores null (parseFloat('') is NaN, which serialises to null), so this is
+  // reachable from ordinary use, not just bad seed data.
+  const priceNumber = Number(noodle.price);
+  price.textContent = Number.isFinite(priceNumber) ? `£${priceNumber.toFixed(2)}` : '—';
 
   const spice = document.createElement('div');
   spice.className = 'spice';

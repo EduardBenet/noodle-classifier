@@ -2,8 +2,10 @@
   "name": "noodle-classifier",
   "private": true,
   "scripts": {
-    "build": "eleventy",
-    "dev": "eleventy --serve"
+    "build": "npm run clean && eleventy",
+    "dev": "eleventy --serve",
+    "clean": "node -e \"require('fs').rmSync('_site',{recursive:true,force:true})\"",
+    "icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
     "@11ty/eleventy": "^3.0.0"

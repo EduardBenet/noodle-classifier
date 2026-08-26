@@ -1,47 +1,62 @@
+---
+rawPermalink: sw.js
+layout: null
+eleventyExcludeFromCollections: true
+---
 // Service worker. Chrome on Android requires one with a fetch handler before it
 // will offer a real install, and it is what makes the shell survive a bad
 // signal. Registered by assets/js/sw-register.js.
 //
-// Bump CACHE_VERSION on any change to the precache list or the strategies —
-// activate deletes every cache that does not match, which is the only way an
-// old shell gets evicted.
+// Bump CACHE_VERSION to evict every previous cache wholesale; activate deletes
+// anything that does not match. Day to day you should not need to: shell assets
+// are stale-while-revalidate, so a deploy lands on the next page load without
+// any version change.
 
 const CACHE_VERSION = 'v1';
 const SHELL_CACHE = `noodle-shell-${CACHE_VERSION}`;
 const DATA_CACHE = `noodle-data-${CACHE_VERSION}`;
 
-// Public pages and the assets they need. Deliberately excludes every gated
-// route (/add, /queue, /mylist, /profile, /submit, /suggest-edit): those answer
-// 302 to the sign-in page for a signed-out visitor, and caching that redirect
-// would pin it for signed-in ones too.
+// GENERATED — edit src/sw.njk, not the built _site/sw.js.
 //
-// Also excludes the Google Fonts stylesheet and the unpkg ZXing bundle. They
-// are cross-origin, so they answer requests we cannot inspect, and a single
-// failure in cache.addAll aborts the whole install — which is why each entry is
-// added individually below.
+// The page list comes from Eleventy's own collection and each page's
+// `localScripts`, so adding a page or a script cannot leave this list stale.
+// Gated routes are filtered out using staticwebapp.config.json itself (via
+// src/_data/swa.js), so "which routes need a login" is stated exactly once:
+// those answer 302 to the sign-in page for a signed-out visitor, and caching
+// that redirect would pin it for signed-in ones too.
+//
+// Cross-origin assets — the Google Fonts stylesheet, the unpkg ZXing bundle —
+// are never listed: they answer requests we cannot inspect, and one failure in
+// cache.addAll would abort the whole install, which is why each entry is added
+// individually below.
 const SHELL = [
-  '/',
-  '/index.html',
-  '/list.html',
-  '/signin.html',
+{%- for page in collections.all %}
+{%- if page.url and not swa.gatedSet.has(page.url) %}
+  '{{ page.url }}',
+{%- for script in page.data.localScripts %}
+  '/{{ script }}',
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
   '/manifest.webmanifest',
   '/assets/css/style.css',
-  '/assets/js/cards.js',
-  '/assets/js/overlay.js',
-  '/assets/js/auth.js',
-  '/assets/js/list.js',
-  '/assets/js/home.js',
-  '/assets/js/toast.js',
+{%- for script in baseScripts %}
+  '/{{ script }}',
+{%- endfor %}
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png'
 ];
+
+// Duplicates are harmless — cache.add on an already-cached URL just re-fetches
+// it once at install — but they make the generated file noisy, so collapse.
+const SHELL_URLS = [...new Set(SHELL)];
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(SHELL_CACHE);
     // One at a time, each tolerating failure: addAll is atomic, so a single
     // renamed asset would leave the app with no offline shell at all.
-    await Promise.all(SHELL.map(url => cache.add(url).catch(() => { })));
+    await Promise.all(SHELL_URLS.map(url => cache.add(url).catch(() => { })));
     await self.skipWaiting();
   })());
 });
@@ -84,16 +99,34 @@ async function networkFirst(request, cacheName) {
   }
 }
 
-async function cacheFirst(request) {
+// Stale-while-revalidate, NOT cache-first. The asset URLs carry no content
+// hash, so plain cache-first would serve whatever was cached at install for as
+// long as CACHE_VERSION stayed the same — a later deploy would ship fresh HTML
+// (network-first) against months-old JS, and remembering to bump a constant by
+// hand is not a cache-invalidation strategy. Here the cached copy answers
+// immediately and the network copy replaces it for next time, so a deploy takes
+// at most one extra page load to land.
+async function staleWhileRevalidate(request, event) {
   const cached = await caches.match(request);
-  if (cached) return cached;
 
-  const response = await fetch(request);
-  if (isCacheable(response)) {
-    const cache = await caches.open(SHELL_CACHE);
-    cache.put(request, response.clone());
+  const revalidate = fetch(request).then(async (response) => {
+    if (isCacheable(response)) {
+      const cache = await caches.open(SHELL_CACHE);
+      await cache.put(request, response.clone());
+    }
+    return response;
+  }).catch(() => null);
+
+  // waitUntil so the worker is not killed mid-revalidation once the cached
+  // response has already been handed back.
+  if (cached) {
+    event.waitUntil(revalidate);
+    return cached;
   }
-  return response;
+
+  const response = await revalidate;
+  if (response) return response;
+  throw new Error(`offline and not cached: ${request.url}`);
 }
 
 self.addEventListener('fetch', (event) => {
@@ -129,5 +162,5 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  event.respondWith(cacheFirst(request));
+  event.respondWith(staleWhileRevalidate(request, event));
 });

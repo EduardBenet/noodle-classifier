@@ -2,9 +2,10 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/assets");
   eleventyConfig.addPassthroughCopy("src/staticwebapp.config.json");
   eleventyConfig.addPassthroughCopy("src/manifest.webmanifest");
-  // Must land at the site root: a service worker can only control URLs at or
-  // below its own path, so /assets/sw.js could never control the pages.
-  eleventyConfig.addPassthroughCopy("src/sw.js");
+  // sw.js is no longer copied — it is generated from src/sw.njk so its
+  // precache list can be derived rather than hand-maintained. It still lands at
+  // the site root, which a service worker requires: one served from /assets/
+  // could only ever control /assets/.
 
   return {
     htmlTemplateEngine: "njk",

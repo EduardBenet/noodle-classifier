@@ -1,25 +1,13 @@
 ---
-layout: base.html
-title: "Review Queue 🍜"
-currentPage: "queue"
-loginRedirect: "/queue.html"
-logoutRedirect: "/"
-permalink: queue.html
+title: "Review Queue"
 localScripts:
   - assets/js/textarea-resize.js
   - assets/js/toast.js
   - assets/js/queue.js
 ---
 
-<div id="confirm-dialog" class="confirm-backdrop">
-    <div class="confirm-box">
-        <p id="confirm-message"></p>
-        <div class="confirm-buttons">
-            <button id="confirm-cancel">Cancel</button>
-            <button id="confirm-ok" class="confirm-ok">Reject</button>
-        </div>
-    </div>
-</div>
+{% set confirmLabel = "Reject" %}
+{% include "confirm-dialog.html" %}
 
 <main>
     <h2 class="page-heading">Review queue</h2>
