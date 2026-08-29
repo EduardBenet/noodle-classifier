@@ -720,6 +720,22 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     cursor: pointer;
 }
 
+/* Sits as the last child of the card grid, so it spans the column and reads as
+   the end of the (capped) list rather than as a card. */
+.show-all {
+    padding: 0.6rem;
+    font-size: 0.95rem;
+    color: #8a6a4a;
+    background: #fdf9f4;
+    border: 1px dashed #c8b89a;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.show-all:hover {
+    background: #f1e9dc;
+}
+
 /* ========== Noodle Cards ========== */
 #noodle-list {
     display: grid;
