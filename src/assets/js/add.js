@@ -13,10 +13,17 @@ function selectedScore(name) {
 
 function collectFormData() {
   return {
-    id: document.getElementById('product-id').value,
+    // Trimmed, like every other collector: " 123 " and "123" would otherwise
+    // be two separate noodles. The API trims too — this just keeps what the
+    // form sends honest.
+    id: document.getElementById('product-id').value.trim(),
     name: document.getElementById('name').value,
     brand: document.getElementById('brand').value,
-    keywords: document.getElementById('keywords').value.split(',').map(k => k.trim()),
+    // filter(Boolean) to match submit.js, queue.js and suggest-edit.js — this
+    // was the only collector without it, so an empty keywords box stored [""]
+    // rather than []. That stray empty string is how the orphan record created
+    // on 2026-08-24 was traced back to this form.
+    keywords: document.getElementById('keywords').value.split(',').map(k => k.trim()).filter(Boolean),
     description: document.getElementById('description').value,
     spicy: selectedScore('spice'),
     hasSoup: document.getElementById('hasSoup').checked,
@@ -57,7 +64,13 @@ async function save(method) {
   }
 
   if (!res.ok) {
-    const msg = res.status === 401 ? 'Not authorised.' : `Error ${res.status} — changes not saved.`;
+    // A 400 carries a reason worth reading (a missing barcode, say), so show
+    // the API's own message rather than a bare status code.
+    let msg = res.status === 401 ? 'Not authorised.' : `Error ${res.status} — changes not saved.`;
+    if (res.status === 400) {
+      const body = await res.json().catch(() => null);
+      if (body?.error) msg = `${body.error} — changes not saved.`;
+    }
     showToast(msg, 'error');
     return;
   }
