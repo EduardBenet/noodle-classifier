@@ -71,6 +71,9 @@ window.addEventListener("DOMContentLoaded", async () => {
       }
       if (isOwner) {
         document.getElementById("nav-queue")?.removeAttribute("hidden");
+        // Deleting a noodle takes everyone's ratings of it with it, so it is
+        // the owner's alone — the API refuses it for anyone else regardless.
+        document.getElementById("overlay-delete")?.removeAttribute("hidden");
       }
     }
   } catch {

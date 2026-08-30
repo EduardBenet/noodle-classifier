@@ -14,6 +14,11 @@ function showNoodleOfDayError(message) {
   host.replaceChildren(p);
 }
 
+// Today's pick is chosen from the catalogue by a date seed, so deleting it
+// does not just remove a card — it changes which noodle today's is. Reloading
+// is the whole of the fix.
+window.noodleRemoved = () => location.reload();
+
 window.addEventListener('DOMContentLoaded', async () => {
   const host = document.getElementById('noodle-of-the-day');
   if (!host) return;

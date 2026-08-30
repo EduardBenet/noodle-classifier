@@ -1,3 +1,8 @@
+// Every number on this page is computed from the whole catalogue — totals,
+// averages, the price range, the highlights. Deleting a noodle invalidates all
+// of them at once, so the page is rebuilt rather than patched.
+window.noodleRemoved = () => location.reload();
+
 window.addEventListener("DOMContentLoaded", async () => {
   let noodles;
   try {

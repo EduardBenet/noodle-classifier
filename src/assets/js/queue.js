@@ -13,7 +13,6 @@
 // indices.
 
 let queueCount = 0;
-let pendingReject = null;
 
 function queueField(labelText, field, value, opts = {}) {
   const wrap = document.createElement('label');
@@ -390,17 +389,12 @@ async function decide(card, action) {
 
 // Reject deletes the submission outright, and nothing else records it — worth
 // a confirmation, unlike approve which publishes what is on screen.
-function askReject(card) {
-  pendingReject = card;
-  document.getElementById('confirm-message').textContent = card.dataset.kind === 'edit'
+async function askReject(card) {
+  const message = card.dataset.kind === 'edit'
     ? `Reject the edit to "${card.dataset.name}"? The noodle is left as it is and the edit is deleted.`
     : `Reject "${card.dataset.name}"? The suggestion is deleted.`;
-  document.getElementById('confirm-dialog').classList.add('visible');
-}
 
-function closeConfirm() {
-  document.getElementById('confirm-dialog').classList.remove('visible');
-  pendingReject = null;
+  if (await confirmAction({ message, label: 'Reject', danger: true })) decide(card, 'reject');
 }
 
 function updateEmptyState() {
@@ -432,12 +426,5 @@ async function loadQueue() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('confirm-ok').addEventListener('click', () => {
-    const card = pendingReject;
-    closeConfirm();
-    if (card) decide(card, 'reject');
-  });
-  document.getElementById('confirm-cancel').addEventListener('click', closeConfirm);
-
   loadQueue();
 });

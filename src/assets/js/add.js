@@ -136,23 +136,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (id) fillFormById(id);
   });
 
-  document.getElementById('add-form').addEventListener('submit', (e) => {
+  document.getElementById('add-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (isExistingNoodle) {
-      const name = document.getElementById('name').value;
-      document.getElementById('confirm-message').textContent = `"${name}" already exists. Overwrite it?`;
-      document.getElementById('confirm-dialog').classList.add('visible');
-    } else {
+    if (!isExistingNoodle) {
       save('POST');
+      return;
     }
-  });
-
-  document.getElementById('confirm-ok').addEventListener('click', () => {
-    document.getElementById('confirm-dialog').classList.remove('visible');
-    save('PUT');
-  });
-
-  document.getElementById('confirm-cancel').addEventListener('click', () => {
-    document.getElementById('confirm-dialog').classList.remove('visible');
+    const name = document.getElementById('name').value;
+    const overwrite = await confirmAction({
+      message: `"${name}" already exists. Overwrite it?`,
+      label: 'Update'
+    });
+    if (overwrite) save('PUT');
   });
 });

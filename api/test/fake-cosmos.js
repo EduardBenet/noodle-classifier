@@ -30,7 +30,7 @@ function fakeContainer(seed = []) {
     // Errors queued by a test, thrown one per matching call — this is how a
     // lost etag race is reproduced deterministically.
     failures: { replace: [], create: [], delete: [] },
-    calls: { read: 0, upsert: 0, create: 0, replace: 0, delete: 0 }
+    calls: { read: 0, upsert: 0, create: 0, replace: 0, delete: 0, query: 0 }
   };
 
   const nextFailure = (op) => (container.failures[op].length ? container.failures[op].shift() : null);
@@ -68,7 +68,36 @@ function fakeContainer(seed = []) {
     }
   });
 
+  // Enough SQL to evaluate the queries this codebase actually issues: equality
+  // against a parameter, joined by OR or AND, over dotted paths. Deliberately
+  // not a parser — but it does read the real query text, so a query naming the
+  // wrong field fails the test rather than quietly matching everything.
+  const evaluate = (spec, doc) => {
+    const where = /WHERE\s+([\s\S]+)$/i.exec(spec.query);
+    if (!where) return true;
+    const params = Object.fromEntries((spec.parameters ?? []).map(p => [p.name, p.value]));
+    const clauses = where[1].split(/\s+OR\s+/i);
+
+    return clauses.some(clause => clause.split(/\s+AND\s+/i).every(term => {
+      const [, path, param] = /c\.([\w.]+)\s*=\s*(@\w+)/.exec(term.trim()) ?? [];
+      if (!path) throw new Error(`fake cosmos cannot evaluate: ${term}`);
+      const value = path.split('.').reduce((acc, key) => (acc == null ? acc : acc[key]), doc);
+      return value === params[param];
+    }));
+  };
+
   container.items = {
+    query(spec) {
+      container.calls.query++;
+      return {
+        async fetchAll() {
+          const resources = [...docs.values()]
+            .filter(doc => evaluate(typeof spec === 'string' ? { query: spec } : spec, doc))
+            .map(doc => ({ ...doc }));
+          return { resources };
+        }
+      };
+    },
     async upsert(doc) {
       container.calls.upsert++;
       return { resource: store(doc) };

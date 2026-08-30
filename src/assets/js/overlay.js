@@ -150,6 +150,53 @@ async function removeRating() {
   }
 }
 
+// How many other people's scores this delete would take with it. The owner is
+// about to destroy data they did not create, so the count belongs in the
+// question, not in a toast afterwards.
+function deleteWarning(noodle) {
+  const count = noodle.ratingCount ?? 0;
+  if (!count) return 'It is not rated by anyone.';
+  return count === 1
+    ? 'The one rating it has goes with it.'
+    : `All ${count} ratings of it go with it.`;
+}
+
+async function deleteNoodle() {
+  closeMenu();
+  if (!overlayNoodle) return;
+
+  const confirmed = await confirmAction({
+    message: `Delete "${overlayNoodle.name}" from the index? ${deleteWarning(overlayNoodle)} This cannot be undone.`,
+    label: 'Delete',
+    danger: true
+  });
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`/api/noodles?id=${encodeURIComponent(overlayNoodle.id)}`, {
+      method: 'DELETE'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const { ratingsRemoved } = await res.json();
+    const removed = overlayNoodle;
+    hideOverlay();
+    showToast(
+      ratingsRemoved
+        ? `"${removed.name}" deleted, along with ${ratingsRemoved} rating${ratingsRemoved === 1 ? '' : 's'}`
+        : `"${removed.name}" deleted`,
+      'success'
+    );
+    // Not refreshNoodleCards: that patches a noodle in place, and this one is
+    // gone. Every page that can open the overlay implements its own removal —
+    // dropping the card, or reloading where the whole page is derived from the
+    // catalogue.
+    window.noodleRemoved?.(removed.id);
+  } catch {
+    showToast('Could not delete that noodle — try again', 'error');
+  }
+}
+
 // The canonical link to one noodle: the list page, with the overlay opened on
 // arrival (list.js reads this back). The list is public and un-gated, so a
 // shared link opens for a signed-out stranger; a dedicated page would need its
@@ -284,6 +331,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Escape unwinds one layer at a time: the menu first, the overlay behind it.
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
+    // The confirmation dialog sits on top and handles its own Escape; without
+    // this the one keypress dismisses the question and the card behind it.
+    if (confirmIsOpen()) return;
     if (isMenuOpen()) closeMenu({ refocus: true });
     else hideOverlay();
   });
@@ -305,6 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById("overlay-share").addEventListener("click", shareNoodle);
+  document.getElementById("overlay-delete").addEventListener("click", deleteNoodle);
   document.getElementById("overlay-edit").addEventListener("click", () => {
     closeMenu();
     if (!overlayNoodle) return;

@@ -112,6 +112,18 @@ window.refreshNoodleCards = (updated) => {
   }
 };
 
+// The catalogue is held in memory here, so a deleted noodle has to be dropped
+// from it — and from the search results, which are a separate array.
+window.noodleRemoved = (id) => {
+  allNoodles = allNoodles.filter(n => n.id !== id);
+  if (searchResults) {
+    searchResults = searchResults.filter(n => n.id !== id);
+    renderList(searchResults, 'noodle-list');
+    return;
+  }
+  renderPagedList(sortNoodles(allNoodles));
+};
+
 function renderList(data, lname) {
   const list = document.getElementById(lname);
   list.innerHTML = '';

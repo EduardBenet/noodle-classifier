@@ -25,6 +25,7 @@
 <body>
     {% include "header.html" %}
     {% include "overlay.html" %}
+    {% include "confirm-dialog.html" %}
 
     {{ content | safe }}
 
@@ -35,6 +36,7 @@
     <div id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
 
     <script src="assets/js/cards.js"></script>
+    <script src="assets/js/confirm.js"></script>
     <script src="assets/js/toast.js"></script>
     <script src="assets/js/overlay.js"></script>
     {% for script in localScripts %}

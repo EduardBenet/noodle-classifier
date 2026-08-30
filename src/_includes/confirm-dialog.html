@@ -1,11 +1,12 @@
-{# Confirmation dialog, byte-identical in add.html and queue.html apart from the
-   action button's label. Set `confirmLabel` before including. #}
+{# The app's one confirmation dialog, in base.html because the overlay — which
+   is on every page — needs it too. Message and button label are set by
+   confirmAction(); nothing here is per-page any more. #}
 <div id="confirm-dialog" class="confirm-backdrop">
     <div class="confirm-box">
         <p id="confirm-message"></p>
         <div class="confirm-buttons">
-            <button id="confirm-cancel">Cancel</button>
-            <button id="confirm-ok" class="confirm-ok">{{ confirmLabel }}</button>
+            <button id="confirm-cancel" type="button">Cancel</button>
+            <button id="confirm-ok" class="confirm-ok" type="button"></button>
         </div>
     </div>
 </div>

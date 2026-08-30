@@ -123,4 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
     allNoodles = null;
     renderMine();
   };
+
+  // A deleted noodle takes this page's rating of it with it, so the same
+  // refetch is the right answer — the row is simply gone from the API's reply.
+  window.noodleRemoved = window.refreshNoodleCards;
 });

@@ -31,6 +31,12 @@
                 <button id="overlay-share" type="button" role="menuitem">Share link</button>
                 {# auth.js reveals this and sets its wording; overlay.js routes the click. #}
                 <button id="overlay-edit" type="button" role="menuitem" hidden>Edit</button>
+                {# Owner only, revealed by auth.js. Last in the menu and set
+                   apart, because it is the one item here that destroys
+                   something — and it is a tap away from "Remove my rating" in
+                   the widget below, which sounds similar and is not. #}
+                <button id="overlay-delete" type="button" role="menuitem" class="menu-danger" hidden>Delete
+                    noodle</button>
             </div>
         </div>
         <h2 id="overlay-title"></h2>

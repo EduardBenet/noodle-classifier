@@ -3,6 +3,7 @@ const { parsePrincipal } = require('../lib/auth');
 const { withRatingDefaults, normaliseId } = require('../lib/noodle');
 const { packages, aggregates, submissions } = require('../lib/cosmos');
 const { applyRating } = require('../lib/rating');
+const { deleteNoodle } = require('../lib/catalogue');
 
 function withAggregate(noodle, agg) {
   return agg ? { ...noodle, avgRating: agg.avgRating, avgSpicy: agg.avgSpicy, ratingCount: agg.ratingCount } : noodle;
@@ -25,7 +26,7 @@ async function mergeAggregates(noodles) {
 }
 
 app.http('noodles', {
-  methods: ['GET', 'POST', 'PUT'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   authLevel: 'anonymous',
   handler: async (request, context) => {
     if (request.method === 'GET') {
@@ -96,6 +97,20 @@ app.http('noodles', {
         await applyRating({ userId, noodleId: data.id, rating: data.rating, spicy: data.spicy });
       }
       return { jsonBody: resource, status: 201 };
+    }
+
+    // Owner-only by the check above. Irreversible: the noodle, its aggregate,
+    // every rating anyone gave it and any pending suggestion for it all go.
+    if (request.method === 'DELETE') {
+      const id = normaliseId(new URL(request.url).searchParams.get('id'));
+      if (!id) return { status: 400, jsonBody: { error: 'A product ID (barcode) is required' } };
+
+      const result = await deleteNoodle(id);
+      if (!result.found) return { status: 404, jsonBody: { error: 'That noodle is not in the catalogue' } };
+      // The counts go back so the client can say what was actually destroyed,
+      // rather than leaving the owner to guess how many people's scores went
+      // with it.
+      return { jsonBody: result };
     }
 
     if (request.method === 'PUT') {

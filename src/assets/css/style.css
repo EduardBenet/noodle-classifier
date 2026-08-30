@@ -412,6 +412,15 @@ textarea {
     cursor: pointer;
 }
 
+/* The one item in here that destroys something. Set apart so a thumb reaching
+   for Edit does not find it by accident. */
+.menu-danger {
+    color: #a4432e;
+    margin-top: 0.25rem;
+    border-top: 1px solid #ece4d5;
+    border-radius: 0 0 6px 6px;
+}
+
 .overlay-menu button:hover {
     background: #f1e9dc;
 }
@@ -1052,6 +1061,14 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
 #rating-remove:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* Matches .menu-danger: the confirm dialog's action button carries the same
+   weight as the control that opened it. */
+.confirm-buttons .confirm-danger {
+    background: #a4432e;
+    border-color: #a4432e;
+    color: #fdf9f4;
 }
 
 /* ========== Barcode Scanner ========== */
