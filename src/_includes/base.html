@@ -28,7 +28,11 @@
 
     {{ content | safe }}
 
-    <div id="toast" hidden></div>
+    {# A live region, so the messages that used to sit inline — a failed save,
+       a removed rating — are announced rather than only seen. toast.js unhides
+       the element before writing to it, which is the order that makes the
+       announcement fire. #}
+    <div id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
 
     <script src="assets/js/cards.js"></script>
     <script src="assets/js/toast.js"></script>
