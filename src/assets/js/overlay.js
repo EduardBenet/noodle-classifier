@@ -25,15 +25,18 @@ function ratingInputs() {
     rating: document.querySelector('input[name="my-rating"]:checked'),
     spicy: document.querySelector('input[name="my-spice"]:checked'),
     submit: document.getElementById('rating-submit'),
+    remove: document.getElementById('rating-remove'),
     status: document.getElementById('rating-status')
   };
 }
 
 function resetRatingWidget() {
-  const { form, submit, status } = ratingInputs();
+  const { form, submit, remove, status } = ratingInputs();
   form.hidden = true;
   form.querySelectorAll('input[type="radio"]').forEach(i => { i.checked = false; });
   submit.disabled = true;
+  remove.hidden = true;
+  remove.disabled = false;
   status.textContent = '';
 }
 
@@ -59,6 +62,7 @@ async function loadOwnRating(noodle, token) {
     selectRadio('my-rating', own.rating);
     selectRadio('my-spice', own.spicy);
     status.textContent = 'Your current rating';
+    ratingInputs().remove.hidden = false;
     syncSubmitState();
   } catch {
     // leave the widget empty — the user can still submit a fresh rating
@@ -98,12 +102,51 @@ async function submitRating(e) {
 
     renderCommunityScores(overlayNoodle);
     status.textContent = 'Saved';
+    ratingInputs().remove.hidden = false;
     // Pass the noodle along: search results are not the same objects the list
     // page caches, so the receiver may need to patch its own copy.
     window.refreshNoodleCards?.(overlayNoodle);
   } catch {
     status.textContent = 'Could not save — try again';
   } finally {
+    syncSubmitState();
+  }
+}
+
+async function removeRating() {
+  if (!overlayNoodle) return;
+
+  const { form, remove, status } = ratingInputs();
+  remove.disabled = true;
+  status.textContent = 'Removing…';
+
+  try {
+    const res = await fetch(`/api/ratings?noodleId=${encodeURIComponent(overlayNoodle.id)}`, {
+      method: 'DELETE'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const { aggregate } = await res.json();
+    // Null, not delete: the cached copy on a search results page is a different
+    // object patched with Object.assign, which copies a null over but cannot
+    // carry the absence of a key. `communityRating` reads `avgRating ?? rating`,
+    // so a null falls back to the noodle's own score either way.
+    overlayNoodle.avgRating = aggregate?.avgRating ?? null;
+    overlayNoodle.avgSpicy = aggregate?.avgSpicy ?? null;
+    overlayNoodle.ratingCount = aggregate?.ratingCount ?? null;
+    overlayNoodle.myRating = null;
+    overlayNoodle.mySpicy = null;
+    overlayNoodle.ratedAt = null;
+
+    form.querySelectorAll('input[type="radio"]').forEach(i => { i.checked = false; });
+    remove.hidden = true;
+    status.textContent = 'Rating removed';
+    renderCommunityScores(overlayNoodle);
+    window.refreshNoodleCards?.(overlayNoodle);
+  } catch {
+    status.textContent = 'Could not remove — try again';
+  } finally {
+    remove.disabled = false;
     syncSubmitState();
   }
 }
@@ -271,6 +314,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const page = window.currentUser?.isOwner ? 'add.html' : 'suggest-edit.html';
     window.location.href = `${page}?id=${encodeURIComponent(overlayNoodle.id)}`;
   });
+
+  document.getElementById("rating-remove").addEventListener("click", removeRating);
 
   const form = document.getElementById("rating-widget");
   form.addEventListener("change", syncSubmitState);

@@ -42,6 +42,11 @@
             <div class="rating-widget-footer">
                 <button type="submit" id="rating-submit" disabled>Save rating</button>
                 <span id="rating-status" role="status"></span>
+                {# Revealed only once a rating has actually loaded for this
+                   noodle — there is nothing to take back otherwise. It clears
+                   your score, not the noodle, which is why it lives beside the
+                   stars rather than in the ⋮ menu next to Delete. #}
+                <button type="button" id="rating-remove" hidden>Remove my rating</button>
             </div>
         </form>
     </div>

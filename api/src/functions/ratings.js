@@ -5,7 +5,7 @@ const {
   aggregates: aggregatesContainer,
   packages: packagesContainer
 } = require('../lib/cosmos');
-const { applyRating, parseScore, RATING_MIN, SPICY_MIN, SCORE_MAX } = require('../lib/rating');
+const { applyRating, unapplyRating, parseScore, RATING_MIN, SPICY_MIN, SCORE_MAX } = require('../lib/rating');
 
 // Every noodle the caller has rated, joined with the noodle document and the
 // community aggregate. `ratings` has a hierarchical partition key
@@ -60,7 +60,7 @@ async function listOwnRatings(userId, limit) {
 }
 
 app.http('ratings', {
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'DELETE'],
   authLevel: 'anonymous',
   handler: async (request, context) => {
     const userId = parsePrincipal(request)?.userId;
@@ -81,6 +81,20 @@ app.http('ratings', {
       const { resource } = await ratingsContainer
         .item(`${userId}_${noodleId}`, [userId, noodleId]).read().catch(() => ({}));
       return { jsonBody: resource ? { rating: resource.rating, spicy: resource.spicy } : null };
+    }
+
+    // Taking your own rating back. Scoped to the caller's own partition by the
+    // key, never by a userId from the request — the only thing anyone can
+    // delete here is their own row.
+    if (request.method === 'DELETE') {
+      const noodleId = new URL(request.url).searchParams.get('noodleId');
+      if (!noodleId) return { status: 400, jsonBody: { error: 'noodleId is required' } };
+
+      const { removed, aggregate } = await unapplyRating({ userId, noodleId });
+      if (!removed) return { status: 404, jsonBody: { error: 'You have not rated this noodle' } };
+      // A null aggregate means that was the last rating: the caller falls back
+      // to the noodle's own score, exactly as it does for a never-rated noodle.
+      return { status: 200, jsonBody: { aggregate: aggregate ?? null } };
     }
 
     const { noodleId, rating, spicy } = await request.json();
