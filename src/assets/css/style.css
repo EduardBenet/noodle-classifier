@@ -326,6 +326,9 @@ textarea {
 
 #overlay-card h2 {
     margin: 0 0 1rem;
+    /* Clear of the action buttons pinned in the corner, so a long name wraps
+       beside them rather than underneath. */
+    padding-right: 5.5rem;
     font-size: 1.3rem;
     text-align: center;
     padding: 0 4rem;
@@ -339,18 +342,72 @@ textarea {
     gap: 0.25rem;
 }
 
-.overlay-actions button {
+/* 44px square: these sit a few pixels apart in the corner of a card that fills
+   a phone screen, and the two of them are "leave" and "act" — a mis-tap between
+   those is the one worth spending the space to prevent. */
+.overlay-actions>button {
     background: none;
     border: none;
-    font-size: 1rem;
+    font-size: 1.25rem;
     cursor: pointer;
     color: #888;
     line-height: 1;
-    padding: 0.25rem;
+    padding: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
 }
 
-.overlay-actions button:hover {
+.overlay-actions>button:hover {
     color: #333;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.overlay-actions>button:focus-visible {
+    outline: 2px solid #8a6a4a;
+    outline-offset: -2px;
+}
+
+/* Anchored to .overlay-actions, which is itself absolutely positioned — so the
+   menu hangs under the ⋮ and off its right edge, where it cannot run off a
+   narrow screen the way a left-aligned popover would. */
+.overlay-menu {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    right: 0;
+    z-index: 1;
+    min-width: 11rem;
+    padding: 0.25rem;
+    background: #fdf9f4;
+    border: 1px solid #c8b89a;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+}
+
+.overlay-menu button {
+    background: none;
+    border: none;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.95rem;
+    text-align: left;
+    color: #3a3226;
+    padding: 0.75rem;
+    cursor: pointer;
+}
+
+.overlay-menu button:hover {
+    background: #f1e9dc;
+}
+
+.overlay-menu button:focus-visible {
+    outline: 2px solid #8a6a4a;
+    outline-offset: -2px;
 }
 
 /* Matches the geometry of `main` on the list page (800px content box) so the

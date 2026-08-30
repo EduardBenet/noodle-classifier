@@ -136,6 +136,7 @@ function copyTextFallback(text) {
 }
 
 async function shareNoodle() {
+  closeMenu();
   if (!overlayNoodle) return;
   const url = noodleLink(overlayNoodle);
 
@@ -160,6 +161,34 @@ async function shareNoodle() {
     if (copyTextFallback(url)) showToast('Link copied', 'success');
     else showToast(`Could not copy the link: ${url}`, 'error');
   }
+}
+
+function menuParts() {
+  return {
+    menu: document.getElementById('overlay-menu'),
+    button: document.getElementById('overlay-menu-button')
+  };
+}
+
+function isMenuOpen() {
+  return !menuParts().menu.hidden;
+}
+
+function openMenu() {
+  const { menu, button } = menuParts();
+  menu.hidden = false;
+  button.setAttribute('aria-expanded', 'true');
+  // Straight into the list, so a keyboard user is not left on the trigger with
+  // the menu open behind them.
+  menu.querySelector('button:not([hidden])')?.focus();
+}
+
+function closeMenu({ refocus = false } = {}) {
+  const { menu, button } = menuParts();
+  if (menu.hidden) return;
+  menu.hidden = true;
+  button.setAttribute('aria-expanded', 'false');
+  if (refocus) button.focus();
 }
 
 function showNoodleOverlay(noodle) {
@@ -191,6 +220,7 @@ function showNoodleOverlay(noodle) {
   renderCommunityScores(noodle);
 
   resetRatingWidget();
+  closeMenu();
   window.authReady?.then(user => {
     if (user && token === overlayToken) loadOwnRating(noodle, token);
   });
@@ -200,6 +230,7 @@ function showNoodleOverlay(noodle) {
 
 function hideOverlay() {
   overlayToken++;
+  closeMenu();
   document.getElementById("overlay").classList.remove("visible");
 }
 
@@ -208,14 +239,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // A third way out, alongside the close button and the backdrop. The card is
   // as tall as the screen on a phone, which leaves little backdrop to tap.
+  // Escape unwinds one layer at a time: the menu first, the overlay behind it.
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") hideOverlay();
+    if (e.key !== "Escape") return;
+    if (isMenuOpen()) closeMenu({ refocus: true });
+    else hideOverlay();
   });
   document.getElementById("overlay").addEventListener("click", (e) => {
     if (e.target === document.getElementById("overlay")) hideOverlay();
   });
+
+  document.getElementById("overlay-menu-button").addEventListener("click", (e) => {
+    // Without this the document listener below sees the same click and shuts
+    // the menu again in the same tick, so it would never appear to open.
+    e.stopPropagation();
+    if (isMenuOpen()) closeMenu();
+    else openMenu();
+  });
+  // A tap anywhere else dismisses it — including on the card behind, which is
+  // what a phone user expects from a popover.
+  document.addEventListener("click", (e) => {
+    if (isMenuOpen() && !menuParts().menu.contains(e.target)) closeMenu();
+  });
+
   document.getElementById("overlay-share").addEventListener("click", shareNoodle);
   document.getElementById("overlay-edit").addEventListener("click", () => {
+    closeMenu();
     if (!overlayNoodle) return;
     // The owner edits the catalogue directly; everyone else files an edit
     // suggestion for the review queue. auth.js reveals the button for both.

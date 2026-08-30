@@ -60,12 +60,13 @@ window.addEventListener("DOMContentLoaded", async () => {
         navAdd.textContent = isOwner ? 'Add' : 'Suggest';
         navAdd.removeAttribute("hidden");
       }
-      // The overlay pencil is for every signed-in user now: the owner edits
+      // The overlay's edit action is for every signed-in user now: the owner edits
       // the noodle directly, everyone else suggests an edit for review.
       // overlay.js routes the click; this only decides the affordance.
       const overlayEdit = document.getElementById("overlay-edit");
       if (overlayEdit) {
-        overlayEdit.title = isOwner ? 'Edit' : 'Suggest an edit';
+        // A labelled menu row now, so the wording is the label itself.
+        overlayEdit.textContent = isOwner ? 'Edit' : 'Suggest an edit';
         overlayEdit.removeAttribute("hidden");
       }
       if (isOwner) {
