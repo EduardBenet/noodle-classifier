@@ -20,13 +20,23 @@ jobs:
           submodules: true
           lfs: false
       # Before the deploy, not after: a failing job here is what stops a broken
-      # aggregate reaching production. The API tests use fakes for Cosmos, so
-      # they need no connection string and no secrets.
+      # aggregate reaching production. The tests fake Cosmos, so they need no
+      # connection string and no secrets — `npm ci` is here so they run against
+      # the same dependency tree the deployed API gets, not so they can load.
+      #
+      # working-directory, not --prefix: `npm install --prefix api` run from the
+      # repo root takes the root package as something to install and writes it
+      # into api/package.json as a file:.. dependency.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: api/package-lock.json
       - name: API tests
-        run: npm test --prefix api
+        working-directory: api
+        run: |
+          npm ci
+          npm test
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
