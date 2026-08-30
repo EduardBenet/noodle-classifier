@@ -1,22 +1,8 @@
 const { app } = require('@azure/functions');
 const { parsePrincipal } = require('../lib/auth');
-const { withRatingDefaults } = require('../lib/noodle');
+const { withRatingDefaults, normaliseId } = require('../lib/noodle');
 const { packages, aggregates, submissions } = require('../lib/cosmos');
 const { applyRating } = require('../lib/rating');
-
-// The barcode IS the partition key and the primary key, so a document without
-// one is unreachable: Cosmos mints a GUID, no barcode lookup can ever find the
-// row, and its ratings key to an id nobody can type. One such record already
-// reached production and blanked the home page on the day the noodle-of-the-day
-// seed landed on it.
-//
-// The forms mark the field `required`, but that is a client-side hint the API
-// must not trust — a stale page, a bypassed dialog handler, or any hand-rolled
-// request skips it entirely. Trimmed, because " 123 " and "123" would otherwise
-// be two different noodles.
-function normaliseId(value) {
-  return typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
-}
 
 function withAggregate(noodle, agg) {
   return agg ? { ...noodle, avgRating: agg.avgRating, avgSpicy: agg.avgSpicy, ratingCount: agg.ratingCount } : noodle;

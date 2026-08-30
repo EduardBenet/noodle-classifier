@@ -23,6 +23,20 @@ function withRatingDefaults(noodle) {
   };
 }
 
+// The barcode IS the partition key and the primary key, so a document without
+// one is unreachable: Cosmos mints a GUID, no barcode lookup can ever find the
+// row, and its ratings key to an id nobody can type. One such record already
+// reached production and blanked the home page on the day the noodle-of-the-day
+// seed landed on it.
+//
+// The forms mark the field `required`, but that is a client-side hint the API
+// must not trust — a stale page, a bypassed dialog handler, or any hand-rolled
+// request skips it entirely. Trimmed, because " 123 " and "123" would otherwise
+// be two different noodles.
+function normaliseId(value) {
+  return typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
+}
+
 // The factual fields a non-owner may propose changing on an existing noodle.
 // Deliberately excludes `id` (a different barcode is a different noodle, not an
 // edit) and `rating`/`spicy` (an opinion, not a fact — those go through the
@@ -41,6 +55,6 @@ function pickEditable(noodle = {}) {
 }
 
 module.exports = {
-  withRatingDefaults, pickEditable, EDITABLE_FIELDS,
+  withRatingDefaults, normaliseId, pickEditable, EDITABLE_FIELDS,
   RATING_MIN, SPICY_MIN, SCORE_MAX
 };

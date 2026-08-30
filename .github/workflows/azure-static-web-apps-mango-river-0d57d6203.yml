@@ -19,6 +19,14 @@ jobs:
         with:
           submodules: true
           lfs: false
+      # Before the deploy, not after: a failing job here is what stops a broken
+      # aggregate reaching production. The API tests use fakes for Cosmos, so
+      # they need no connection string and no secrets.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: API tests
+        run: npm test --prefix api
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
