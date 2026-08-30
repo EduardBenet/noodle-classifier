@@ -331,7 +331,11 @@ textarea {
 .overlay-toolbar {
     display: flex;
     justify-content: space-between;
-    margin: -0.5rem -0.5rem 0;
+    /* Enough negative margin to put the glyphs themselves in the corners, not
+       just their 44px boxes. The box is mostly padding around a small mark, so
+       pulling it only out of the card's padding still left the dots sitting
+       inboard of the text below them, which read as a misalignment. */
+    margin: -1.25rem -1.25rem 0;
     /* The menu below is anchored to this row. */
     position: relative;
 }
@@ -368,26 +372,15 @@ textarea {
     fill: currentColor;
 }
 
+/* Colour only, no shading — the buttons are marks in the corners of the card,
+   not chips sitting on it. */
 .overlay-icon-button:hover {
     color: #3a3226;
-    background: rgba(0, 0, 0, 0.06);
 }
 
 .overlay-icon-button:focus-visible {
     outline: 2px solid #8a6a4a;
     outline-offset: -2px;
-}
-
-/* Deliberately heavier than the ⋮ beside it: leaving is the action people reach
-   for in a hurry, and two identical grey marks gave it no more weight than a
-   menu they may never open. */
-.overlay-close {
-    background: rgba(0, 0, 0, 0.06);
-    color: #5c5348;
-}
-
-.overlay-close:hover {
-    background: rgba(0, 0, 0, 0.12);
 }
 
 /* Hangs from the left edge of the toolbar, under the ⋮ that opens it. Anchored
