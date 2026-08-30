@@ -1029,11 +1029,6 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     cursor: not-allowed;
 }
 
-#rating-status {
-    color: #666;
-    font-size: 0.8rem;
-}
-
 /* Quiet, and pushed to the far end of the row: it undoes work rather than
    doing any, so it should never compete with Save for the thumb. `form button`
    is full-width on the add form, hence the width reset. */

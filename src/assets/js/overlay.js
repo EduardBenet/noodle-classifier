@@ -25,19 +25,17 @@ function ratingInputs() {
     rating: document.querySelector('input[name="my-rating"]:checked'),
     spicy: document.querySelector('input[name="my-spice"]:checked'),
     submit: document.getElementById('rating-submit'),
-    remove: document.getElementById('rating-remove'),
-    status: document.getElementById('rating-status')
+    remove: document.getElementById('rating-remove')
   };
 }
 
 function resetRatingWidget() {
-  const { form, submit, remove, status } = ratingInputs();
+  const { form, submit, remove } = ratingInputs();
   form.hidden = true;
   form.querySelectorAll('input[type="radio"]').forEach(i => { i.checked = false; });
   submit.disabled = true;
   remove.hidden = true;
   remove.disabled = false;
-  status.textContent = '';
 }
 
 function syncSubmitState() {
@@ -52,16 +50,17 @@ function selectRadio(name, value) {
 }
 
 async function loadOwnRating(noodle, token) {
-  const { form, status } = ratingInputs();
+  const { form } = ratingInputs();
   form.hidden = false;
   try {
     const res = await fetch(`/api/ratings?noodleId=${encodeURIComponent(noodle.id)}`);
     if (!res.ok) return;
     const own = await res.json();
     if (token !== overlayToken || !own) return;
+    // The checked stars are the message: a line of text saying they are your
+    // current rating only repeats what they already show.
     selectRadio('my-rating', own.rating);
     selectRadio('my-spice', own.spicy);
-    status.textContent = 'Your current rating';
     ratingInputs().remove.hidden = false;
     syncSubmitState();
   } catch {
@@ -73,11 +72,10 @@ async function submitRating(e) {
   e.preventDefault();
   if (!overlayNoodle) return;
 
-  const { rating, spicy, submit, status } = ratingInputs();
+  const { rating, spicy, submit } = ratingInputs();
   if (!rating || !spicy) return;
 
   submit.disabled = true;
-  status.textContent = 'Saving…';
 
   try {
     const res = await fetch('/api/ratings', {
@@ -101,13 +99,15 @@ async function submitRating(e) {
     overlayNoodle.ratedAt = new Date().toISOString();
 
     renderCommunityScores(overlayNoodle);
-    status.textContent = 'Saved';
+    // Outcomes go to the toast the rest of the app uses, rather than a line of
+    // text wedged between the two buttons.
+    showToast('Rating saved', 'success');
     ratingInputs().remove.hidden = false;
     // Pass the noodle along: search results are not the same objects the list
     // page caches, so the receiver may need to patch its own copy.
     window.refreshNoodleCards?.(overlayNoodle);
   } catch {
-    status.textContent = 'Could not save — try again';
+    showToast('Could not save your rating — try again', 'error');
   } finally {
     syncSubmitState();
   }
@@ -116,9 +116,8 @@ async function submitRating(e) {
 async function removeRating() {
   if (!overlayNoodle) return;
 
-  const { form, remove, status } = ratingInputs();
+  const { form, remove } = ratingInputs();
   remove.disabled = true;
-  status.textContent = 'Removing…';
 
   try {
     const res = await fetch(`/api/ratings?noodleId=${encodeURIComponent(overlayNoodle.id)}`, {
@@ -140,11 +139,11 @@ async function removeRating() {
 
     form.querySelectorAll('input[type="radio"]').forEach(i => { i.checked = false; });
     remove.hidden = true;
-    status.textContent = 'Rating removed';
+    showToast('Rating removed', 'success');
     renderCommunityScores(overlayNoodle);
     window.refreshNoodleCards?.(overlayNoodle);
   } catch {
-    status.textContent = 'Could not remove — try again';
+    showToast('Could not remove your rating — try again', 'error');
   } finally {
     remove.disabled = false;
     syncSubmitState();
