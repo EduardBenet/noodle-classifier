@@ -1,16 +1,16 @@
 {% import "macros.njk" as ui %}
 <div id="overlay">
     <div id="overlay-card">
-        {# A header row rather than buttons pinned in a corner: ⋮ left, title
-           centre, ✕ right — the arrangement every modal uses, and the two icons
-           stop reading as a matched pair when they do different jobs. The flex
-           row also centres the title between two fixed slots on its own, which
-           is what removed the hand-tuned padding the absolute version needed.
+        {# Controls in the top corners, title on its own line beneath them: ⋮
+           left, ✕ right where it has always been. Sharing a line with the
+           buttons made the title look pinned between them; dropping it below
+           also hands it the full width of the card, so a long name needs no
+           padding tuned around the buttons to stay clear of them.
 
            Both glyphs are drawn as SVG. ⋮ (U+22EE) and ✕ (U+2715) render thin
            and inconsistently across Android font stacks — the same reason the
            textarea grip in this stylesheet was drawn rather than typed. #}
-        <div class="overlay-header">
+        <div class="overlay-toolbar">
             <button id="overlay-menu-button" class="overlay-icon-button" type="button" aria-haspopup="true"
                 aria-expanded="false" aria-controls="overlay-menu" aria-label="More actions">
                 <svg viewBox="0 0 4 16" width="4" height="16" aria-hidden="true" focusable="false">
@@ -19,7 +19,6 @@
                     <circle cx="2" cy="14" r="1.7" />
                 </svg>
             </button>
-            <h2 id="overlay-title"></h2>
             {# Weightier than the ⋮ on purpose: it is the way out of a card that
                fills a phone screen, so it should not look like just another
                grey mark. #}
@@ -37,6 +36,7 @@
                 <button id="overlay-edit" type="button" role="menuitem" hidden>Edit</button>
             </div>
         </div>
+        <h2 id="overlay-title"></h2>
         <div id="overlay-body"></div>
         <form id="rating-widget" hidden>
             <div class="rating-widget-heading">Your rating</div>

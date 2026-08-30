@@ -319,32 +319,30 @@ textarea {
     min-height: 0;
 }
 
-.overlay-header,
+.overlay-toolbar,
+#overlay-card h2,
 #rating-widget {
     flex-shrink: 0;
 }
 
-/* 44px | 1fr | 44px. The title centres itself between two fixed slots, so
-   there is no padding to hand-tune against the buttons and no way for a long
-   name to run underneath one — which is what the absolutely positioned corner
-   version needed a magic number to avoid. */
-.overlay-header {
+/* The two controls, pushed into their own corners. Negative margins pull them
+   out of the card's 1.5rem padding so they sit near the edges where the eye
+   looks for them, rather than floating a full pad inside it. */
+.overlay-toolbar {
     display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    margin-bottom: 1rem;
+    justify-content: space-between;
+    margin: -0.5rem -0.5rem 0;
     /* The menu below is anchored to this row. */
     position: relative;
 }
 
+/* Its own line, under the buttons: level with them it read as pinned between
+   two icons, and this way the full width of the card is available to a long
+   name — no padding to tune around the corners. */
 #overlay-card h2 {
-    margin: 0;
+    margin: 0.25rem 0 1rem;
     font-size: 1.3rem;
     text-align: center;
-    /* Takes the middle and no more: min-width:0 lets a long name wrap inside
-       the row instead of pushing the buttons apart. */
-    flex: 1;
-    min-width: 0;
     overflow-wrap: anywhere;
 }
 
@@ -392,7 +390,7 @@ textarea {
     background: rgba(0, 0, 0, 0.12);
 }
 
-/* Hangs from the left edge of the header, under the ⋮ that opens it. Anchored
+/* Hangs from the left edge of the toolbar, under the ⋮ that opens it. Anchored
    right it opened across the card towards the close button. */
 .overlay-menu {
     position: absolute;
