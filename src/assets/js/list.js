@@ -16,14 +16,37 @@ async function list() {
   currentPage = 1;
   renderPagedList(sortNoodles(allNoodles));
 
+  const params = new URLSearchParams(location.search);
+
   // `?search=` lets other pages deep-link here — the submit form uses it to
   // point at the noodle behind a duplicate barcode.
-  const term = new URLSearchParams(location.search).get('search');
+  const term = params.get('search');
   if (term) {
     const input = document.getElementById('search');
     input.value = term;
     input.dispatchEvent(new Event('input'));
   }
+
+  // `?id=` is the shared link to one noodle (the overlay's share button builds
+  // it): show the list, then open that noodle on top of it.
+  const id = params.get('id');
+  if (id) openSharedNoodle(id);
+}
+
+async function openSharedNoodle(id) {
+  let noodle = allNoodles.find(n => n.id === id);
+  if (!noodle) {
+    // Not in the catalogue we just loaded — that fetch may have failed, or the
+    // link may predate this device's cache. Ask for the one noodle directly.
+    try {
+      const res = await fetch(`/api/noodles?id=${encodeURIComponent(id)}`);
+      if (res.ok) [noodle] = await res.json();
+    } catch {
+      noodle = undefined;
+    }
+  }
+  if (noodle) showNoodleOverlay(noodle);
+  else showToast('That noodle could not be found', 'error');
 }
 
 function sortNoodles(items) {

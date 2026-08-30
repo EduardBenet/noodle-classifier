@@ -108,6 +108,60 @@ async function submitRating(e) {
   }
 }
 
+// The canonical link to one noodle: the list page, with the overlay opened on
+// arrival (list.js reads this back). The list is public and un-gated, so a
+// shared link opens for a signed-out stranger; a dedicated page would need its
+// own route in staticwebapp.config.json to say the same thing.
+function noodleLink(noodle) {
+  return `${location.origin}/list.html?id=${encodeURIComponent(noodle.id)}`;
+}
+
+// execCommand('copy') is deprecated but still the only fallback that works
+// without a secure context or clipboard permission, so it stays as the last
+// resort — a share button that silently does nothing is worse.
+function copyTextFallback(text) {
+  const field = document.createElement('textarea');
+  field.value = text;
+  field.setAttribute('readonly', '');
+  field.style.cssText = 'position:fixed;top:-1000px;opacity:0;';
+  document.body.appendChild(field);
+  field.select();
+  try {
+    return document.execCommand('copy');
+  } catch {
+    return false;
+  } finally {
+    field.remove();
+  }
+}
+
+async function shareNoodle() {
+  if (!overlayNoodle) return;
+  const url = noodleLink(overlayNoodle);
+
+  // The real share sheet where there is one (every mobile browser worth the
+  // name); a copied link everywhere else, which is what desktop gets.
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: overlayNoodle.name, text: `${overlayNoodle.name} 🍜`, url });
+      return;
+    } catch (err) {
+      // Dismissing the sheet rejects with AbortError — not a failure, and
+      // falling through to "Link copied" after a deliberate cancel would be
+      // its own small lie.
+      if (err?.name === 'AbortError') return;
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(url);
+    showToast('Link copied', 'success');
+  } catch {
+    if (copyTextFallback(url)) showToast('Link copied', 'success');
+    else showToast(`Could not copy the link: ${url}`, 'error');
+  }
+}
+
 function showNoodleOverlay(noodle) {
   overlayNoodle = noodle;
   const token = ++overlayToken;
@@ -160,6 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById("overlay").addEventListener("click", (e) => {
     if (e.target === document.getElementById("overlay")) hideOverlay();
   });
+  document.getElementById("overlay-share").addEventListener("click", shareNoodle);
   document.getElementById("overlay-edit").addEventListener("click", () => {
     if (!overlayNoodle) return;
     // The owner edits the catalogue directly; everyone else files an edit

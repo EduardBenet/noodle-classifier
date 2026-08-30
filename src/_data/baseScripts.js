@@ -3,6 +3,7 @@
 // than hand-maintained; base.html remains the place they are actually loaded.
 module.exports = [
   'assets/js/cards.js',
+  'assets/js/toast.js',
   'assets/js/overlay.js',
   'assets/js/auth.js',
   'assets/js/sw-register.js'
