@@ -16,3 +16,46 @@ updates:
       actions:
         patterns:
           - "*"
+
+  # The API's runtime dependencies. Worth watching now that api/package-lock.json
+  # pins the whole transitive tree — before the lockfile, a bump here changed
+  # nothing that was actually resolved at deploy time.
+  #
+  # Minor and patch bumps arrive as one grouped PR; majors come separately,
+  # because @azure/cosmos 4 to 5 is the kind of change that wants reading, not
+  # merging. The deploy workflow runs on pull_request, so every one of these
+  # PRs has the API test suite run against it before it can be merged.
+  - package-ecosystem: "npm"
+    directory: "/api"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "deps(api)"
+    labels:
+      - "dependencies"
+    groups:
+      api:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # The site build — Eleventy and whatever it pulls in.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "deps(site)"
+    labels:
+      - "dependencies"
+    groups:
+      site:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
