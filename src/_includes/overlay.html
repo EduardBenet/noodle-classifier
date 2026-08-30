@@ -1,21 +1,42 @@
 {% import "macros.njk" as ui %}
 <div id="overlay">
     <div id="overlay-card">
-        {# Close stays out of the menu: it is the way out of a card that fills a
-           phone screen, so it has to be one direct tap. Everything else lives
-           behind the ⋮, with text labels — an emoji plus a `title` says nothing
-           on a touchscreen. #}
-        <div class="overlay-actions">
-            <button id="overlay-menu-button" type="button" aria-haspopup="true" aria-expanded="false"
-                aria-controls="overlay-menu" aria-label="More actions">⋮</button>
-            <button id="overlay-close" type="button" aria-label="Close">✕</button>
+        {# A header row rather than buttons pinned in a corner: ⋮ left, title
+           centre, ✕ right — the arrangement every modal uses, and the two icons
+           stop reading as a matched pair when they do different jobs. The flex
+           row also centres the title between two fixed slots on its own, which
+           is what removed the hand-tuned padding the absolute version needed.
+
+           Both glyphs are drawn as SVG. ⋮ (U+22EE) and ✕ (U+2715) render thin
+           and inconsistently across Android font stacks — the same reason the
+           textarea grip in this stylesheet was drawn rather than typed. #}
+        <div class="overlay-header">
+            <button id="overlay-menu-button" class="overlay-icon-button" type="button" aria-haspopup="true"
+                aria-expanded="false" aria-controls="overlay-menu" aria-label="More actions">
+                <svg viewBox="0 0 4 16" width="4" height="16" aria-hidden="true" focusable="false">
+                    <circle cx="2" cy="2" r="1.7" />
+                    <circle cx="2" cy="8" r="1.7" />
+                    <circle cx="2" cy="14" r="1.7" />
+                </svg>
+            </button>
+            <h2 id="overlay-title"></h2>
+            {# Weightier than the ⋮ on purpose: it is the way out of a card that
+               fills a phone screen, so it should not look like just another
+               grey mark. #}
+            <button id="overlay-close" class="overlay-icon-button overlay-close" type="button" aria-label="Close">
+                <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
+                    <path d="M4 4 L12 12 M12 4 L4 12" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" />
+                </svg>
+            </button>
+            {# Hangs from the left edge, under the ⋮: anchored right it opened
+               towards the close button and off the corner of a narrow card. #}
             <div id="overlay-menu" class="overlay-menu" role="menu" hidden>
                 <button id="overlay-share" type="button" role="menuitem">Share link</button>
                 {# auth.js reveals this and sets its wording; overlay.js routes the click. #}
                 <button id="overlay-edit" type="button" role="menuitem" hidden>Edit</button>
             </div>
         </div>
-        <h2 id="overlay-title"></h2>
         <div id="overlay-body"></div>
         <form id="rating-widget" hidden>
             <div class="rating-widget-heading">Your rating</div>

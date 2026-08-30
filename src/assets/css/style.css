@@ -319,65 +319,85 @@ textarea {
     min-height: 0;
 }
 
-#overlay-card h2,
+.overlay-header,
 #rating-widget {
     flex-shrink: 0;
 }
 
+/* 44px | 1fr | 44px. The title centres itself between two fixed slots, so
+   there is no padding to hand-tune against the buttons and no way for a long
+   name to run underneath one — which is what the absolutely positioned corner
+   version needed a magic number to avoid. */
+.overlay-header {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+    /* The menu below is anchored to this row. */
+    position: relative;
+}
+
 #overlay-card h2 {
-    margin: 0 0 1rem;
-    /* Clear of the action buttons pinned in the corner, so a long name wraps
-       beside them rather than underneath. */
-    padding-right: 5.5rem;
+    margin: 0;
     font-size: 1.3rem;
     text-align: center;
-    padding: 0 4rem;
+    /* Takes the middle and no more: min-width:0 lets a long name wrap inside
+       the row instead of pushing the buttons apart. */
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
-.overlay-actions {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    display: flex;
-    gap: 0.25rem;
-}
-
-/* 44px square: these sit a few pixels apart in the corner of a card that fills
-   a phone screen, and the two of them are "leave" and "act" — a mis-tap between
-   those is the one worth spending the space to prevent. */
-.overlay-actions>button {
-    background: none;
-    border: none;
-    font-size: 1.25rem;
-    cursor: pointer;
-    color: #888;
-    line-height: 1;
-    padding: 0;
+/* 44px square, and round: the hit area is the point, not the glyph. Both sit
+   at the edge of a card that fills a phone screen. */
+.overlay-icon-button {
+    flex-shrink: 0;
     width: 44px;
     height: 44px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: #8d8378;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
 }
 
-.overlay-actions>button:hover {
-    color: #333;
-    background: rgba(0, 0, 0, 0.05);
+/* The dots are drawn, so they take their colour from the button. */
+.overlay-icon-button svg circle {
+    fill: currentColor;
 }
 
-.overlay-actions>button:focus-visible {
+.overlay-icon-button:hover {
+    color: #3a3226;
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.overlay-icon-button:focus-visible {
     outline: 2px solid #8a6a4a;
     outline-offset: -2px;
 }
 
-/* Anchored to .overlay-actions, which is itself absolutely positioned — so the
-   menu hangs under the ⋮ and off its right edge, where it cannot run off a
-   narrow screen the way a left-aligned popover would. */
+/* Deliberately heavier than the ⋮ beside it: leaving is the action people reach
+   for in a hurry, and two identical grey marks gave it no more weight than a
+   menu they may never open. */
+.overlay-close {
+    background: rgba(0, 0, 0, 0.06);
+    color: #5c5348;
+}
+
+.overlay-close:hover {
+    background: rgba(0, 0, 0, 0.12);
+}
+
+/* Hangs from the left edge of the header, under the ⋮ that opens it. Anchored
+   right it opened across the card towards the close button. */
 .overlay-menu {
     position: absolute;
     top: calc(100% + 0.25rem);
-    right: 0;
+    left: 0;
     z-index: 1;
     min-width: 11rem;
     padding: 0.25rem;
