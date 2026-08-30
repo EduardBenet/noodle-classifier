@@ -30,30 +30,19 @@ app.http('noodles', {
   authLevel: 'anonymous',
   handler: async (request, context) => {
     if (request.method === 'GET') {
-      const params = new URL(request.url).searchParams;
-      const search = params.get('search');
-      const id = params.get('id');
+      const id = new URL(request.url).searchParams.get('id');
 
       if (id) {
         const { resource } = await packages.item(id, id).read().catch(() => ({}));
         return { jsonBody: await mergeAggregates(resource ? [resource] : []) };
       }
 
-      let querySpec;
-      if (search) {
-        const term = search.toLowerCase();
-        querySpec = {
-          query: `SELECT * FROM c WHERE
-            CONTAINS(LOWER(c.name), @term) OR
-            CONTAINS(LOWER(c.brand), @term) OR
-            CONTAINS(c.id, @term)`,
-          parameters: [{ name: '@term', value: term }]
-        };
-      } else {
-        querySpec = { query: 'SELECT * FROM c' };
-      }
-
-      const { resources } = await packages.items.query(querySpec).fetchAll();
+      // There was a `?search=` branch here running CONTAINS(LOWER(...)) across
+      // every partition — the most expensive query in the app, to search a
+      // catalogue the list page had already downloaded in full. The list page
+      // filters its own copy now, so nothing called it. The `?search=` deep
+      // link still works; it is answered on the client.
+      const { resources } = await packages.items.query({ query: 'SELECT * FROM c' }).fetchAll();
       return { jsonBody: await mergeAggregates(resources) };
     }
 

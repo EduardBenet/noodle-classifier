@@ -32,7 +32,7 @@ function showDuplicate(id) {
   const el = document.getElementById('toast');
   el.className = 'toast-error';
   el.hidden = false;
-  el.innerHTML = `This noodle is already in the index. <a href="list.html?search=${encodeURIComponent(id)}">View it</a> `
+  el.innerHTML = `This noodle is already in the index. <a href="list.html?id=${encodeURIComponent(id)}">View it</a> `
     + `<button onclick="this.parentElement.hidden=true" aria-label="Dismiss">&times;</button>`;
 }
 

@@ -813,6 +813,15 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     background: #f1e9dc;
 }
 
+/* Sits where the cards would be: a failed load, an empty index, or a search
+   that matched nothing. */
+.list-empty {
+    margin: 0;
+    padding: 1.5rem 0;
+    color: #6a6055;
+    text-align: center;
+}
+
 /* ========== Noodle Cards ========== */
 #noodle-list {
     display: grid;

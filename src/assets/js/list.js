@@ -1,25 +1,26 @@
 let allNoodles = [];
 let currentPage = 1;
-let currentData = [];
-// Non-null while a search is active, so a re-render knows which set to show.
-let searchResults = null;
-let debounceTimeout;
+// '' when nothing is being searched for. The catalogue is already in memory,
+// so this is a filter over it rather than a query — see matches() below.
+let searchTerm = '';
+let loadFailed = false;
 const PAGE_SIZE = 10;
 
 async function list() {
   try {
     const response = await fetch("/api/noodles");
+    if (!response.ok) throw new Error(response.status);
     allNoodles = await response.json();
   } catch {
     allNoodles = [];
+    loadFailed = true;
   }
   currentPage = 1;
-  renderPagedList(sortNoodles(allNoodles));
+  render();
 
   const params = new URLSearchParams(location.search);
 
-  // `?search=` lets other pages deep-link here — the submit form uses it to
-  // point at the noodle behind a duplicate barcode.
+  // `?search=` still honoured for links made before `?id=` existed.
   const term = params.get('search');
   if (term) {
     const input = document.getElementById('search');
@@ -49,6 +50,24 @@ async function openSharedNoodle(id) {
   else showToast('That noodle could not be found', 'error');
 }
 
+// Name, brand and barcode — the same three fields the server-side search used
+// to match, now applied to the catalogue this page already holds.
+function matches(noodle, term) {
+  return `${noodle.name ?? ''} ${noodle.brand ?? ''} ${noodle.id ?? ''}`.toLowerCase().includes(term);
+}
+
+// The single source of what is on screen: filtered, then sorted. Search results
+// used to bypass both the sort and the pagination, which is why the dropdown
+// appeared to do nothing while a search was active.
+function visibleNoodles() {
+  const term = searchTerm.trim().toLowerCase();
+  return sortNoodles(term ? allNoodles.filter(n => matches(n, term)) : allNoodles);
+}
+
+function render() {
+  renderPagedList(visibleNoodles());
+}
+
 function sortNoodles(items) {
   const val = document.getElementById('sort-by')?.value;
   if (!val) return items;
@@ -74,11 +93,10 @@ function sortNoodles(items) {
 }
 
 function renderPagedList(data) {
-  currentData = data;
   const totalPages = Math.ceil(data.length / PAGE_SIZE);
   currentPage = Math.min(currentPage, totalPages || 1);
 
-  renderList(data.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE), 'noodle-list');
+  renderList(data.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE));
 
   const pg = document.getElementById('pagination');
   if (totalPages <= 1) {
@@ -95,38 +113,42 @@ function renderPagedList(data) {
 }
 
 // Lets the overlay refresh the visible cards after a rating is saved.
-// `updated` is the noodle the overlay just changed: search results are freshly
-// fetched objects, so the copy held in allNoodles has to be patched too or the
-// new average is lost as soon as the search is cleared.
+// `updated` is the noodle the overlay just changed. It may not be the same
+// object this page holds — the overlay can be opened from a shared `?id=` link
+// whose noodle was fetched separately — so the cached copy is patched before
+// the re-render, or the new average is lost as soon as the search is cleared.
 window.refreshNoodleCards = (updated) => {
   if (updated) {
     const cached = allNoodles.find(n => n.id === updated.id);
     if (cached && cached !== updated) Object.assign(cached, updated);
   }
-  // Re-rendering the paged list while a search is active would throw the
-  // results away and bring the pagination back.
-  if (searchResults) {
-    renderList(searchResults, 'noodle-list');
-  } else {
-    renderPagedList(currentData);
-  }
+  render();
 };
 
 // The catalogue is held in memory here, so a deleted noodle has to be dropped
-// from it — and from the search results, which are a separate array.
+// from it. Whatever is on screen — searched, sorted, paged — follows from that.
 window.noodleRemoved = (id) => {
   allNoodles = allNoodles.filter(n => n.id !== id);
-  if (searchResults) {
-    searchResults = searchResults.filter(n => n.id !== id);
-    renderList(searchResults, 'noodle-list');
-    return;
-  }
-  renderPagedList(sortNoodles(allNoodles));
+  render();
 };
 
-function renderList(data, lname) {
-  const list = document.getElementById(lname);
+function renderList(data) {
+  const list = document.getElementById('noodle-list');
   list.innerHTML = '';
+
+  // A blank page reads as "there are no noodles" whatever the reason, which is
+  // wrong for two of these three and alarming for the first.
+  if (!data.length) {
+    const term = searchTerm.trim();
+    const note = document.createElement('p');
+    note.className = 'list-empty';
+    if (loadFailed) note.textContent = 'Could not load the catalogue. Check your connection and reload.';
+    else if (term) note.textContent = `Nothing matches “${term}”.`;
+    else note.textContent = 'No noodles in the index yet.';
+    list.appendChild(note);
+    return;
+  }
+
   data.forEach(noodle => {
     const card = buildNoodleCard(noodle);
     card.addEventListener('click', () => showNoodleOverlay(noodle));
@@ -137,41 +159,25 @@ function renderList(data, lname) {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('sort-by').addEventListener('change', () => {
     currentPage = 1;
-    renderPagedList(sortNoodles(allNoodles));
+    render();
   });
 
+  // No debounce and no request: filtering an array already in memory is
+  // instant. The fetch this replaces was not sequenced, so a slow reply for
+  // "shi" could land after "shin" and leave the wrong results under the right
+  // query — a race that cannot exist without the network.
   document.getElementById('search').addEventListener('input', (e) => {
-    const searchTerm = e.target.value.trim();
-    clearTimeout(debounceTimeout);
-    if (!searchTerm) {
-      searchResults = null;
-      currentPage = 1;
-      renderPagedList(sortNoodles(allNoodles));
-      return;
-    }
-    debounceTimeout = setTimeout(async () => {
-      try {
-        const response = await fetch(`/api/noodles?search=${encodeURIComponent(searchTerm)}`);
-        const items = await response.json();
-        searchResults = items;
-        document.getElementById('pagination').hidden = true;
-        renderList(items, 'noodle-list');
-      } catch {
-        // search failure is non-fatal — leave current list in place
-      }
-    }, 300);
+    searchTerm = e.target.value;
+    currentPage = 1;
+    render();
   });
 
   document.getElementById('pagination').addEventListener('click', (e) => {
-    if (e.target.id === 'pg-prev') {
-      currentPage--;
-      renderPagedList(currentData);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (e.target.id === 'pg-next') {
-      currentPage++;
-      renderPagedList(currentData);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    if (e.target.id === 'pg-prev') currentPage--;
+    else if (e.target.id === 'pg-next') currentPage++;
+    else return;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
   list();
