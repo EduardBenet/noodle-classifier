@@ -12,12 +12,8 @@ const OTHER = '8801043032156';
 // belonging to OTHER is there to prove the sweep does not reach past its target.
 function catalogue() {
   const packages = fakeContainer([
-    { id: SHIN, name: 'Shin Ramyun Black' },
-    { id: OTHER, name: 'Buldak' }
-  ]);
-  const aggregates = fakeContainer([
-    { id: SHIN, avgRating: 4, avgSpicy: 3, ratingCount: 3, sumRating: 12, sumSpicy: 9 },
-    { id: OTHER, avgRating: 5, avgSpicy: 5, ratingCount: 1, sumRating: 5, sumSpicy: 5 }
+    { id: SHIN, name: 'Shin Ramyun Black', avgRating: 4, avgSpicy: 3, ratingCount: 3, sumRating: 12, sumSpicy: 9 },
+    { id: OTHER, name: 'Buldak', avgRating: 5, avgSpicy: 5, ratingCount: 1, sumRating: 5, sumSpicy: 5 }
   ]);
   const ratings = fakeContainer([
     { id: `ann_${SHIN}`, userId: 'ann', noodleId: SHIN, rating: 4, spicy: 3 },
@@ -32,8 +28,8 @@ function catalogue() {
   ]);
 
   return {
-    packages, aggregates, ratings, submissions,
-    ...createCatalogueOps({ packages, aggregates, ratings, submissions })
+    packages, ratings, submissions,
+    ...createCatalogueOps({ packages, ratings, submissions })
   };
 }
 
@@ -47,10 +43,12 @@ test('deleting a noodle removes the catalogue row', async () => {
   assert.equal(c.packages.docs.has(SHIN), false);
 });
 
-test('deleting a noodle removes its aggregate', async () => {
+test('deleting a noodle takes its scores with it', async () => {
+  // No separate delete to forget: the scores are fields on the row that just
+  // went. This is one fewer container the sweep has to remember.
   const c = catalogue();
   await c.deleteNoodle(SHIN);
-  assert.equal(c.aggregates.docs.has(SHIN), false);
+  assert.equal(c.packages.docs.has(SHIN), false);
 });
 
 test('deleting a noodle removes every rating written against it', async () => {
@@ -82,7 +80,7 @@ test('deleting a noodle leaves every other noodle intact', async () => {
   await c.deleteNoodle(SHIN);
 
   assert.equal(c.packages.docs.has(OTHER), true);
-  assert.equal(c.aggregates.docs.get(OTHER).ratingCount, 1);
+  assert.equal(c.packages.docs.get(OTHER).ratingCount, 1, 'and its scores');
   assert.equal(c.ratings.docs.has(`ann_${OTHER}`), true, "ann's other rating survived");
   assert.equal(c.submissions.docs.has('edit-2'), true);
 });
@@ -100,7 +98,7 @@ test('deleting a noodle that is not there changes nothing', async () => {
 
 test('deleting an unrated noodle is not an error', async () => {
   const c = catalogue();
-  c.aggregates.docs.delete(SHIN);
+  c.packages.docs.set(SHIN, { id: SHIN, name: 'Shin Ramyun Black' });
   ['ann', 'bo', 'cai'].forEach(u => c.ratings.docs.delete(`${u}_${SHIN}`));
 
   const result = await c.deleteNoodle(SHIN);
@@ -131,7 +129,6 @@ test('a failure sweeping ratings does not resurrect the noodle', async () => {
   await assert.rejects(() => c.deleteNoodle(SHIN), (err) => err.code === 429);
 
   assert.equal(c.packages.docs.has(SHIN), false, 'the catalogue row went first');
-  assert.equal(c.aggregates.docs.has(SHIN), false);
 });
 
 test('the noodle of the day is the same all day and for everyone', async () => {

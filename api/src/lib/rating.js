@@ -40,17 +40,42 @@ function sumsOf(agg) {
   };
 }
 
-// One place where a stored aggregate is built, so the derived averages can
-// never disagree with the sums they come from.
-function aggregateOf(noodleId, sumRating, sumSpicy, ratingCount) {
+// One place where the stored scores are built, so the derived averages can
+// never disagree with the sums they come from. These five fields live on the
+// noodle document itself.
+function scoresOf(sumRating, sumSpicy, ratingCount) {
   return {
-    id: noodleId,
     avgRating: round2(sumRating / ratingCount),
     avgSpicy: round2(sumSpicy / ratingCount),
     ratingCount,
     sumRating,
     sumSpicy
   };
+}
+
+// What a noodle nobody has rated carries. Nulls rather than absent keys: the
+// fields have to be written to clear them, and the client reads a null the same
+// way it reads a missing one.
+const NO_SCORES = {
+  avgRating: null, avgSpicy: null, ratingCount: null, sumRating: null, sumSpicy: null
+};
+
+// The community scores now live on the noodle document, which means any write
+// that replaces that document wholesale — the owner editing a noodle, an
+// approval republishing one — would take the scores with it. Under the old
+// split they sat in another container and survived by accident.
+//
+// Every score field is carried across explicitly, nulls included: a cleared
+// score is a deliberate "nobody has rated this", not a missing value to be
+// filled in.
+const SCORE_FIELDS = ['avgRating', 'avgSpicy', 'ratingCount', 'sumRating', 'sumSpicy'];
+
+function keepScores(existing, incoming) {
+  const kept = { ...incoming };
+  for (const field of SCORE_FIELDS) {
+    if (existing?.[field] !== undefined) kept[field] = existing[field];
+  }
+  return kept;
 }
 
 // The two aggregate writers, over whatever containers they are handed. The
@@ -78,41 +103,47 @@ function createRatingOps(stores) {
       (await stores.ratings.item(ratingId, [userId, noodleId]).read().catch(() => null))?.resource ?? null;
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      const existingAgg =
-        (await stores.aggregates.item(noodleId, noodleId).read().catch(() => null))?.resource ?? null;
+      // The scores live on the noodle now, so this reads the document being
+      // scored. Every caller writes the noodle before rating it — POST, PUT and
+      // queue approval all do, in that order — so a missing one is a bug worth
+      // surfacing, rather than the scores floating free of any catalogue entry,
+      // which is what a separate container allowed.
+      const noodle =
+        (await stores.packages.item(noodleId, noodleId).read().catch(() => null))?.resource ?? null;
+      if (!noodle) throw Object.assign(new Error(`no noodle ${noodleId} to rate`), { code: 404 });
 
-      const { sumRating, sumSpicy } = sumsOf(existingAgg);
+      const { sumRating, sumSpicy } = sumsOf(noodle);
 
-      let newAgg;
-      if (!existingAgg || !existingAgg.ratingCount) {
-        newAgg = aggregateOf(noodleId, rating, spicy, 1);
+      let scores;
+      if (!noodle.ratingCount) {
+        scores = scoresOf(rating, spicy, 1);
       } else if (existingRating) {
         // Replacing this user's previous score: count is unchanged.
-        newAgg = aggregateOf(
-          noodleId,
+        scores = scoresOf(
           sumRating - existingRating.rating + rating,
           sumSpicy - existingRating.spicy + spicy,
-          existingAgg.ratingCount
+          noodle.ratingCount
         );
       } else {
-        newAgg = aggregateOf(noodleId, sumRating + rating, sumSpicy + spicy, existingAgg.ratingCount + 1);
+        scores = scoresOf(sumRating + rating, sumSpicy + spicy, noodle.ratingCount + 1);
       }
 
-      // Store the rating before the aggregate: the upsert is idempotent, while
-      // the aggregate write is the one that can lose a race and be retried.
+      // Store the rating before the noodle: the upsert is idempotent, while the
+      // scored write is the one that can lose a race and be retried.
       await stores.ratings.items.upsert({
         id: ratingId, userId, noodleId, rating, spicy, ratedAt: new Date().toISOString()
       });
 
       try {
-        if (existingAgg) {
-          await stores.aggregates.item(noodleId, noodleId).replace(newAgg, {
-            accessCondition: { type: 'IfMatch', condition: existingAgg._etag }
-          });
-        } else {
-          await stores.aggregates.items.create(newAgg);
-        }
-        return newAgg;
+        // Spread over the document just read, so a field the owner edited in
+        // the same moment survives — and IfMatch turns that collision into a
+        // retry rather than a silent overwrite. This is the one thing the
+        // separate container gave for free.
+        await stores.packages.item(noodleId, noodleId).replace(
+          { ...noodle, ...scores },
+          { accessCondition: { type: 'IfMatch', condition: noodle._etag } }
+        );
+        return { id: noodleId, ...scores };
       } catch (err) {
         if ((err.code === 409 || err.code === 412) && attempt < MAX_RETRIES - 1) continue;
         throw err;
@@ -138,42 +169,33 @@ function createRatingOps(stores) {
     if (!existing) return { removed: false, aggregate: null };
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      const existingAgg =
-        (await stores.aggregates.item(noodleId, noodleId).read().catch(() => null))?.resource ?? null;
+      const noodle =
+        (await stores.packages.item(noodleId, noodleId).read().catch(() => null))?.resource ?? null;
 
       // 404 tolerated: on a retry this row is already gone.
       await stores.ratings.item(ratingId, [userId, noodleId]).delete().catch(err => {
         if (err.code !== 404) throw err;
       });
 
-      const count = (existingAgg?.ratingCount ?? 1) - 1;
+      // The noodle was deleted from under this rating. Removing the row is all
+      // that was asked for, and there is nothing left to score.
+      if (!noodle) return { removed: true, aggregate: null };
 
-      // The last rating: drop the aggregate rather than store an average of
-      // nothing. A zeroed row would read as "rated 0.0 by nobody", and the cards
-      // fall back to the noodle's own seed score when there is no aggregate.
-      if (!existingAgg || count <= 0) {
-        try {
-          if (existingAgg) {
-            await stores.aggregates.item(noodleId, noodleId).delete({
-              accessCondition: { type: 'IfMatch', condition: existingAgg._etag }
-            });
-          }
-          return { removed: true, aggregate: null };
-        } catch (err) {
-          if (err.code === 404) return { removed: true, aggregate: null };
-          if (err.code === 412 && attempt < MAX_RETRIES - 1) continue;
-          throw err;
-        }
-      }
+      const count = (noodle.ratingCount ?? 1) - 1;
+      const { sumRating, sumSpicy } = sumsOf(noodle);
 
-      const { sumRating, sumSpicy } = sumsOf(existingAgg);
-      const newAgg = aggregateOf(noodleId, sumRating - existing.rating, sumSpicy - existing.spicy, count);
+      // The last rating: clear the scores rather than store an average of
+      // nothing, which would read as "rated 0.0 by nobody".
+      const scores = count <= 0
+        ? NO_SCORES
+        : scoresOf(sumRating - existing.rating, sumSpicy - existing.spicy, count);
 
       try {
-        await stores.aggregates.item(noodleId, noodleId).replace(newAgg, {
-          accessCondition: { type: 'IfMatch', condition: existingAgg._etag }
-        });
-        return { removed: true, aggregate: newAgg };
+        await stores.packages.item(noodleId, noodleId).replace(
+          { ...noodle, ...scores },
+          { accessCondition: { type: 'IfMatch', condition: noodle._etag } }
+        );
+        return { removed: true, aggregate: count <= 0 ? null : { id: noodleId, ...scores } };
       } catch (err) {
         if ((err.code === 409 || err.code === 412) && attempt < MAX_RETRIES - 1) continue;
         throw err;
@@ -188,6 +210,6 @@ const { applyRating, unapplyRating } = createRatingOps(cosmos);
 
 module.exports = {
   applyRating, unapplyRating, createRatingOps,
-  sumsOf, aggregateOf, parseScore,
+  sumsOf, scoresOf, NO_SCORES, keepScores, SCORE_FIELDS, parseScore,
   RATING_MIN, SPICY_MIN, SCORE_MAX
 };

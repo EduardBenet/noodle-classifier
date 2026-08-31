@@ -2,7 +2,6 @@ const { app } = require('@azure/functions');
 const { parsePrincipal } = require('../lib/auth');
 const {
   ratings: ratingsContainer,
-  aggregates: aggregatesContainer,
   packages: packagesContainer
 } = require('../lib/cosmos');
 const { applyRating, unapplyRating, parseScore, RATING_MIN, SPICY_MIN, SCORE_MAX } = require('../lib/rating');
@@ -36,20 +35,15 @@ async function listOwnRatings(userId, limit) {
   own.sort((a, b) => (b.ratedAt ?? '').localeCompare(a.ratedAt ?? ''));
   const wanted = limit ? own.slice(0, limit) : own;
 
+  // One point read per rating, not two: the community scores are fields on the
+  // noodle now. This is the join that used to cost this page double.
   const rows = await Promise.all(wanted.map(async (r) => {
-    const [noodleRes, aggRes] = await Promise.all([
-      packagesContainer.item(r.noodleId, r.noodleId).read().catch(() => ({})),
-      aggregatesContainer.item(r.noodleId, r.noodleId).read().catch(() => ({}))
-    ]);
-    const noodle = noodleRes.resource;
+    const { resource: noodle } =
+      await packagesContainer.item(r.noodleId, r.noodleId).read().catch(() => ({}));
     // Skip ratings whose noodle has since been removed.
     if (!noodle) return null;
-    const agg = aggRes.resource;
     return {
       ...noodle,
-      avgRating: agg?.avgRating,
-      avgSpicy: agg?.avgSpicy,
-      ratingCount: agg?.ratingCount,
       myRating: r.rating,
       mySpicy: r.spicy,
       ratedAt: r.ratedAt ?? null

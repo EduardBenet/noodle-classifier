@@ -50,10 +50,10 @@ function createCatalogueOps(stores) {
     return resource ?? null;
   }
 
-  // Deleting a noodle is four deletes, not one. The catalogue row is what
-  // people see, but its aggregate, every rating written against it, and any
-  // suggestion pointing at it are all keyed to an id that is about to stop
-  // existing.
+  // Deleting a noodle is three deletes, not one. The catalogue row is what
+  // people see, but every rating written against it and any suggestion pointing
+  // at it are keyed to an id that is about to stop existing. (The community
+  // scores need no delete of their own — they are fields on the row itself.)
   //
   // Orphaned ratings are not merely untidy: listOwnRatings joins each of the
   // caller's rating rows to its noodle and drops the ones whose noodle is gone,
@@ -67,7 +67,6 @@ function createCatalogueOps(stores) {
     // to everyone. The other order leaves a live noodle whose ratings have been
     // destroyed, which is neither.
     await stores.packages.item(noodleId, noodleId).delete().catch(ignoreMissing);
-    await stores.aggregates.item(noodleId, noodleId).delete().catch(ignoreMissing);
 
     // Cross-partition: `ratings` is keyed (/userId, /noodleId), so every rating
     // of one noodle sits in a different partition. Both key levels are needed

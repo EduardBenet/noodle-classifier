@@ -6,7 +6,7 @@ const {
   submissions: submissionsContainer,
   packages: packagesContainer
 } = require('../lib/cosmos');
-const { applyRating, parseScore, RATING_MIN, SPICY_MIN } = require('../lib/rating');
+const { applyRating, keepScores, parseScore, RATING_MIN, SPICY_MIN } = require('../lib/rating');
 
 // A point read that distinguishes "not there" from "could not tell". Swallowing
 // every error made a throttled read indistinguishable from a deleted document,
@@ -182,7 +182,14 @@ app.http('submissions', {
 
         // Sequential, not Promise.all: publishing must succeed before the
         // submission is dropped, or a failure loses the queue entry too.
-        await packagesContainer.items.upsert(approved);
+        //
+        // The same barcode can be queued twice, so this noodle may already
+        // exist and carry community ratings. The queue form knows nothing about
+        // those fields, so they are carried across rather than overwritten with
+        // nothing — the scores are on this document now, not in a container of
+        // their own that used to survive by accident.
+        const existingNoodle = await readOrNull(packagesContainer, approved.id);
+        await packagesContainer.items.upsert(keepScores(existingNoodle, approved));
 
         // Approval is "the owner adds the noodle, then the submitter rates it".
         // Two rating rows, written in that order. They carry the same score

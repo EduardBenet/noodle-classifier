@@ -1,29 +1,14 @@
 const { app } = require('@azure/functions');
 const { parsePrincipal } = require('../lib/auth');
 const { withRatingDefaults, normaliseId } = require('../lib/noodle');
-const { packages, aggregates, submissions } = require('../lib/cosmos');
-const { applyRating } = require('../lib/rating');
+const { packages, submissions } = require('../lib/cosmos');
+const { applyRating, keepScores } = require('../lib/rating');
 const { deleteNoodle, noodleOfTheDay } = require('../lib/catalogue');
 
-function withAggregate(noodle, agg) {
-  return agg ? { ...noodle, avgRating: agg.avgRating, avgSpicy: agg.avgSpicy, ratingCount: agg.ratingCount } : noodle;
-}
-
-async function mergeAggregates(noodles) {
-  if (!noodles.length) return noodles;
-
-  // A single result (the `?id=` lookup, or a search that matched one noodle)
-  // only needs a point read.
-  if (noodles.length === 1) {
-    const id = noodles[0].id;
-    const { resource } = await aggregates.item(id, id).read().catch(() => ({}));
-    return [withAggregate(noodles[0], resource)];
-  }
-
-  const { resources } = await aggregates.items.query('SELECT * FROM c').fetchAll();
-  const aggMap = new Map(resources.map(a => [a.id, a]));
-  return noodles.map(n => withAggregate(n, aggMap.get(n.id)));
-}
+// The community scores live on the noodle document, so there is no join here
+// any more. This file used to carry a mergeAggregates() that read the whole
+// aggregates container on every list request — a second full scan to attach
+// three numbers to documents that can simply hold them.
 
 app.http('noodles', {
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -38,13 +23,13 @@ app.http('noodles', {
       if (params.has('ofTheDay')) {
         const noodle = await noodleOfTheDay(params.get('ofTheDay'));
         if (!noodle) return { status: 404, jsonBody: { error: 'No noodle to show today' } };
-        const [withScores] = await mergeAggregates([noodle]);
-        return { jsonBody: withScores };
+        return { jsonBody: noodle };
       }
 
+      // An array of nothing or of one, which is what the client unpacks.
       if (id) {
         const { resource } = await packages.item(id, id).read().catch(() => ({}));
-        return { jsonBody: await mergeAggregates(resource ? [resource] : []) };
+        return { jsonBody: resource ? [resource] : [] };
       }
 
       // There was a `?search=` branch here running CONTAINS(LOWER(...)) across
@@ -53,7 +38,7 @@ app.http('noodles', {
       // filters its own copy now, so nothing called it. The `?search=` deep
       // link still works; it is answered on the client.
       const { resources } = await packages.items.query({ query: 'SELECT * FROM c' }).fetchAll();
-      return { jsonBody: await mergeAggregates(resources) };
+      return { jsonBody: resources };
     }
 
     // 401 and 403 mean different things to the client: the add form offers a
@@ -118,7 +103,11 @@ app.http('noodles', {
       // than editing anything.
       const id = normaliseId(body.id);
       if (!id) return { status: 400, jsonBody: { error: 'A product ID (barcode) is required' } };
-      const data = withRatingDefaults({ ...body, id });
+      // Read before upsert: the body comes from a form that knows nothing about
+      // avgRating or the running sums, so replacing the document with it would
+      // wipe every community rating this noodle has.
+      const { resource: existing } = await packages.item(id, id).read().catch(() => ({}));
+      const data = keepScores(existing, withRatingDefaults({ ...body, id }));
 
       const { resource } = await packages.items.upsert(data);
       // The form edits the owner's own score, so put it through the same path

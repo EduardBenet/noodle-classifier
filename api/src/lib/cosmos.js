@@ -33,6 +33,9 @@ function db() {
 module.exports = {
   get packages() { return db().container('packages'); },
   get ratings() { return db().container('ratings'); },
+  // Superseded: the community scores are fields on the noodle document now.
+  // Kept for scripts/merge-aggregates.js, which reads the old container to copy
+  // them across, and can go once that has been run.
   get aggregates() { return db().container('aggregates'); },
   get submissions() { return db().container('submissions'); }
 };

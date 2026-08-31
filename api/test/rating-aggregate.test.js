@@ -1,19 +1,24 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { createRatingOps, sumsOf, aggregateOf } = require('../src/lib/rating');
+const { createRatingOps, sumsOf, scoresOf, keepScores } = require('../src/lib/rating');
 const { fakeContainer, conflict } = require('./fake-cosmos');
 
 const NOODLE = '8801043032155';
 
+// The community scores are fields on the noodle document, so the noodle has to
+// exist before it can be rated — which is true of every caller in the app.
+// `seed.scores` starts it with scores already on it.
 function ops(seed = {}) {
   const ratings = fakeContainer(seed.ratings ?? []);
-  const aggregates = fakeContainer(seed.aggregates ?? []);
-  return { ratings, aggregates, ...createRatingOps({ ratings, aggregates }) };
+  const packages = fakeContainer([
+    { id: NOODLE, name: 'Shin Ramyun Black', price: 3.5, ...(seed.scores ?? {}) }
+  ]);
+  return { ratings, packages, ...createRatingOps({ ratings, packages }) };
 }
 
-test('the first rating creates the aggregate', async () => {
-  const { applyRating, aggregates, ratings } = ops();
+test('the first rating scores the noodle', async () => {
+  const { applyRating, packages, ratings } = ops();
 
   const agg = await applyRating({ userId: 'ann', noodleId: NOODLE, rating: 4, spicy: 2 });
 
@@ -22,7 +27,7 @@ test('the first rating creates the aggregate', async () => {
     { avgRating: 4, avgSpicy: 2, ratingCount: 1 }
   );
   assert.equal(ratings.docs.size, 1, 'the rating row is stored too');
-  assert.equal(aggregates.docs.get(NOODLE).ratingCount, 1);
+  assert.equal(packages.docs.get(NOODLE).ratingCount, 1);
 });
 
 test('a second user raises the count and averages both scores', async () => {
@@ -53,10 +58,10 @@ test('a lost etag race retries without mistaking a new rating for an edit', asyn
   // loop would find the row this same call had just written, treat a brand-new
   // rating as a replacement, and leave the count at 1 — the rating silently
   // vanishing from the community average.
-  const { applyRating, aggregates } = ops();
+  const { applyRating, packages } = ops();
   await applyRating({ userId: 'ann', noodleId: NOODLE, rating: 4, spicy: 2 });
 
-  aggregates.failures.replace.push(conflict());
+  packages.failures.replace.push(conflict());
   const agg = await applyRating({ userId: 'bo', noodleId: NOODLE, rating: 2, spicy: 0 });
 
   assert.equal(agg.ratingCount, 2, 'the retry still counted a second rater');
@@ -65,10 +70,10 @@ test('a lost etag race retries without mistaking a new rating for an edit', asyn
 });
 
 test('a rating gives up after the retries are exhausted', async () => {
-  const { applyRating, aggregates } = ops();
+  const { applyRating, packages } = ops();
   await applyRating({ userId: 'ann', noodleId: NOODLE, rating: 4, spicy: 2 });
 
-  aggregates.failures.replace.push(conflict(), conflict(), conflict());
+  packages.failures.replace.push(conflict(), conflict(), conflict());
 
   await assert.rejects(
     () => applyRating({ userId: 'bo', noodleId: NOODLE, rating: 2, spicy: 0 }),
@@ -100,36 +105,40 @@ test('un-rating deletes the rating row', async () => {
   assert.equal(ratings.docs.has('ann_' + NOODLE), true, 'other raters are untouched');
 });
 
-test('removing the last rating drops the aggregate rather than zeroing it', async () => {
-  // A zeroed row would read as "rated 0.0 by nobody". With no aggregate the
-  // cards fall back to the noodle's own seed score, exactly as they do for a
-  // noodle nobody has ever rated.
-  const { applyRating, unapplyRating, aggregates } = ops();
+test('removing the last rating clears the scores rather than zeroing them', async () => {
+  // A zeroed row would read as "rated 0.0 by nobody". Cleared, the card falls
+  // back exactly as it does for a noodle nobody has ever rated — and the noodle
+  // itself is untouched, which is the whole point of the fields living on it.
+  const { applyRating, unapplyRating, packages } = ops();
   await applyRating({ userId: 'ann', noodleId: NOODLE, rating: 4, spicy: 2 });
 
   const { removed, aggregate } = await unapplyRating({ userId: 'ann', noodleId: NOODLE });
 
   assert.equal(removed, true);
   assert.equal(aggregate, null);
-  assert.equal(aggregates.docs.has(NOODLE), false);
+
+  const noodle = packages.docs.get(NOODLE);
+  assert.equal(noodle.ratingCount, null);
+  assert.equal(noodle.avgRating, null);
+  assert.equal(noodle.name, 'Shin Ramyun Black', 'the noodle survived losing its scores');
 });
 
 test('un-rating something you never rated is not an error', async () => {
-  const { unapplyRating, aggregates, applyRating } = ops();
+  const { unapplyRating, packages, applyRating } = ops();
   await applyRating({ userId: 'ann', noodleId: NOODLE, rating: 4, spicy: 2 });
 
   const result = await unapplyRating({ userId: 'bo', noodleId: NOODLE });
 
   assert.deepEqual(result, { removed: false, aggregate: null });
-  assert.equal(aggregates.docs.get(NOODLE).ratingCount, 1, 'the aggregate is untouched');
+  assert.equal(packages.docs.get(NOODLE).ratingCount, 1, 'the aggregate is untouched');
 });
 
 test('un-rating retries a lost etag race', async () => {
-  const { applyRating, unapplyRating, aggregates } = ops();
+  const { applyRating, unapplyRating, packages } = ops();
   await applyRating({ userId: 'ann', noodleId: NOODLE, rating: 4, spicy: 2 });
   await applyRating({ userId: 'bo', noodleId: NOODLE, rating: 2, spicy: 0 });
 
-  aggregates.failures.replace.push(conflict());
+  packages.failures.replace.push(conflict());
   const { aggregate } = await unapplyRating({ userId: 'bo', noodleId: NOODLE });
 
   assert.equal(aggregate.ratingCount, 1);
@@ -183,7 +192,7 @@ test('an aggregate written before sums existed is reconstructed exactly', async 
   );
 
   const { applyRating } = ops({
-    aggregates: [{ id: NOODLE, avgRating: 4, avgSpicy: 2.33, ratingCount: 3 }]
+    scores: { avgRating: 4, avgSpicy: 2.33, ratingCount: 3 }
   });
 
   const agg = await applyRating({ userId: 'dee', noodleId: NOODLE, rating: 4, spicy: 1 });
@@ -199,9 +208,67 @@ test('sumsOf treats a countless aggregate as empty', () => {
   assert.deepEqual(sumsOf({ ratingCount: 0 }), { sumRating: 0, sumSpicy: 0 });
 });
 
-test('aggregateOf derives averages that agree with their sums', () => {
-  const agg = aggregateOf(NOODLE, 7, 3, 2);
-  assert.deepEqual(agg, {
-    id: NOODLE, avgRating: 3.5, avgSpicy: 1.5, ratingCount: 2, sumRating: 7, sumSpicy: 3
+test('scoresOf derives averages that agree with their sums', () => {
+  assert.deepEqual(scoresOf(7, 3, 2), {
+    avgRating: 3.5, avgSpicy: 1.5, ratingCount: 2, sumRating: 7, sumSpicy: 3
   });
+});
+
+test('rating a noodle leaves the rest of its document alone', async () => {
+  // The scores are spread over the document just read, so an edit made in the
+  // same moment survives — this is what the separate container used to give
+  // for free, and the reason the write carries an IfMatch.
+  const { applyRating, packages } = ops();
+
+  await applyRating({ userId: 'ann', noodleId: NOODLE, rating: 5, spicy: 1 });
+
+  const noodle = packages.docs.get(NOODLE);
+  assert.equal(noodle.name, 'Shin Ramyun Black');
+  assert.equal(noodle.price, 3.5);
+  assert.equal(noodle.avgRating, 5);
+});
+
+test('rating a noodle that is not in the catalogue is refused', async () => {
+  // The scores have nowhere to live. Under the old split they would have been
+  // written to an aggregate row floating free of any catalogue entry.
+  const { applyRating } = ops();
+
+  await assert.rejects(
+    () => applyRating({ userId: 'ann', noodleId: 'no-such-barcode', rating: 4, spicy: 2 }),
+    (err) => err.code === 404
+  );
+});
+
+test('an edit to a noodle does not wipe its community scores', () => {
+  // The owner's form posts name, brand, price and so on — nothing about
+  // avgRating or the running sums. Now that those live on the same document,
+  // replacing it with the form's contents would destroy every rating the
+  // noodle has. Under the old split they sat in another container and survived
+  // by accident.
+  const stored = {
+    id: NOODLE, name: 'Shin Ramyun Black', price: 3.5,
+    avgRating: 4.5, avgSpicy: 2, ratingCount: 8, sumRating: 36, sumSpicy: 16
+  };
+  const fromForm = { id: NOODLE, name: 'Shin Ramyun Black (Bowl)', price: 3.95 };
+
+  const merged = keepScores(stored, fromForm);
+
+  assert.equal(merged.name, 'Shin Ramyun Black (Bowl)', 'the edit lands');
+  assert.equal(merged.price, 3.95);
+  assert.equal(merged.ratingCount, 8, 'and the ratings survive it');
+  assert.equal(merged.avgRating, 4.5);
+  assert.equal(merged.sumRating, 36);
+});
+
+test('keepScores carries a cleared score across as cleared', () => {
+  // null is a deliberate "nobody has rated this", not a gap to be filled.
+  const merged = keepScores({ ratingCount: null, avgRating: null }, { id: NOODLE, name: 'Buldak' });
+
+  assert.equal(merged.ratingCount, null);
+  assert.equal(merged.avgRating, null);
+});
+
+test('keepScores on a noodle that did not exist adds nothing', () => {
+  assert.deepEqual(keepScores(undefined, { id: NOODLE, name: 'Buldak' }), { id: NOODLE, name: 'Buldak' });
+  assert.deepEqual(keepScores(null, { id: NOODLE, name: 'Buldak' }), { id: NOODLE, name: 'Buldak' });
 });
