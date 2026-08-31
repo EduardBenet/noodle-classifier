@@ -4,14 +4,28 @@ function formatScore(value) {
   return Number(value ?? 0).toFixed(1);
 }
 
-// Community average, falling back to the owner's own score for any noodle that
-// somehow has no aggregate row yet.
+// Whether anyone has actually scored this noodle. There used to be no way to
+// ask: the document carried the owner's own rating as a fallback, so every
+// noodle looked rated and an unrated one claimed a 3.0 nobody had given it.
+function isRated(noodle) {
+  return (noodle?.ratingCount ?? 0) > 0;
+}
+
+// The community average. Zero for an unrated noodle, so arithmetic and sorting
+// stay simple — but ask isRated() before showing it, because zero here means
+// "nobody has said" and not "everybody said nothing".
 function communityRating(noodle) {
-  return noodle.avgRating ?? noodle.rating ?? 0;
+  return noodle.avgRating ?? 0;
 }
 
 function communitySpicy(noodle) {
-  return noodle.avgSpicy ?? noodle.spicy ?? 0;
+  return noodle.avgSpicy ?? 0;
+}
+
+// Shown wherever the meters would go for a noodle nobody has rated. Reads as an
+// invitation rather than a fault, because that is what it is.
+function unratedHTML() {
+  return '<span class="unrated">Not yet rated</span>';
 }
 
 // Two identical glyph rows stacked; the coloured one is clipped to a percentage
@@ -74,6 +88,7 @@ document.addEventListener('click', closeScoreTips);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeScoreTips(); });
 
 function ratingSpiceHTML(rating, spicy, ratingCount) {
+  if (!(ratingCount > 0)) return unratedHTML();
   return `
     <div class="stars has-tip" ${scoreTipAttrs(scoreTitle('Rating', rating, ratingCount))}>${meterHTML(rating, '★')}</div>
     <div class="spice has-tip" ${scoreTipAttrs(scoreTitle('Spice', spicy, ratingCount))}>${meterHTML(spicy, '🌶️')}</div>
@@ -100,15 +115,20 @@ function buildNoodleCard(noodle, { showDescription = false } = {}) {
   cardTitle.className = 'card-title';
   cardTitle.append(strong, ' ', brandSpan);
 
+  const rated = isRated(noodle);
+
   const stars = document.createElement('div');
   stars.className = 'stars';
-  applyScoreTip(stars, scoreTitle('Rating', rating, noodle.ratingCount));
-  stars.innerHTML = meterHTML(rating, '★');
-  if (noodle.ratingCount != null) {
+  if (rated) {
+    applyScoreTip(stars, scoreTitle('Rating', rating, noodle.ratingCount));
+    stars.innerHTML = meterHTML(rating, '★');
     const count = document.createElement('small');
     count.className = 'rating-count';
     count.textContent = `(${noodle.ratingCount})`;
     stars.append(' ', count);
+  } else {
+    stars.className = 'unrated';
+    stars.textContent = 'Not yet rated';
   }
 
   const price = document.createElement('div');
@@ -129,14 +149,20 @@ function buildNoodleCard(noodle, { showDescription = false } = {}) {
     : NaN;
   price.textContent = Number.isFinite(priceNumber) ? `£${priceNumber.toFixed(2)}` : '—';
 
-  const spice = document.createElement('div');
-  spice.className = 'spice';
-  applyScoreTip(spice, scoreTitle('Spice', spicy, noodle.ratingCount));
-  spice.innerHTML = meterHTML(spicy, '🌶️');
-
   const statsRow = document.createElement('div');
   statsRow.className = 'card-stats';
-  statsRow.append(stars, price, spice);
+
+  // No spice meter on an unrated noodle either: the heat shown on a card is the
+  // community's reading of it, not a property of the packet.
+  if (rated) {
+    const spice = document.createElement('div');
+    spice.className = 'spice';
+    applyScoreTip(spice, scoreTitle('Spice', spicy, noodle.ratingCount));
+    spice.innerHTML = meterHTML(spicy, '🌶️');
+    statsRow.append(stars, price, spice);
+  } else {
+    statsRow.append(stars, price);
+  }
 
   const content = document.createElement('div');
   content.className = 'card-content';

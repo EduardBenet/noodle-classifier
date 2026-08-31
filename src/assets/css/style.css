@@ -813,6 +813,14 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     background: #f1e9dc;
 }
 
+/* Stands in for the score meters on a noodle nobody has rated. Quiet rather
+   than alarming: it is an invitation, not a missing value. */
+.unrated {
+    color: #8d8378;
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
 /* Sits where the cards would be: a failed load, an empty index, or a search
    that matched nothing. */
 .list-empty {

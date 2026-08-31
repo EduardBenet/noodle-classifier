@@ -1,7 +1,7 @@
 const { app } = require('@azure/functions');
 const { randomUUID } = require('crypto');
 const { parsePrincipal } = require('../lib/auth');
-const { withRatingDefaults, pickEditable } = require('../lib/noodle');
+const { splitScores, pickEditable } = require('../lib/noodle');
 const {
   submissions: submissionsContainer,
   packages: packagesContainer
@@ -174,7 +174,11 @@ app.http('submissions', {
           return { jsonBody: { ok: true } };
         }
 
-        const approved = withRatingDefaults(noodle);
+        // The scores the owner sees in the queue are the submitter's opinion,
+        // pre-filled and editable. They become ratings below; the document
+        // stores only the product's facts.
+        const { facts, rating: ownerRating, spicy: ownerSpicy } = splitScores(noodle);
+        const approved = facts;
         // Without an id Cosmos assigns a GUID, producing a catalogue entry no
         // barcode lookup can ever reach — and its ratings would be keyed to
         // that invisible id too. Refuse rather than publish it.
@@ -200,12 +204,16 @@ app.http('submissions', {
         // already exists and carries community ratings (the same barcode can
         // be queued twice), overwriting would reset ratingCount to 1 and
         // discard every real rating.
-        await applyRating({
-          userId: user.userId,
-          noodleId: approved.id,
-          rating: approved.rating,
-          spicy: approved.spicy
-        });
+        const ownerScore = parseScore(ownerRating, RATING_MIN);
+        const ownerHeat = parseScore(ownerSpicy, SPICY_MIN);
+        if (ownerScore !== null && ownerHeat !== null) {
+          await applyRating({
+            userId: user.userId,
+            noodleId: approved.id,
+            rating: ownerScore,
+            spicy: ownerHeat
+          });
+        }
 
         const submitterId = submission?.submittedBy;
         const submittedRating = parseScore(submission?.noodle?.rating, RATING_MIN);

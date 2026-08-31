@@ -78,7 +78,14 @@ function sortNoodles(items) {
     if (key === 'avgSpicy') return communitySpicy(noodle);
     return noodle[key];
   };
-  return [...items].sort((a, b) => {
+  // Unrated noodles have no score to sort by, so they go to the end whichever
+  // direction is chosen. Treating them as zero would file them under "worst",
+  // which is a judgement nobody has made.
+  const [scored, unscored] = field === 'price'
+    ? [items, []]
+    : [items.filter(isRated), items.filter(n => !isRated(n))];
+
+  const sorted = [...scored].sort((a, b) => {
     const primary = asc ? score(a, field) - score(b, field) : score(b, field) - score(a, field);
     if (primary !== 0) return primary;
     if (field !== 'avgSpicy') {
@@ -90,6 +97,8 @@ function sortNoodles(items) {
     }
     return 0;
   });
+
+  return [...sorted, ...unscored];
 }
 
 function renderPagedList(data) {

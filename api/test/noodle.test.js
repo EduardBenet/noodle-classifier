@@ -1,29 +1,42 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { withRatingDefaults, normaliseId, pickEditable, EDITABLE_FIELDS } = require('../src/lib/noodle');
+const { splitScores, normaliseId, pickEditable, EDITABLE_FIELDS } = require('../src/lib/noodle');
 
-test('withRatingDefaults keeps a stored zero spice', () => {
-  // The trap this guards: Number('') and Number(null) are 0, and 0 is a real
-  // spice level. Treating "unset" as falsy would rewrite every not-spicy
-  // noodle to medium.
-  assert.equal(withRatingDefaults({ spicy: 0 }).spicy, 0);
-  assert.equal(withRatingDefaults({ spicy: '0' }).spicy, 0);
+test('splitScores keeps the scores out of the stored document', () => {
+  // A rating is an opinion and belongs in the ratings container. The document
+  // used to carry the owner's score as well, which is what made an un-rated
+  // noodle still show the score its only rater had just removed.
+  const { facts, rating, spicy } = splitScores({
+    id: '123', name: 'Shin', price: 2.5, rating: 4, spicy: 2
+  });
+
+  assert.deepEqual(facts, { id: '123', name: 'Shin', price: 2.5 });
+  assert.equal('rating' in facts, false);
+  assert.equal('spicy' in facts, false);
+  assert.equal(rating, 4);
+  assert.equal(spicy, 2);
 });
 
-test('withRatingDefaults fills only absent or out-of-range scores', () => {
-  assert.equal(withRatingDefaults({}).rating, 3);
-  assert.equal(withRatingDefaults({}).spicy, 3);
-  assert.equal(withRatingDefaults({ rating: null }).rating, 3);
-  assert.equal(withRatingDefaults({ rating: '' }).rating, 3);
-  assert.equal(withRatingDefaults({ rating: 9 }).rating, 3, 'above the max is not a score');
-  assert.equal(withRatingDefaults({ rating: 0 }).rating, 3, 'stars start at 1, so 0 is not a score');
-  assert.equal(withRatingDefaults({ rating: 5 }).rating, 5);
+test('splitScores reports a zero spice rather than losing it', () => {
+  // Zero is a real spice level, so it has to survive the split as itself and
+  // not as "nothing was entered".
+  const { spicy } = splitScores({ name: 'Shin', spicy: 0 });
+  assert.equal(spicy, 0);
 });
 
-test('withRatingDefaults leaves every other field alone', () => {
-  const noodle = { id: '123', name: 'Shin', price: 2.5, hasSoup: true };
-  assert.deepEqual(withRatingDefaults(noodle), { ...noodle, rating: 3, spicy: 3 });
+test('splitScores on a body with no scores leaves them undefined', () => {
+  // Blank pickers mean the noodle is unrated — no score is invented here, and
+  // the caller writes no rating row.
+  const { facts, rating, spicy } = splitScores({ id: '123', name: 'Shin' });
+
+  assert.deepEqual(facts, { id: '123', name: 'Shin' });
+  assert.equal(rating, undefined);
+  assert.equal(spicy, undefined);
+});
+
+test('splitScores tolerates an empty body', () => {
+  assert.deepEqual(splitScores(), { facts: {}, rating: undefined, spicy: undefined });
 });
 
 test('normaliseId trims, stringifies, and rejects junk', () => {

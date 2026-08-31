@@ -1,14 +1,25 @@
 const { app } = require('@azure/functions');
 const { parsePrincipal } = require('../lib/auth');
-const { withRatingDefaults, normaliseId } = require('../lib/noodle');
+const { splitScores, normaliseId } = require('../lib/noodle');
 const { packages, submissions } = require('../lib/cosmos');
-const { applyRating, keepScores } = require('../lib/rating');
+const { applyRating, keepScores, parseScore, RATING_MIN, SPICY_MIN } = require('../lib/rating');
 const { deleteNoodle, noodleOfTheDay } = require('../lib/catalogue');
 
 // The community scores live on the noodle document, so there is no join here
 // any more. This file used to carry a mergeAggregates() that read the whole
 // aggregates container on every list request — a second full scan to attach
 // three numbers to documents that can simply hold them.
+
+// The owner's own rating, from the add form's pickers. Skipped when there is
+// no usable score: the form no longer defaults one, so "left blank" means the
+// owner has not rated it rather than "give it a 3".
+async function rateAsOwner(userId, noodleId, rating, spicy) {
+  if (!userId) return;
+  const score = parseScore(rating, RATING_MIN);
+  const heat = parseScore(spicy, SPICY_MIN);
+  if (score === null || heat === null) return;
+  await applyRating({ userId, noodleId, rating: score, spicy: heat });
+}
 
 app.http('noodles', {
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -53,7 +64,8 @@ app.http('noodles', {
       const body = await request.json();
       const id = normaliseId(body.id);
       if (!id) return { status: 400, jsonBody: { error: 'A product ID (barcode) is required' } };
-      const data = withRatingDefaults({ ...body, id });
+      const { facts, rating, spicy } = splitScores(body);
+      const data = { ...facts, id };
 
       // A pending suggestion for this barcode has to go through the review
       // queue rather than be bypassed here. Approving it afterwards upserts
@@ -77,9 +89,9 @@ app.http('noodles', {
       }
 
       const { resource } = await packages.items.create(data);
-      if (userId) {
-        await applyRating({ userId, noodleId: data.id, rating: data.rating, spicy: data.spicy });
-      }
+      // Only if the owner actually gave one. A noodle added without a score is
+      // simply unrated, which the catalogue can now say.
+      await rateAsOwner(userId, data.id, rating, spicy);
       return { jsonBody: resource, status: 201 };
     }
 
@@ -107,15 +119,13 @@ app.http('noodles', {
       // avgRating or the running sums, so replacing the document with it would
       // wipe every community rating this noodle has.
       const { resource: existing } = await packages.item(id, id).read().catch(() => ({}));
-      const data = keepScores(existing, withRatingDefaults({ ...body, id }));
+      const { facts, rating, spicy } = splitScores(body);
+      const data = keepScores(existing, { ...facts, id });
 
       const { resource } = await packages.items.upsert(data);
-      // The form edits the owner's own score, so put it through the same path
-      // a rating takes — otherwise the edit changes nothing the site displays,
-      // which all reads from the aggregate now.
-      if (userId) {
-        await applyRating({ userId, noodleId: data.id, rating: data.rating, spicy: data.spicy });
-      }
+      // The form edits the owner's own score, so put it through the same path a
+      // rating takes — otherwise the edit changes nothing the site displays.
+      await rateAsOwner(userId, data.id, rating, spicy);
       return { jsonBody: resource };
     }
   }

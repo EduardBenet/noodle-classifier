@@ -80,6 +80,28 @@ async function save(method) {
   isExistingNoodle = false;
 }
 
+// Selects a radio by value without building a selector out of it: a stray quote
+// in an API value would throw a SyntaxError and abort the whole form fill.
+function checkScore(name, value) {
+  if (value == null) return;
+  document.getElementsByName(name).forEach(input => {
+    if (input.value === String(value)) input.checked = true;
+  });
+}
+
+async function fillOwnRating(id) {
+  try {
+    const res = await fetch(`/api/ratings?noodleId=${encodeURIComponent(id)}`);
+    if (!res.ok) return;
+    const own = await res.json();
+    if (!own) return;
+    checkScore('rating', own.rating);
+    checkScore('spice', own.spicy);
+  } catch {
+    // Not fatal: the owner can pick a score, or leave it as it was.
+  }
+}
+
 // Never rejects: called from event handlers, where an unhandled rejection
 // would silently do nothing.
 async function fillFormById(id) {
@@ -104,11 +126,12 @@ async function fillFormById(id) {
     document.getElementById('image').value = n.image ?? '';
     document.getElementById('hasSoup').checked = !!n.hasSoup;
 
-    const spiceInput = document.querySelector(`input[name="spice"][value="${n.spicy}"]`);
-    if (spiceInput) spiceInput.checked = true;
-
-    const ratingInput = document.querySelector(`input[name="rating"][value="${n.rating}"]`);
-    if (ratingInput) ratingInput.checked = true;
+    // The pickers show the owner's own rating, fetched from where ratings live.
+    // They used to read n.spicy and n.rating off the noodle document — fields
+    // that no longer exist, because a score is an opinion and belongs with the
+    // other opinions. Left blank when the owner has not rated this one, and
+    // saving with them blank leaves it that way.
+    await fillOwnRating(id);
   } else {
     try {
       await fillFromOpenFoodFacts(id);

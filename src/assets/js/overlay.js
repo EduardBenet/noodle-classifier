@@ -8,8 +8,9 @@ function communityScoresHTML(noodle) {
 }
 
 function communitySummaryText(noodle) {
-  const count = noodle.ratingCount != null ? ` · ${countLabel(noodle.ratingCount)}` : '';
-  return `${formatScore(communityRating(noodle))} ★ · ${formatScore(communitySpicy(noodle))} 🌶️${count}`;
+  if (!isRated(noodle)) return 'No ratings yet — yours would be the first.';
+  return `${formatScore(communityRating(noodle))} ★ · ${formatScore(communitySpicy(noodle))} 🌶️`
+    + ` · ${countLabel(noodle.ratingCount)}`;
 }
 
 function renderCommunityScores(noodle) {
@@ -43,10 +44,13 @@ function syncSubmitState() {
   submit.disabled = !(rating && spicy);
 }
 
+// Compared, not interpolated into a selector: a value with a quote in it would
+// throw a SyntaxError and take the whole widget down with it.
 function selectRadio(name, value) {
   if (value == null) return;
-  const input = document.querySelector(`input[name="${name}"][value="${value}"]`);
-  if (input) input.checked = true;
+  document.getElementsByName(name).forEach(input => {
+    if (input.value === String(value)) input.checked = true;
+  });
 }
 
 async function loadOwnRating(noodle, token) {
