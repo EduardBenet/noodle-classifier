@@ -8,14 +8,56 @@ const ignoreMissing = (err) => {
   if (err.code !== 404) throw err;
 };
 
-// Deleting a noodle is four deletes, not one. The catalogue row is what people
-// see, but its aggregate, every rating written against it, and any suggestion
-// pointing at it are all keyed to an id that is about to stop existing.
-//
-// Orphaned ratings are not merely untidy: listOwnRatings joins each of the
-// caller's rating rows to its noodle and drops the ones whose noodle is gone,
-// so every orphan costs two point reads on every My List load, forever.
+// The date is the seed, so everyone opening the app on the same day sees the
+// same noodle and it changes at midnight. It arrives from the caller as
+// YYYY-MM-DD rather than being read from the clock here: the pick used to be
+// made in the browser against the visitor's own calendar, and computing it from
+// the server's UTC day would quietly move the changeover to 01:00 for half the
+// year in London. An unparseable or missing date falls back to the server's.
+function seedFor(dateKey) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey ?? '');
+  if (match) return Number(`${match[1]}${match[2]}${match[3]}`);
+
+  const now = new Date();
+  return now.getUTCFullYear() * 10000 + (now.getUTCMonth() + 1) * 100 + now.getUTCDate();
+}
+
 function createCatalogueOps(stores) {
+  // One noodle, chosen by the date. The home page used to download the whole
+  // catalogue to keep a single row; this reads ids and names — no descriptions,
+  // no images, no Cosmos system fields — picks from those, and point-reads the
+  // winner.
+  //
+  // Rows that cannot render a card are skipped, as they were on the client: one
+  // record reached production with no id and every field empty, and it blanked
+  // the home page on the day the seed landed on it.
+  async function noodleOfTheDay(dateKey) {
+    const { resources } = await stores.packages.items
+      .query({ query: 'SELECT c.id, c.name FROM c' }).fetchAll();
+
+    // Sorted, because the pick has to be the same on every request and Cosmos
+    // makes no promise about the order of an unsorted query. The client version
+    // took whatever order the query returned, which was luck rather than
+    // determinism.
+    const candidates = resources
+      .filter(n => n.id && typeof n.name === 'string' && n.name.trim() !== '')
+      .sort((a, b) => String(a.id).localeCompare(String(b.id)));
+
+    if (!candidates.length) return null;
+
+    const { id } = candidates[seedFor(dateKey) % candidates.length];
+    const { resource } = await stores.packages.item(id, id).read().catch(() => ({}));
+    return resource ?? null;
+  }
+
+  // Deleting a noodle is four deletes, not one. The catalogue row is what
+  // people see, but its aggregate, every rating written against it, and any
+  // suggestion pointing at it are all keyed to an id that is about to stop
+  // existing.
+  //
+  // Orphaned ratings are not merely untidy: listOwnRatings joins each of the
+  // caller's rating rows to its noodle and drops the ones whose noodle is gone,
+  // so every orphan would cost two point reads on every My List load, forever.
   async function deleteNoodle(noodleId) {
     const { resource: existing } = await stores.packages.item(noodleId, noodleId).read().catch(() => ({}));
     if (!existing) return { found: false, ratingsRemoved: 0, submissionsRemoved: 0 };
@@ -59,9 +101,9 @@ function createCatalogueOps(stores) {
     };
   }
 
-  return { deleteNoodle };
+  return { deleteNoodle, noodleOfTheDay };
 }
 
-const { deleteNoodle } = createCatalogueOps(cosmos);
+const { deleteNoodle, noodleOfTheDay } = createCatalogueOps(cosmos);
 
-module.exports = { deleteNoodle, createCatalogueOps };
+module.exports = { deleteNoodle, noodleOfTheDay, createCatalogueOps, seedFor };

@@ -3,7 +3,7 @@ const { parsePrincipal } = require('../lib/auth');
 const { withRatingDefaults, normaliseId } = require('../lib/noodle');
 const { packages, aggregates, submissions } = require('../lib/cosmos');
 const { applyRating } = require('../lib/rating');
-const { deleteNoodle } = require('../lib/catalogue');
+const { deleteNoodle, noodleOfTheDay } = require('../lib/catalogue');
 
 function withAggregate(noodle, agg) {
   return agg ? { ...noodle, avgRating: agg.avgRating, avgSpicy: agg.avgSpicy, ratingCount: agg.ratingCount } : noodle;
@@ -30,7 +30,17 @@ app.http('noodles', {
   authLevel: 'anonymous',
   handler: async (request, context) => {
     if (request.method === 'GET') {
-      const id = new URL(request.url).searchParams.get('id');
+      const params = new URL(request.url).searchParams;
+      const id = params.get('id');
+
+      // One noodle for the home page, chosen by the caller's local date. The
+      // page used to fetch the entire catalogue and keep a single row.
+      if (params.has('ofTheDay')) {
+        const noodle = await noodleOfTheDay(params.get('ofTheDay'));
+        if (!noodle) return { status: 404, jsonBody: { error: 'No noodle to show today' } };
+        const [withScores] = await mergeAggregates([noodle]);
+        return { jsonBody: withScores };
+      }
 
       if (id) {
         const { resource } = await packages.item(id, id).read().catch(() => ({}));

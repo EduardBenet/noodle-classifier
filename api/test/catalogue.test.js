@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { createCatalogueOps } = require('../src/lib/catalogue');
+const { createCatalogueOps, seedFor } = require('../src/lib/catalogue');
 const { fakeContainer } = require('./fake-cosmos');
 
 const SHIN = '8801043032155';
@@ -132,4 +132,65 @@ test('a failure sweeping ratings does not resurrect the noodle', async () => {
 
   assert.equal(c.packages.docs.has(SHIN), false, 'the catalogue row went first');
   assert.equal(c.aggregates.docs.has(SHIN), false);
+});
+
+test('the noodle of the day is the same all day and for everyone', async () => {
+  const c = catalogue();
+
+  const first = await c.noodleOfTheDay('2026-08-31');
+  const second = await c.noodleOfTheDay('2026-08-31');
+
+  assert.equal(first.id, second.id);
+  assert.ok([SHIN, OTHER].includes(first.id));
+});
+
+test('the noodle of the day is picked from the sorted catalogue', async () => {
+  // Cosmos promises nothing about the order of an unsorted query, so the pick
+  // is made against ids sorted here. 20260831 % 2 === 1, and OTHER sorts second.
+  const c = catalogue();
+
+  const noodle = await c.noodleOfTheDay('2026-08-31');
+
+  assert.equal(noodle.id, OTHER);
+  assert.equal((await c.noodleOfTheDay('2026-08-30')).id, SHIN, 'the day before is the other one');
+});
+
+test('the noodle of the day returns the whole document, not the projection', async () => {
+  // The query reads ids and names only; the winner is then point-read, or the
+  // card would render with no price and no image.
+  const c = catalogue();
+
+  const noodle = await c.noodleOfTheDay('2026-08-30');
+
+  assert.equal(noodle.name, 'Shin Ramyun Black');
+  assert.ok('_etag' in noodle, 'came from a read of the stored document');
+});
+
+test('the noodle of the day skips records that cannot render', async () => {
+  // A record with no name blanked the home page on the day the seed landed on
+  // it. Only Buldak is nameable here, so it wins every day.
+  const c = catalogue();
+  c.packages.docs.set(SHIN, { id: SHIN, name: '   ', _etag: 'e' });
+
+  for (const day of ['2026-08-30', '2026-08-31', '2026-09-01']) {
+    assert.equal((await c.noodleOfTheDay(day)).id, OTHER, day);
+  }
+});
+
+test('an empty catalogue has no noodle of the day', async () => {
+  const c = catalogue();
+  c.packages.docs.clear();
+
+  assert.equal(await c.noodleOfTheDay('2026-08-31'), null);
+});
+
+test('seedFor reads a date key, and falls back when it cannot', () => {
+  assert.equal(seedFor('2026-08-31'), 20260831);
+  assert.equal(seedFor('2026-01-01'), 20260101);
+  // Junk from a query string must not throw or produce NaN, which would index
+  // the candidate array with undefined.
+  for (const junk of ['', 'today', '2026-8-31', null, undefined, '../etc']) {
+    const seed = seedFor(junk);
+    assert.ok(Number.isInteger(seed) && seed > 20000000, `${junk} fell back to a real date`);
+  }
 });
