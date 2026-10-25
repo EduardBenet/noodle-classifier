@@ -1565,3 +1565,27 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
         font-size: 0.7rem;
     }
 }
+
+/* ========== Footer ========== */
+.site-footer {
+    margin: 2rem 0 1rem;
+    padding: 0 1rem;
+    text-align: center;
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.site-footer a {
+    color: inherit;
+}
+
+/* ========== Terms of Use ========== */
+.terms h3 {
+    margin: 1.25rem 0 0.25rem;
+}
+
+.terms p,
+.terms li {
+    line-height: 1.45;
+    font-size: 0.9rem;
+}

@@ -1,3 +1,11 @@
+# THE SODIUM INDEX
+
+**Live site:** [https://mango-river-0d57d6203.6.azurestaticapps.net](https://mango-river-0d57d6203.6.azurestaticapps.net)
+
+© 2026 EduardBenet. All rights reserved except as stated in the [LICENSE](LICENSE).
+
+---
+
 # Noodle Classifier
 
 A web app for cataloging and browsing instant noodle products. Users can search, filter, and add new products — including barcode scanning with auto-fill from OpenFoodFacts.
@@ -231,4 +239,6 @@ Set `DATABASE_CONNECTION_STRING` in the Function App's **Application Settings** 
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+[PolyForm Strict 1.0.0](LICENSE) — noncommercial use only; no modification, no redistribution. Commercial licensing: contact the author (EduardBenet) via GitHub.
+
+Use of the live site is also governed by the [Terms of Use](src/terms.html), which prohibit scraping, mirroring and AI training on the catalog. Data derived from OpenFoodFacts remains under its own ODbL license.

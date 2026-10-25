@@ -1,6 +1,7 @@
 {
   "name": "noodle-classifier",
   "private": true,
+  "license": "PolyForm-Strict-1.0.0",
   "scripts": {
     "build": "npm run clean && eleventy",
     "dev": "eleventy --serve",
