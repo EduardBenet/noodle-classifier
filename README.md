@@ -1,6 +1,6 @@
 # THE SODIUM INDEX
 
-**Live site:** [https://mango-river-0d57d6203.6.azurestaticapps.net](https://mango-river-0d57d6203.6.azurestaticapps.net)
+**Live site:** [The SODIUM INDEX] (https://mango-river-0d57d6203.6.azurestaticapps.net](https://mango-river-0d57d6203.6.azurestaticapps.net)
 
 © 2026 EduardBenet. All rights reserved except as stated in the [LICENSE](LICENSE).
 
