@@ -4,20 +4,17 @@ logoutRedirect: "/list.html"
 localScripts:
   - assets/js/list.js
 ---
+{% import "macros.njk" as ui %}
 
 <main>
-    <div class="list-filters">
-        <input type="text" id="search" placeholder="Search...">
-        <select id="sort-by">
-            <option value="">Sort by...</option>
-            <option value="avgRating-desc">★ Rating (best first)</option>
-            <option value="avgRating-asc">★ Rating (worst first)</option>
-            <option value="avgSpicy-desc">🌶️ Spiciest first</option>
-            <option value="avgSpicy-asc">🌶️ Mildest first</option>
-            <option value="price-asc">£ Price (low → high)</option>
-            <option value="price-desc">£ Price (high → low)</option>
-        </select>
-    </div>
+    {{ ui.listFilters([
+        ['avgRating-desc', '★ Rating (best first)'],
+        ['avgRating-asc', '★ Rating (worst first)'],
+        ['avgSpicy-desc', '🌶️ Spiciest first'],
+        ['avgSpicy-asc', '🌶️ Mildest first'],
+        ['price-asc', '£ Price (low → high)'],
+        ['price-desc', '£ Price (high → low)']
+    ], 'Search...', 'Sort by...') }}
     <div id="noodle-list"></div>
     <div id="pagination" hidden></div>
 </main>

@@ -11,7 +11,8 @@ const PAGE_SIZE = 10;
 
 let recentNoodles = null;   // last RECENT_LIMIT by ratedAt, or null until fetched
 let allNoodles = null;      // whole history, or null until someone asks for it
-let shown = PAGE_SIZE;      // how far into the full list the reader has paged
+let shown = PAGE_SIZE;
+let searchTerm = '';        // lower-cased; filters whatever the sort shows      // how far into the full list the reader has paged
 
 function myScoreHTML(noodle) {
   return `
@@ -19,6 +20,11 @@ function myScoreHTML(noodle) {
     <span class="stars has-tip" ${scoreTipAttrs(`Your rating: ${formatScore(noodle.myRating)} out of 5`)}>${meterHTML(noodle.myRating, '★')}</span>
     <span class="spice has-tip" ${scoreTipAttrs(`Your spice: ${formatScore(noodle.mySpicy)} out of 5`)}>${meterHTML(noodle.mySpicy, '🌶️')}</span>
   `;
+}
+
+// Same three fields as the main list's search.
+function matches(noodle, term) {
+  return `${noodle.name ?? ''} ${noodle.brand ?? ''} ${noodle.id ?? ''}`.toLowerCase().includes(term);
 }
 
 function currentSort() {
@@ -73,7 +79,9 @@ function footerButton(label, onClick) {
 
 async function renderMine() {
   const sort = currentSort();
-  const recent = sort === 'ratedAt-desc';
+  // The last-five peek only holds five rows, so a search has to look through
+  // the whole history instead — still in recency order, but paged like the rest.
+  const recent = sort === 'ratedAt-desc' && !searchTerm;
   const container = document.getElementById('noodle-list');
 
   if (recent) {
@@ -84,9 +92,18 @@ async function renderMine() {
   const items = recent ? recentNoodles : allNoodles;
 
   container.innerHTML = '';
+  const found = searchTerm ? items.filter(n => matches(n, searchTerm)) : items;
   document.getElementById('mylist-empty').hidden = items.length > 0;
 
-  const sorted = sortMine(items, sort);
+  if (searchTerm && !found.length && items.length) {
+    const note = document.createElement('p');
+    note.className = 'list-empty';
+    note.textContent = `Nothing in your list matches “${searchTerm}”.`;
+    container.appendChild(note);
+    return;
+  }
+
+  const sorted = sortMine(found, sort);
   const page = recent ? sorted : sorted.slice(0, shown);
   page.forEach(noodle => container.appendChild(buildCard(noodle)));
 
@@ -111,6 +128,12 @@ async function renderMine() {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('sort-by').addEventListener('change', () => {
     // A different sort is a fresh question — start at the first page again.
+    shown = PAGE_SIZE;
+    renderMine();
+  });
+
+  document.getElementById('search').addEventListener('input', (e) => {
+    searchTerm = e.target.value.trim().toLowerCase();
     shown = PAGE_SIZE;
     renderMine();
   });

@@ -3,22 +3,21 @@ title: "My List"
 localScripts:
   - assets/js/mylist.js
 ---
+{% import "macros.njk" as ui %}
 
 <main>
     <h2 class="page-heading">My list</h2>
     <p class="page-intro">Your last five ratings, with your score next to the community average. Tap one to change your
         rating, or pick another sort to page through everything.</p>
 
-    <div class="list-filters">
-        <select id="sort-by">
-            <option value="ratedAt-desc">🕒 Recently rated (last 5)</option>
-            <option value="all">📋 All rated (by rating)</option>
-            <option value="myRating-desc">★ My rating (best first)</option>
-            <option value="myRating-asc">★ My rating (worst first)</option>
-            <option value="mySpicy-desc">🌶️ Spiciest first</option>
-            <option value="price-asc">£ Price (low → high)</option>
-        </select>
-    </div>
+    {{ ui.listFilters([
+        ['ratedAt-desc', '🕒 Recently rated (last 5)'],
+        ['all', '📋 All rated (by rating)'],
+        ['myRating-desc', '★ My rating (best first)'],
+        ['myRating-asc', '★ My rating (worst first)'],
+        ['mySpicy-desc', '🌶️ Spiciest first'],
+        ['price-asc', '£ Price (low → high)']
+    ], 'Search my list...') }}
 
     <div id="mylist-empty" hidden>
         <p>You haven't rated anything yet. Open a noodle from the <a href="list.html">list</a> and give it a score.</p>

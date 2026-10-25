@@ -34,6 +34,21 @@
 </div>
 {% endmacro %}
 
+{# Search box + sort dropdown shared by the list and My list pages. `options` is
+   a list of [value, label] pairs; the ids are what list.js and mylist.js bind to. #}
+
+{% macro listFilters(options, placeholder, sortFirst) %}
+<div class="list-filters">
+    <input type="text" id="search" placeholder="{{ placeholder or 'Search...' }}">
+    <select id="sort-by">
+        {% if sortFirst %}<option value="">{{ sortFirst }}</option>{% endif %}
+        {% for o in options %}
+        <option value="{{ o[0] }}">{{ o[1] }}</option>
+        {% endfor %}
+    </select>
+</div>
+{% endmacro %}
+
 {# Provider icons. Only the path data was duplicated between the header menu and
    signin.html — the surrounding link markup genuinely differs between the two,
    so it stays where it is. #}

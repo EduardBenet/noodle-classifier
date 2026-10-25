@@ -797,6 +797,21 @@ form#add-form>div:not(.barcode-row):not(#reader-container):not(.rating-row):not(
     cursor: pointer;
 }
 
+/* The select sizes itself to its longest option, which on a phone leaves the
+   search box a sliver. Cap the select so search gets the larger share. */
+@media (max-width: 600px) {
+    .list-filters input[type="text"] {
+        flex: 1 1 60%;
+    }
+
+    .list-filters select {
+        flex: 0 1 40%;
+        min-width: 0;
+        max-width: 40%;
+        text-overflow: ellipsis;
+    }
+}
+
 /* Sits as the last child of the card grid, so it spans the column and reads as
    the end of the (capped) list rather than as a card. */
 .show-all {
