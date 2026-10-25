@@ -19,6 +19,8 @@ Multi-user ratings · Submission queue · Community averages
 - **Phase 2 — Community ratings display** (see below)
 - **Mobile card layout** — the ≤600px rules used to stack title / image / stats vertically, leaving most of a phone's width empty. Now a compact list row: 64px thumbnail left, name over brand, then one line of stars · spice · price (price pinned right). Brand parentheses moved from `cards.js` into CSS so they can be dropped when the brand sits on its own line; `<360px` drops the rating count to keep that line intact. Desktop layout unchanged. Verified at 320 / 360 / 412px with no horizontal overflow.
 
+- **Everything since Phase 7** — see *Since the Last Plan Update* below. Two of those changes supersede wording in the older sections: the **`aggregates` container no longer exists** (community scores are fields on the noodle document), and the **owner's score is no longer stored on the noodle** (it is a row in `ratings` like anyone else's).
+
 ---
 
 ## Phase 1 — Backend Polish `done`
@@ -288,25 +290,51 @@ Multi-user ratings · Submission queue · Community averages
 
 ---
 
-## Phase 7 — Shareable Noodle Links `todo`
+## Phase 7 — Shareable Noodle Links `done` (simpler than planned)
 
-> There is no way to link to a single noodle. The overlay is in-memory only — `showNoodleOverlay(noodle)` takes an object and never touches the URL — so a noodle can only be reached by finding it in the list again. Sharing one means telling someone the name and hoping they search for it.
+> A noodle can now be linked to. The overlay's share button builds `/list.html?id=<barcode>`; `list.js` reads `?id=` on load, shows the list, and opens that noodle on top of it. Built as commit `08155e1`, and deliberately smaller than the original plan: the link is made on demand rather than kept in the address bar.
 
 | Task | File |
 |------|------|
-| Read a noodle id from the URL on load and open the overlay for it; fall back to the plain list if the id is unknown | `assets/js/list.js` |
-| Cold-load path: fetch the single noodle when it is not in the current page of results, via the existing `GET /api/noodles?id=` point read | `assets/js/list.js` |
-| Rewrite the URL when the overlay opens and restore it when it closes, so the address bar always holds a copyable link | `assets/js/overlay.js` |
-| Back button closes the overlay instead of leaving the page (`pushState` on open, `popstate` to close) | `assets/js/overlay.js` |
-| "Copy link" affordance in the overlay, so the link is obtainable on mobile where the address bar is hidden | `src/_includes/overlay.html`, `assets/js/overlay.js` |
+| `?id=` on load opens the overlay; unknown id shows a "That noodle could not be found" toast over the plain list | `assets/js/list.js` |
+| Cold-load path: when the id is not in the catalogue the page already holds, point-read it with `GET /api/noodles?id=` (`[noodle] = await res.json()` — an empty array is the not-found branch) | `assets/js/list.js` |
+| Canonical link always targets `list.html`, which is public — `/mylist` and `/profile` are gated, so a link built from the current page would bounce a stranger to sign-in | `assets/js/overlay.js` (`noodleLink`) |
+| Share action in the overlay's three-dot menu: `navigator.share` where it exists, otherwise `clipboard.writeText`, otherwise an `execCommand('copy')` fallback, otherwise the URL in an error toast. Cancelling the share sheet is not treated as a failure | `assets/js/overlay.js`, `src/_includes/overlay.html` |
+| `?search=` still honoured for links made before `?id=` existed | `assets/js/list.js` |
 
-**Watch out for:**
+**Not built, from the original plan:**
 
-- **The link must target `list.html`.** It is the only public page that shows cards — `/mylist` and `/profile` are gated to `authenticated`, so a link built from either would bounce the recipient to a Microsoft login before they saw the noodle. The overlay opens from the home page and the profile highlights too, so the copied link has to name a canonical page rather than the current one.
-- **`GET /api/noodles?id=` returns an array of 0 or 1**, not an object. An unknown or deleted id comes back as `[]`, which needs a real "not found" branch — not a crash on `noodles[0].name`.
-- **`?search=` already owns the list page's query string** and dispatches an `input` event that re-renders the list asynchronously. A noodle id in the same URL has to resolve against that, or the search re-render will close the overlay just after it opens.
-- **`replaceState` for the initial deep-linked load**, otherwise the first Back press returns to the same URL and the overlay reopens.
-- Rating from a deep-linked overlay still calls `window.refreshNoodleCards`, which only `list.js` defines — fine on the list page, still a no-op elsewhere (see Deferred).
+- **The address bar does not change when the overlay opens**, so copying the URL from the browser gives the list, not the noodle. The share button is the only way to get a link.
+- **Back does not close the overlay** — no `pushState`/`popstate`. On a deep-linked load Back leaves the page.
+- Both are cheap to add later if wanted; neither blocks sharing.
+
+**Since the search moved in-memory** (`d760ae6`) the `?search=` re-render is synchronous rather than racing the overlay, so the original worry about it closing the overlay just after it opens no longer applies.
+
+---
+
+## Since the Last Plan Update `done`
+
+> Everything below landed after Phase 7 was written up, in roughly this order. Commit hashes are given so the reasoning in each message can be looked up.
+
+| Change | Why it matters | Commit |
+|--------|----------------|--------|
+| **Suggest an edit** — signed-in non-owners can propose changes to an existing noodle; arrives in the owner's queue as an `edit` submission carrying `targetId`. Rating/spice deliberately absent (opinions, set via the rating widget) | `suggest-edit.html`, `suggest-edit.js`, `submissions.js` | `c657056`, `4e28127` |
+| **Overlay three-dot menu** — Share link, Edit and Delete (the last two role-gated) behind one trigger; card top row realigned | `overlay.html`, `overlay.js`, `style.css` | `0407258`–`bab4259` |
+| **My List rework** | `mylist.js`, `ratings.js` | `851672d` |
+| **Remove your own rating**; the average no longer drifts when a rating is replaced or removed. Removing the last rating clears the score fields | `rating.js`, `ratings.js`, overlay | `eb6e284` |
+| **Committed API test suite** — `api/test/` (`node --test`) over a fake Cosmos; runs in CI before every deploy against the locked dependency tree | `api/test/*`, workflow | `e1e432d`, `8817372`, `25b7b88` |
+| **Dependabot** watches both npm trees and the actions | `.github/dependabot.yml` | `201b7ee` |
+| **Toasts announced to screen readers** | `base.html` | `bb962df` |
+| **Delete a noodle** — `DELETE /api/noodles?id=`, owner only. Removes the row, every rating anyone wrote against it, and any pending suggestion pointing at it; catalogue row first so an interrupted delete cannot leave a live noodle with destroyed ratings. Hard delete, confirmed by a dialog that names the noodle. Pages react through a new `window.noodleRemoved` hook (list/My List drop the card, home/profile reload). The confirm dialog became a shared promise-based `confirm.js` | `catalogue.js`, `confirm.js`, `overlay.js` | `a80d214` |
+| **Search runs over the catalogue already in memory** instead of a server query. Search results are now sorted and paged like the normal list — this fixes the old "search skips sorting" deferred item | `list.js`, `noodles.js` | `d760ae6` |
+| **Noodle of the day picked in the API** — `GET /api/noodles?ofTheDay=YYYY-MM-DD`; the home page no longer downloads the whole catalogue. Date comes from the caller so the changeover stays at the visitor's midnight | `catalogue.js`, `home.js` | `67058f1` |
+| **`aggregates` container merged into the noodle document** — community scores are fields on the noodle. Rating writes use `IfMatch` against the owner's edit form; `keepScores()` stops any wholesale replace from erasing scores. Rating a nonexistent noodle is a 404. One read fewer per page. The migration script has since been deleted | `rating.js`, `noodles.js`, `submissions.js` | `c41273b`, `0db97d2` |
+| **Owner score no longer stored on the noodle** — `splitScores()` replaces `withRatingDefaults`. A blank picker means *unrated* (not a defaulted 3), and the UI can now show "not yet rated"; unrated noodles sort to the end in both directions. Two `querySelector` interpolations of API data removed. Seed-score cleanup script has been run and deleted | `noodle.js`, `cards.js`, `add.js`, `overlay.js` | `668be77` |
+| **Profile stats computed in the API** — `GET /api/stats` returns the figures instead of the page downloading the catalogue. Unrated noodles excluded from every score-derived figure; `avgRating` is `null` rather than 0.0 for an unrated catalogue | `stats.js`, `profile.js` | `65e23da` |
+| **README, LICENSE, footer** — PolyForm Strict 1.0.0 licence, copyright line, footer linking to `terms.html` | `LICENSE`, `README.md`, `base.html` | `6b4d1d4` |
+| **Search bar on My List**; phone layout gives the search box the larger share of the filter row | `mylist.js`, `style.css` | `7ba4423` |
+
+**Open: `terms.html` is not committed.** The footer on every page already links to `terms.html` and that commit is on `origin`, so the deployed site currently links to a 404. `src/terms.html` exists locally but is untracked. Commit and push it. It also still needs a decision on gating — the page should be public, which `staticwebapp.config.json` already allows by default.
 
 ---
 
@@ -314,14 +342,13 @@ Multi-user ratings · Submission queue · Community averages
 
 - **A user can submit the same noodle twice** — the duplicate check only looks at `packages`, not at pending submissions, so two people (or one person twice) can queue the same barcode. The owner sees both in the queue. Approving one no longer leaves the other able to overwrite it (see *Owner Add vs. the Queue*), but the second card still has to be rejected by hand. (Approving both is no longer destructive after review fix #3, but the duplicate entries remain.)
 - **Spice 0 may already have been corrupted** — until the score-scale fix, every save through the add/edit form rewrote a stored spice 0 to 3. Any noodle edited in that window has lost its real value, and the backfill can't recover it (the aggregate would have been overwritten too). Worth spot-checking noodles you know are not spicy.
-- **Aggregates are never recalculated from source** — `applyRating` updates them incrementally, so any historical drift (including ratings dropped by review bug #1 before it was fixed) persists. A rebuild-from-`ratings` job would correct existing rows.
-- **Profile stats don't refresh after rating** — the overlay's `window.refreshNoodleCards` hook is only defined by `list.js`, so rating from a profile highlight updates the overlay but leaves the summary stats and distribution stale until reload.
-- **No committed test suite** — the API handlers were verified with a throwaway harness that stubs `lib/cosmos` and captures the `app.http` handler. Worth committing as `api/test/` so the aggregate maths and role checks stay covered.
-- **Search results skip sorting** — `list.js` search calls `renderList` directly rather than `sortNoodles`, so the sort dropdown is ignored while a search term is active (pre-existing, now more visible).
-- **Profile "Avg price" rounds to 1 decimal** — shares the `fmt()` helper with the rating stats, so £1.482 shows as "£1.5" instead of "£1.48" (pre-existing).
+- **Scores are never recalculated from source** — `applyRating` updates the fields on the noodle incrementally, so any historical drift (including ratings dropped by review bug #1 before it was fixed) persists. A rebuild-from-`ratings` job would correct existing rows (the sums now live on the noodle document, so it is a single pass).
+- **Profile stats don't refresh after rating** — `window.refreshNoodleCards` is defined by `list.js` and `mylist.js` only, so rating from a profile highlight updates the overlay but leaves the summary stats and distribution stale until reload. (Deleting a noodle *does* reload the profile.)
+- ~~**No committed test suite**~~ — done: `api/test/`, run in CI before deploy. Still open: the role checks and handler-level paths (ratings/submissions endpoints) are covered less than the `lib/` maths, and the fake Cosmos does not execute SQL, so a wrong query is only caught by asserting on its text.
 - **Star distribution on the profile is coarse** — fractional averages rounded to whole-star buckets; a histogram of the raw ratings would need a new aggregate or a `GET /api/ratings` scan.
 - Personal lists — users bookmark or collect favourites
 - **Profile page is entirely community data** — it is auth-gated and titled like a personal page, but every stat on it is catalogue-wide. Now that My List exists, the profile should either show *your* stats (your average, your distribution, how often you differ from the crowd) or stop looking personal.
 - **Existing ratings have no `ratedAt`** — rows written before this change sort last under "Recently rated" until they are re-rated. A one-off backfill would fix the ordering.
-- Functional list improvements: empty search state, keyword filter, "showing X of Y" count
+- Functional list improvements: keyword filter, "showing X of Y" count (the empty-search state now exists)
+- **Address bar / Back button for the overlay** — see Phase 7, *Not built*.
 - Duplicate identity detection (same person via GitHub vs Entra ID)
