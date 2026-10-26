@@ -27,7 +27,7 @@ jobs:
       # working-directory, not --prefix: `npm install --prefix api` run from the
       # repo root takes the root package as something to install and writes it
       # into api/package.json as a file:.. dependency.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
